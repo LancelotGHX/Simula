@@ -1,3 +1,6 @@
+#ifndef _SIMULA_MOLECULE_
+#define _SIMULA_MOLECULE_
+
 #include "global.h"
 #include <string>
 
@@ -6,44 +9,50 @@ using namespace global;
 
 class Molecule {
 private:
-	simString name;
-	simI1  size;
-	simI2* rpos;
-
-	simI1 id;
-	simI1 x;
-	simI1 y;
-	simI1 dir;
-
+  simString name;
+  simI2* rpos; //< relative position of sub dots
+  simI1  size; //< number of sub dots
+  simI1 i;
+  simI1 x;
+  simI1 y;
+  simI1 d;
 public:
-	~Molecule() 
-	{
-		if (rpos) { delete[] rpos; }
-	}
+  /** @brief Constructor **/
+  Molecule(simI1 index) : i(index) {}
+  
+  /** @brief Destructor **/
+  ~Molecule() 
+  {
+    if (rpos) { delete[] rpos; }
+  }
 
-	// properties accessor
-	simI1 id() { return this->id; }
-	simI1 x() { return this->x; }
-	simI1 y() { return this->y; }
-	simI1 dir() { return this->dir; }
+  /** @brief properties accessor **/
+  simI1  I() { return this->i; }
+  simI1  X() { return this->x; }
+  simI1  Y() { return this->y; }
+  simI1  D() { return this->d; }
+  simI1  Size() { return this->size; }
+  const simI2* Rpos() { return this->rpos; }
 
-	// properties setter
-	void setX(simI1 xPos) { this->x = xPos; }
-	void setY(simI1 yPos) { this->y = yPos; }
-	void setDir(simI1 direction) { this->dir = direction; }
+  /** @brief properties setters **/
+  void setX(simI1 xpos) { this->x = xpos;  }
+  void setY(simI1 ypos) { this->y = ypos;  }
+  void setD(simI1 direction) { this->d = direction; }
+  void setName(const simString& Name) { this->name = Name; }
 
-	void setName(const simString& Name) { this->name = Name; }
-	void setSize(simI1 Size) 
-	{ 
-		this->size = Size; 
-		this->rpos = new simI2[Size];
-	}
-	void setRpos(simI1* List) 
-	{
-		for (simI1 i = 0; i < this->size; ++i)
-		{
-			this->rpos[i].x = List[2 * i];
-			this->rpos[i].y = List[2 * i + 1];
-		}
-	}
+  /** @brief set relative component position with a list of integer pairs **/
+  void setRpos(simI1 Size, simI1* List) 
+  {
+    /// set size first
+    this->size = Size; 
+    this->rpos = new simI2[Size];
+    /// set relative positions
+    for (simI1 i = 0; i < this->size; ++i) {
+      this->rpos[i].x = List[2 * i];
+      this->rpos[i].y = List[2 * i + 1];
+    }
+  }
+
 };
+
+#endif // _SIMULA_MOLECULE_
