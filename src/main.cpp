@@ -16,19 +16,5 @@ int main()
 		}
 	}
 
-	// read input files
-	simString singleObj;
-	simString singleNum;
-	ifstream inputFile("example.txt");
-	if (inputFile.is_open())
-	{
-		while (getline(inputFile, singleObj, '>'))
-		{
-			cout << singleObj << '\n';
-		}
-		inputFile.close();
-	}
-	else {	cout << "Unable to open file\n";	}
-
 	return 0;
 }
