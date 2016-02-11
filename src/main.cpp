@@ -1,12 +1,11 @@
 #include "global.h"
-#include "molecule_type.h"
 #include "molecule.h"
 #include "substrate.h"
 #include <iostream>
 #include <fstream>
 
-using namespace std;
 using namespace global; 
+using namespace std;
 
 int main() 
 {
@@ -31,12 +30,10 @@ int main()
   for (simI1 id = 0; id < tp.amount();  ++id) {
     mlist[id] = new Molecule(&tp, id);
   }
-
   cout << "successfully created all molecules" << endl;
 
   //--- land all points
   simI1 id = 0;
-  cout << tp.amount() << endl;
   while (id < tp.amount()) {
     
     simI1 Xpos = randInt(1,subXsize);

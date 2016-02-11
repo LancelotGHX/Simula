@@ -3,10 +3,11 @@
 
 #include "global.h"
 #include "molecule.h"
-#include <iostream>
-#include <fstream>
+#include <iostream> // print c++ error
+#include <fstream>  // for print substrate to file
+#include <vector>   // for constructing substrate
 
-#define __BG__ NULL //< background value
+#define __BG__ 0 //< background value
 
 using namespace global;
 
@@ -15,73 +16,61 @@ using namespace global;
  **/
 class Substrate {
 private:
-  const simI1 __xsize__; //< X dimension size
-  const simI1 __ysize__; //< Y dimemsion size
-  const Molecule*** __sub__;   //< array of pointers to Molecule
+  const simI1 __xlen__; //< X dimension size
+  const simI1 __ylen__; //< Y dimemsion size
+  std::vector<simVI1> __sub__; //< array of pointers to Molecule
 private:
 
-  /** @brief allocate the substrate */
-  void __alloc__()
-  {
-    __sub__ = new const Molecule ** [__xsize__];
-    for (simI1 i = 0; i < __xsize__; ++i) {
-      __sub__[i] = new const Molecule * [__ysize__];
-    }
-  }
-
-  /** @brief Initialize substrate **/
+  /** @brief Initialize substrate with value background value **/
   void __init__ ()
   {
-    for (simI1 i = 0; i < __xsize__; ++i) {
-      for (simI1 j = 0; j < __ysize__; ++j) {
-	__sub__[i][j] = __BG__;
+    for (simI1 i = 0; i < __xlen__; ++i) {
+      // construct a column
+      simVI1 col;
+      for (simI1 j = 0; j < __ylen__; ++j) {
+	col.push_back(__BG__);
       }
+      // push the column
+      __sub__.push_back(col);
     }
   }
 
 public:
 
+  /** @brief Constructor **/
+  Substrate (const simI1 Xsize, const simI1 Ysize)
+    : __xlen__ (Xsize), __ylen__ (Ysize) { __init__(); }
+
+  /** @brief Destructor **/
+  ~Substrate () {}
+
   /** @brief Point value setter **/
-  void set_sub (const simI1 x, const simI1 y, const Molecule * value)
+  void set_sub (const simI1 x, const simI1 y, const simI1 value)
   {
-    simI1 mx = pmod(x, __xsize__);
-    simI1 my = pmod(y, __ysize__);
+    simI1 mx = pmod(x, __xlen__);
+    simI1 my = pmod(y, __ylen__);
     __sub__[mx][my] = value;
   }
 
   /** @brief Point value getter **/
-  const Molecule * get_sub (const simI1 x, const simI1 y) const
+  const simI1 get_sub (const simI1 x, const simI1 y) const
   {
-    simI1 mx = pmod(x, __xsize__);
-    simI1 my = pmod(y, __ysize__);
+    simI1 mx = pmod(x, __xlen__);
+    simI1 my = pmod(y, __ylen__);
     return __sub__[mx][my];
-  }
-
-  /** @brief Constructor **/
-  Substrate (const simI1 Xsize, const simI1 Ysize)
-    : __xsize__ (Xsize), 
-      __ysize__ (Ysize) 
-  {
-    //--- initialize dynamic 2D array
-    __alloc__();
-    //--- initialize array with value 0
-    __init__();
   }
 
   /** @brief Check if the point is empty **/
   simBool is_empty (const simI1 x, const simI1 y) const
-  {
-    return ( get_sub(x,y) == __BG__ );
-  }
+  { return ( get_sub(x,y) == __BG__ ); }
 
   /** @brief Check if the relative positions are all empty **/
-  simBool is_all_empty (const simI2* rpos, const simI1 len,
-			const simI1 xc, const simI1 yc) const
+  simBool is_empty (const simVI2& rp, const simI1 xc, const simI1 yc) const
   {
     simBool empty = true;
-    for (simI1 i = 0; i < len; ++i) {
-      simI1 x = xc + rpos[i].x;
-      simI1 y = yc + rpos[i].y;
+    for (simI1 i = 0; i < rp.size(); ++i) {
+      simI1 x = xc + rp[i].x;
+      simI1 y = yc + rp[i].y;
       if ( !is_empty(x,y) ) { empty = false; break; }
     }
     return empty;
@@ -91,7 +80,7 @@ public:
   simBool land (Molecule& m, const simI1 xc, const simI1 yc, const simI1 dc)
   {
     //--- check overlap
-    if ( is_all_empty(m.rpos(), m.size(), xc, yc) ) {
+    if ( is_empty(m.rpos(), xc, yc) ) {
       //--- set molecular position & direction
       m.set_x(xc);
       m.set_y(yc);
@@ -100,7 +89,7 @@ public:
       for (simI1 i = 0; i < m.size(); ++i) {
 	simI1 x = xc + m.rpos()[i].x;
 	simI1 y = yc + m.rpos()[i].y;
-	set_sub(x, y, &m);
+	set_sub(x, y, m.self_id());
       }
       return true;
     } else {
@@ -129,10 +118,13 @@ public:
 /** @brief overload output function **/
 std::ostream& operator<<(std::ostream& os, const Substrate& sub)
 {
-  for (simI1 i = 0; i < sub.__xsize__; ++i) {
-    for (simI1 j = 0; j < sub.__ysize__; ++j) {
-      os << sub.__sub__[i][j] == __BG__ ? 0 : sub.__sub__[i][j]->type_id();
-      os << " ";
+  for (simI1 i = 0; i < sub.__xlen__; ++i) {
+    for (simI1 j = 0; j < sub.__ylen__; ++j) {
+      if (sub.__sub__[i][j] == __BG__) {
+	os << 0 << " ";
+      } else {
+	os << 1 << " ";
+      }
     }
     os << std::endl;
   }

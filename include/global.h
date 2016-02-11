@@ -5,21 +5,37 @@
 #include <stdio.h>
 #include <time.h>
 #include <string>
-
-using namespace std;
+#include <vector>
 
 namespace global
 {
+  using namespace std;
+
   /** @brief required types */
   typedef string simString;
   typedef bool   simBool;
   typedef char   simChar;
   typedef int    simI1;
   typedef double simF1;
-  struct simI2 { simI1 x, y; };
-  struct simF2 { simF1 x, y; };
+  struct simI2 
+  { 
+    simI1 x, y;
+    simI2 (simI1 xi, simI1 yi)
+      : x (xi), y (yi) {}
+  };
+  struct simF2 {
+    simF1 x, y; 
+    simF2 (simF1 xi, simF1 yi)
+      : x (xi), y (yi) {}
+  };
   struct simI3 { simI1 x, y, z; };
   struct simF3 { simF1 x, y, z; };
+  typedef vector<simI1> simVI1;
+  typedef vector<simI2> simVI2;
+  typedef vector<simI3> simVI3;
+  typedef vector<simF1> simVF1;
+  typedef vector<simF2> simVF2;
+  typedef vector<simF3> simVF3;
 
   /** @brief global variables */
   const simI1 subYsize = 100;
