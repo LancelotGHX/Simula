@@ -1,2 +1,5 @@
-# ignore folder #
+# ignore building folder #
 build/
+
+# ignore modulo folder #
+# utils/
