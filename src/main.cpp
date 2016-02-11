@@ -1,14 +1,28 @@
 #include "global.h"
 #include "molecule.h"
 #include "substrate.h"
+#include "init.h"
+#include "reader_xml.h"
 #include <iostream>
 #include <fstream>
 
-using namespace global; 
+using namespace simula; 
 using namespace std;
 
-int main() 
+int main(int argc, char *argv[])
 {
+  if (argc != 2) {
+
+    // error handling
+    std::cerr << "the program need exactly one argument" << std::endl;
+    return -1;
+
+  } else {
+    using namespace reader;
+
+    parse_input(argv[1]);
+  }
+
   initRandSeed();
 
   //--- build a substrate
@@ -21,15 +35,13 @@ int main()
   tp.set_name("TPyP");
   tp.set_id(1);
   tp.set_rpos(5,_list_);
-  tp.set_amount(100);
+  tp.set_amount(10);
 
   cout << "successfully created substratea molecule type" << endl;
 
   //--- build molecules
-  Molecule* mlist[tp.amount()];
-  for (simI1 id = 0; id < tp.amount();  ++id) {
-    mlist[id] = new Molecule(&tp, id);
-  }
+  init(tp);
+
   cout << "successfully created all molecules" << endl;
 
   //--- land all points
@@ -38,7 +50,7 @@ int main()
     
     simI1 Xpos = randInt(1,subXsize);
     simI1 Ypos = randInt(1,subYsize);
-    if ( sub.land(*mlist[id], Xpos, Ypos, 0) ) { ++id; }
+    if ( sub.land(rcd[id], Xpos, Ypos, 0) ) { ++id; }
 
   }
 

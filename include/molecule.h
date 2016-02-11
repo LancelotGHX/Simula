@@ -5,11 +5,8 @@
 #include "molecule_define.h"
 #include <vector>
 
-static std::vector<Molecule> __record__;
-
-void init_molecules(simI1 amount) 
+namespace simula 
 {
-
+  std::vector<Molecule> rcd;
 }
-
 #endif // _SIMULA_MOLECULE_
