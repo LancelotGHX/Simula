@@ -22,8 +22,8 @@ namespace global
   struct simF3 { simF1 x, y, z; };
 
   /** @brief global variables */
-  const simI1 subYsize = 10;
-  const simI1 subXsize = 10;
+  const simI1 subYsize = 100;
+  const simI1 subXsize = 100;
 
   simI1 _list_[10] = { 0,0,1,0,0,1,-1,0,0,-1 };
 
@@ -41,6 +41,16 @@ namespace global
   simI1 randInt(simI1 lowerBound, simI1 upperBound)
   {
     return static_cast<simI1>(rand()) % (upperBound - lowerBound) + lowerBound;
+  }
+
+  /**
+   * @brief positive modulo
+   * @param x Input value
+   * @param n Base integer
+   **/
+  simI1 pmod(simI1 x, simI1 n)
+  {
+    return (x % n + n) % n;
   }
 
 };

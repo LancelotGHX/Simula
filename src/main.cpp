@@ -1,4 +1,5 @@
 #include "global.h"
+#include "molecule_type.h"
 #include "molecule.h"
 #include "substrate.h"
 #include <iostream>
@@ -9,32 +10,47 @@ using namespace global;
 
 int main() 
 {
-  // build a substrate
+  initRandSeed();
+
+  //--- build a substrate
   Substrate sub(subYsize, subYsize);
 
-  cout << "here1" << endl;
+  cout << "successfully created substrate" << endl;
 
-  // build a molecule
-  Molecule* mlist[5];
-  for (simI1 i = 0; i < 5; ++i) {
-    mlist[i] = new Molecule(i+1);
-    mlist[i]->setRpos(5, _list_);
+  //--- build a molecule
+  Molecule_Type tp;
+  tp.set_name("TPyP");
+  tp.set_id(1);
+  tp.set_rpos(5,_list_);
+  tp.set_amount(100);
+
+  cout << "successfully created substratea molecule type" << endl;
+
+  //--- build molecules
+  Molecule* mlist[tp.amount()];
+  for (simI1 id = 0; id < tp.amount();  ++id) {
+    mlist[id] = new Molecule(&tp, id);
   }
 
-  cout << "here2" << endl;
+  cout << "successfully created all molecules" << endl;
 
-  // generate random position
-  for (simI1 i = 0; i < 5; ++i) {
+  //--- land all points
+  simI1 id = 0;
+  cout << tp.amount() << endl;
+  while (id < tp.amount()) {
     
     simI1 Xpos = randInt(1,subXsize);
     simI1 Ypos = randInt(1,subYsize);
-    cout << sub.land(*mlist[i], Xpos, Ypos) << endl;
+    if ( sub.land(*mlist[id], Xpos, Ypos, 0) ) { ++id; }
 
   }
 
-  cout << "here3" << endl;
+  cout << "successfully landed all molecules on thr substrate" << endl;
  
-  sub.print();
+  //--- output substrate to file
+  sub.print("output.txt");
+
+  cout << "successfully printed substrate" << endl;
 
   return 0;
 

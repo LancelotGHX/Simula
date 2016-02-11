@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 
-#include "../rapidxml.hpp"
+#include "../utils/rapidxml/rapidxml.hpp"
 
 using namespace rapidxml;
 using namespace std;
@@ -49,7 +49,8 @@ int main (int argc, char *argv[])
 
 	// show all attribute
 	allattr(iNode);
-	cout <<  "Node value: " << iNode->value() << "\n";
+	cout <<  "Node value: " << iNode->value() << " ";
+	cout <<  "Node Name: " << iNode->name() << "\n";
 	
 	// Interate over the sub nodes
 	for(xml_node<> * jNode = iNode->first_node(); 
@@ -57,7 +58,8 @@ int main (int argc, char *argv[])
 	  {
 
 	    allattr(jNode);
-	    cout <<  "Node value: " << jNode->value() << "\n";
+	    cout <<  "Node value: " << jNode->value() << " ";
+	    cout <<  "Node name: " << jNode->name() << "\n";
 	  }
       
       }    

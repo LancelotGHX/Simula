@@ -2,56 +2,49 @@
 #define _SIMULA_MOLECULE_
 
 #include "global.h"
+#include "molecule_type.h"
 #include <string>
 
 using namespace std;
 using namespace global;
 
+/**
+ * Molecule class
+ **/
 class Molecule {
 private:
-  simString name;
-  simI2* rpos; //< relative position of sub dots
-  simI1  size; //< number of sub dots
-  simI1 i;
-  simI1 x;
-  simI1 y;
-  simI1 d;
+  //--- unchangable values
+  const Molecule_Type* __type__;
+  const simI1 __i__; // molecular index
+  //--- changable values
+  simI1 __d__; // molecular direction
+  simI1 __x__; // molecular x-position
+  simI1 __y__; // molecular y-position
+
 public:
+
   /** @brief Constructor **/
-  Molecule(simI1 index) : i(index) {}
+  Molecule(const Molecule_Type* tp,
+	   const simI1          id) 
+    : __type__(tp), __i__(id) {}
   
   /** @brief Destructor **/
-  ~Molecule() 
-  {
-    if (rpos) { delete[] rpos; }
-  }
+  ~Molecule() {}
 
   /** @brief properties accessor **/
-  simI1  I() { return this->i; }
-  simI1  X() { return this->x; }
-  simI1  Y() { return this->y; }
-  simI1  D() { return this->d; }
-  simI1  Size() { return this->size; }
-  const simI2* Rpos() { return this->rpos; }
+  const Molecule_Type* type() const { return __type__; }
+  const simI1  type_id() const { return __type__->id(); }
+  const simI1  size() const { return __type__->size(); }
+  const simI2* rpos() const { return __type__->rpos(); }
+  const simI1  i() const { return __i__; }
+  const simI1  x() const { return __x__; }
+  const simI1  y() const { return __y__; }
+  const simI1  d() const { return __d__; }
 
   /** @brief properties setters **/
-  void setX(simI1 xpos) { this->x = xpos;  }
-  void setY(simI1 ypos) { this->y = ypos;  }
-  void setD(simI1 direction) { this->d = direction; }
-  void setName(const simString& Name) { this->name = Name; }
-
-  /** @brief set relative component position with a list of integer pairs **/
-  void setRpos(simI1 Size, simI1* List) 
-  {
-    /// set size first
-    this->size = Size; 
-    this->rpos = new simI2[Size];
-    /// set relative positions
-    for (simI1 i = 0; i < this->size; ++i) {
-      this->rpos[i].x = List[2 * i];
-      this->rpos[i].y = List[2 * i + 1];
-    }
-  }
+  void set_x(const simI1 xpos) { __x__ = xpos; }
+  void set_y(const simI1 ypos) { __y__ = ypos; }
+  void set_d(const simI1 direction) { __d__ = direction; }
 
 };
 
