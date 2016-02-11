@@ -1,20 +1,47 @@
-<list>
+<doc>
+  <noise id='90000000000' ></noise>
+
   <molecule id='100'>
+
     <name>TPyP</name>
     <amount>100</amount>
+
     <!-- Geometry -->
-    <geometry>
-      <size>5</size>
-      
-      <!-- relative position list-->    
-      <rpos> 
-	 0  0
-	 0  1
-	 1  0 
-	 0 -1
-	-1  0
-      </rpos>
+    <geometry size='5'>
+      0, 0,
+      1, 0,
+      0, 1,
+      -1,0,
+      0,-1
     </geometry>
+
+    <!-- Chemical Reaction -->
+    <chemical>
+      <bond>
+	<energy>0.1</energy>
+	<target>100</target>	
+      </bond>
+    </chemical>
+
+  </molecule>
+
+  <noise id='90000000000' ></noise>
+  <noise id='90000000000' ></noise>
+  <noise id='90000000000' ></noise>
+
+  <molecule id='150'>
+    <name>TPpopppp</name>
+    <amount>100</amount>
+
+    <!-- Geometry -->
+    <geometry size='5'>
+      0, 0,
+      1, 0,
+      0, 1,
+      -1,0,
+      0,-1
+    </geometry>
+
     <!-- Chemical Reaction -->
     <chemical>
       <bond>
@@ -24,4 +51,5 @@
       </bond>
     </chemical>
   </molecule>
-</list>
+
+</doc>

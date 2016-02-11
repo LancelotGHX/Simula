@@ -18,9 +18,9 @@ int main(int argc, char *argv[])
     return -1;
 
   } else {
-    using namespace reader;
 
-    parse_input(argv[1]);
+    reader::parse(argv[1]);
+
   }
 
   initRandSeed();

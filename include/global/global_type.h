@@ -1,7 +1,7 @@
 #ifndef _SIMULA_GLOBAL_TYPE_
 #define _SIMULA_GLOBAL_TYPE_
 
-#include <string>
+#include <boost/algorithm/string.hpp>
 #include <vector>
 
 namespace _SIM_TYPE_GEN_ {
@@ -42,6 +42,7 @@ namespace simula {
   typedef std::vector<simF2> simVF2;
   typedef std::vector<simF3> simVF3;
 
+  typedef std::vector<simString> simStrVec;
 };
 
 #endif // _SIMULA_GLOBAL_TYPE_
