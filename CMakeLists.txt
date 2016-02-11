@@ -7,3 +7,5 @@ include_directories("utils/rapidxml")
 set (SOURCE_FILES src/main.cpp)
 # set executable
 add_executable(simula ${SOURCE_FILES})
+# copy additional files
+file(COPY "convert.m" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
