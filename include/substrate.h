@@ -94,6 +94,9 @@ namespace simula
 	}
 	return true;
       } else {
+#ifndef NDEBUG
+	cout << "landing fail"<<endl;
+#endif
 	//--- make no changes for checking failure
 	return false;
       }
@@ -121,11 +124,12 @@ std::ostream& operator<<(std::ostream& os, const Substrate& sub)
 {
   for (simI1 i = 0; i < sub.__xlen__; ++i) {
     for (simI1 j = 0; j < sub.__ylen__; ++j) {
-      simI1 value = sub.__sub__[i][j];
-      if (value == __BG__) {
+      simI1 v = sub.__sub__[i][j];
+      if (v == __BG__) {
 	os << 0 << " ";
       } else {
-	os << rcd[value].type_id() << " ";
+	// since all indices are counted from 1, we need to substract 1 first
+	os << get_molecule(v-1).type_id() << " ";	
       }
     }
     os << std::endl;

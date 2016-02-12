@@ -1,8 +1,5 @@
-#include "global.h"
-#include "molecule.h"
-#include "substrate.h"
 #include "init.h"
-#include "reader_xml.h"
+#include "substrate.h"
 #include <iostream>
 #include <fstream>
 
@@ -19,47 +16,31 @@ int main(int argc, char *argv[])
 
   } else {
 
-    reader::parse(argv[1]);
+    init(argv[1]);
+    Substrate sub(subYsize, subYsize);
+    cout << "successfully initialized program" << endl;
 
-  }
-
-  initRandSeed();
-
-  //--- build a substrate
-  Substrate sub(subYsize, subYsize);
-
-  cout << "successfully created substrate" << endl;
-
-  //--- build a molecule
-  Molecule_Type tp;
-  tp.set_name("TPyP");
-  tp.set_id(1);
-  tp.set_rpos(5,_list_);
-  tp.set_amount(10);
-
-  cout << "successfully created substratea molecule type" << endl;
-
-  //--- build molecules
-  init(tp);
-
-  cout << "successfully created all molecules" << endl;
-
-  //--- land all points
-  simI1 id = 0;
-  while (id < tp.amount()) {
+    // land all points
+    cout << "number of molecule types: " << get_molecule_type_size() << endl;
+    cout << "number of molecule types: " << get_molecule_size() << endl;
     
-    simI1 Xpos = randInt(1,subXsize);
-    simI1 Ypos = randInt(1,subYsize);
-    if ( sub.land(rcd[id], Xpos, Ypos, 0) ) { ++id; }
+    simI1 id = 0;
+    while (id < get_molecule_size()) {
+      simI1 Xpos = randInt(1,subXsize);
+      simI1 Ypos = randInt(1,subYsize);
+      if ( sub.land(get_molecule(id), Xpos, Ypos, 0) ) { 
+	//get_molecule(id).debug();
+	id++;
+      }      
+    }
+    
+    cout << "successfully landed all molecules on thr substrate" << endl;
+    // cout << sub << endl;
+    // output substrate to file
+    sub.print("output.txt");
+    cout << "successfully printed substrate" << endl;
 
   }
-
-  cout << "successfully landed all molecules on thr substrate" << endl;
- 
-  //--- output substrate to file
-  sub.print("output.txt");
-
-  cout << "successfully printed substrate" << endl;
 
   return 0;
 

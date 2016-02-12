@@ -26,8 +26,8 @@ namespace simula
 
     /** @brief properties accessor **/
     const Molecule_Type* type () const { return __tp__; }
-    const simI1 type_id () const { return __tp__->id(); }
-    const simI1 self_id () const { return __id__;       }
+    const simI1 type_id () const { return __tp__->data_id(); }
+    const simI1 self_id () const { return __id__;            }
     const simI1 x () const { return __x__; }
     const simI1 y () const { return __y__; }
     const simI1 d () const { return __d__; }
@@ -39,6 +39,15 @@ namespace simula
     void set_y (const simI1 ypos) { __y__ = ypos; }
     void set_d (const simI1 direction) { __d__ = direction; }
 
+#ifndef NDEBUG
+    void debug()
+    {
+      cout << "index: " << __id__;
+      cout << " type: " << type_id();
+      cout << " (" << __x__ << "," << __y__ <<")"<< endl;
+
+    }
+#endif
   };
 };
 

@@ -9,6 +9,7 @@ namespace _SIM_TYPE_GEN_ {
   struct T2
   {
     T1 x,y;
+    T2() {}
     T2 (T1 xi, T1 yi)
       : x(xi), y(yi) {}
   };
@@ -16,6 +17,7 @@ namespace _SIM_TYPE_GEN_ {
   struct T3
   {
     T1 x,y,z;
+    T3 () {}
     T3 (T1 xi, T1 yi, T1 zi)
       : x(xi), y(yi), z(zi) {}
   };
