@@ -10,7 +10,7 @@ load('output.txt');
 str='output';
 
 % eval:use string as statement
-imshow(eval(str),'border','tight','initialmagnification','fit');
+imshow(eval(str)/10,'border','tight','initialmagnification','fit');
 
 % 300,100 is the ordination, 500,500 is the height and width
 set (gcf,'Position',[300,100,500,500]); 
@@ -19,7 +19,7 @@ axis normal; % normal is full size
 MyColorMap=[
    105/255, 105/255, 105/255	%0_silver
    255/255, 255/255,   0/255	%1_yellow
-   255/255, 140/255,   0/255	%2_orange
+   255/255,   0/255, 255/255	%2_orange
    255/255, 140/255,   0/255	%3_orange
     16/255, 180/255,  57/255	%4_orange
    255/255, 236/255,  62/255	%5_orange
