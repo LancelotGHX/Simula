@@ -1,53 +1,66 @@
 #ifndef _SIMULA_MOLECULE_DEFINE_
 #define _SIMULA_MOLECULE_DEFINE_
 
-#include "global.h"
 #include "molecule_type_define.h"
 
-namespace simula
-{
-  ////////////////////////////////////////////////////////////////////////////
-  // Molecule class
-  //
+namespace simula {
+  /**
+   * @brief Molecule class defining every simulation object
+   * @var type
+   * @var type_id
+   * @var self_id
+   * @var x
+   * @var y
+   * @var d
+   * @var size
+   * @var rpos
+   */
   class Molecule {
   private:
-    //--- unchangable values
-    const Molecule_Type * __tp__; // pointer to constant type instance
-    simI1                 __id__; // molecular index
+    const Molecule_Type * _tp_; // pointer to its molecule type
+    simI1                 _id_; // molecule instance index
     //--- changable values
-    simI1 __d__; // molecular direction
-    simI1 __x__; // molecular x-position
-    simI1 __y__; // molecular y-position
+    simI1 _d_; // molecular direction
+    simI1 _x_; // molecular x-position
+    simI1 _y_; // molecular y-position
   public:
 
-    /** @brief Constructor **/
+    /** 
+     * @brief Constructor 
+     * @param pointer to molecule type
+     * @param molecule index
+     */
     Molecule (const Molecule_Type * const tp, const simI1 id) 
-      : __tp__(tp), __id__(id) {}
+      : _tp_(tp), _id_(id) {}
 
-    /** @brief properties accessor **/
-    const Molecule_Type* type () const { return __tp__; }
-    const simI1 type_id () const { return __tp__->data_id(); }
-    const simI1 self_id () const { return __id__;            }
-    const simI1 x () const { return __x__; }
-    const simI1 y () const { return __y__; }
-    const simI1 d () const { return __d__; }
-    const simI1   size () const { return __tp__->size(); }
-    const simVI2& rpos () const { return __tp__->rpos(); }
+    /** 
+     * @defgroup Setters
+     * @{
+     */
+    inline const Molecule_Type* type () const { return _tp_; }
+    inline const simI1 type_id () const { return _tp_->data_id(); }
+    inline const simI1 self_id () const { return _id_;            }
+    inline const simI1 x () const { return _x_; }
+    inline const simI1 y () const { return _y_; }
+    inline const simI1 d () const { return _d_; }
+    inline const simI1   size () const { return _tp_->size(); }
+    inline const simVI2& rpos () const { return this->_tp_->rpos(); }
+    /** @} */
 
-    /** @brief properties setters **/
-    void set_x (const simI1 xpos) { __x__ = xpos; }
-    void set_y (const simI1 ypos) { __y__ = ypos; }
-    void set_d (const simI1 direction) { __d__ = direction; }
+    /** 
+     * @defgroup Getters
+     * @{
+     */
+    inline void set_x (const simI1 xpos) { _x_ = xpos; }
+    inline void set_y (const simI1 ypos) { _y_ = ypos; }
+    inline void set_d (const simI1 dir ) { _d_ = dir;  }
+    /** @} */
 
 #ifndef NDEBUG
-    void debug()
-    {
-      cout << "index: " << __id__;
-      cout << " type: " << type_id();
-      cout << " (" << __x__ << "," << __y__ <<")"<< endl;
-
-    }
+    /** @brief debug function */
+    void debug();
 #endif
+
   };
 };
 

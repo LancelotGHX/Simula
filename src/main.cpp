@@ -1,5 +1,8 @@
-#include "init.h"
+#include "global.h"
+#include "molecule.h"
 #include "substrate.h"
+#include "init.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -28,8 +31,9 @@ int main(int argc, char *argv[])
     while (id < get_molecule_size()) {
       simI1 Xpos = randInt(1,subXsize);
       simI1 Ypos = randInt(1,subYsize);
+      cout << get_molecule_size() << endl;
       if ( sub.land(get_molecule(id), Xpos, Ypos, 0) ) { 
-	//get_molecule(id).debug();
+	get_molecule(id).debug();
 	id++;
       }      
     }

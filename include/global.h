@@ -5,20 +5,21 @@
 #include "global/global_function.h"
 
 #ifndef NDEBUG
-#include <iostream>
+#  include <iostream>
+#endif
+
+#ifndef NDEBUG
 using namespace std;
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
-// constant definitions
-//
+/**
+ * @brief constant definitions
+ */
 namespace simula
 {
 
-  /** @brief global variables */
-  const simI1 subYsize = 50;
-  const simI1 subXsize = 50;
-  simI1 _list_[10] = { 0,0,1,0,0,1,-1,0,0,-1 };
+  const simI1 subYsize = 100;
+  const simI1 subXsize = 100;
 
 };
 

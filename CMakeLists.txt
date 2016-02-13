@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.1.0)
 project(Simula)
 
 # check c++11 standard
@@ -19,7 +19,7 @@ include_directories("utils/rapidxml_1_13")
 include_directories("utils/boost_1_60_0")
 
 # source files
-set (SOURCE_FILES src/main.cpp)
+file(GLOB SOURCE_FILES "src/*.cpp")
 
 # set executable
 add_executable(simula ${SOURCE_FILES})
