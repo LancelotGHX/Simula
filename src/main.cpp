@@ -32,7 +32,9 @@ int main(int argc, char *argv[])
       simI1 Xpos = randInt(1,subXsize);
       simI1 Ypos = randInt(1,subYsize);
       if ( sub.land(get_molecule(id), Xpos, Ypos, 0) ) { 
+#ifndef NDEBUG
 	get_molecule(id).debug();
+#endif
 	id++;
       }      
     }

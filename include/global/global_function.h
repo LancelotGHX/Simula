@@ -13,10 +13,7 @@ namespace simula {
    * @param lowerBound
    * @param upperBound
    */
-  inline simI1 randInt(simI1 lowerBound, simI1 upperBound)
-  {
-    return static_cast<simI1>(rand()) % (upperBound - lowerBound) + lowerBound;
-  }
+  simI1 randInt(simI1 lowerBound, simI1 upperBound);
 
   /**
    * @brief positive modulo

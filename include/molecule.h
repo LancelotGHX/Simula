@@ -1,7 +1,6 @@
 #ifndef _SIMULA_MOLECULE_H_
 #define _SIMULA_MOLECULE_H_
 
-#include "molecule/molecule_type_define.h"
 #include "molecule/molecule_define.h"
 
 namespace _molecule_ {

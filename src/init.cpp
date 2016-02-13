@@ -1,6 +1,7 @@
 #include "init.h"
-#include "reader.h"
-#include "molecule.h"
+
+#include "molecule.h" // Molecule Type
+#include "reader.h"   // reader functions
 
 using namespace simula;
 

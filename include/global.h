@@ -1,7 +1,6 @@
 #ifndef _SIMULA_GLOBAL_
 #define _SIMULA_GLOBAL_
 
-#include "global/global_type.h"
 #include "global/global_function.h"
 
 #ifndef NDEBUG

@@ -1,5 +1,8 @@
 #include "substrate.h"
 
+#include <ostream> // ostream
+#include <fstream> // ofstream
+
 using namespace _substrate_;
 using namespace simula;
 
@@ -16,14 +19,6 @@ void Substrate::_init_ ()
     // push the column
     _sub_.push_back(col);
   }
-}
-
-/** @brief Point value setter **/
-void Substrate::set_sub (const simI1 x, const simI1 y, const simI1 value)
-{
-  simI1 mx = pmod(x, _xlen_);
-  simI1 my = pmod(y, _ylen_);
-  _sub_[mx][my] = value;
 }
 
 /** @brief Point value getter **/
@@ -45,6 +40,14 @@ simBool Substrate::is_empty
     if ( !is_empty(x,y) ) { empty = false; break; }
   }
   return empty;
+}
+
+/** @brief Point value setter **/
+void Substrate::set_sub (const simI1 x, const simI1 y, const simI1 value)
+{
+  simI1 mx = pmod(x, _xlen_);
+  simI1 my = pmod(y, _ylen_);
+  _sub_[mx][my] = value;
 }
 
 /** @brief Land molecule on the position **/
@@ -81,7 +84,9 @@ void Substrate::print(const simChar* name)
     file << *this;
     file.close();
   } else {
+#ifndef NDEBUG
     std::cerr << "fail to open a file" << std::endl;
+#endif
   }
 }
 

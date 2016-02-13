@@ -1,11 +1,7 @@
 #ifndef _SIMULA_SUBSTRATE_
 #define _SIMULA_SUBSTRATE_
 
-#include "global.h"
 #include "molecule.h"
-#include <iostream> // print c++ error
-#include <fstream>  // for print substrate to file
-#include <vector>   // for constructing substrate
 
 /** @brief local variable namespace */
 namespace _substrate_ {
@@ -34,12 +30,6 @@ namespace simula {
     Substrate (const simI1 Xsize, const simI1 Ysize)
       : _xlen_ (Xsize), _ylen_ (Ysize) { _init_(); }
 
-    /** @brief Destructor **/
-    ~Substrate () {}
-
-    /** @brief Point value setter **/
-    void set_sub (const simI1 x, const simI1 y, const simI1 value);
-
     /** @brief Point value getter **/
     const simI1 get_sub (const simI1 x, const simI1 y) const;
 
@@ -49,6 +39,9 @@ namespace simula {
 
     /** @brief Check if the relative positions are all empty **/
     simBool is_empty (const simVI2& rp, const simI1 xc, const simI1 yc) const;
+
+    /** @brief Point value setter **/
+    void set_sub (const simI1 x, const simI1 y, const simI1 value);
 
     /** @brief Land molecule on the position **/
     simBool land (Molecule& m, const simI1 xc, const simI1 yc, const simI1 dc);
