@@ -9,11 +9,10 @@
 #include "global.h"
 
 namespace {
-  rapidxml::xml_document<> _doc_;
+  rapidxml::xml_document<>* _doc_;
 };
 
 namespace simula {
-
   namespace reader {
 
     typedef rapidxml::xml_node<>      node;
@@ -65,13 +64,30 @@ namespace simula {
     }
 
     /**
+     * @brief get the first node of current doc
+     */
+    inline node* get_root()
+    {
+      return _doc_->first_node();
+    }
+
+    /**
      * @brief read xml input file
      */
-    inline node* parse(const simChar* name)
+    inline node* open_reader(const simChar* name)
     {
       rapidxml::file<> xmlFile(name);
-      _doc_.parse<0>(xmlFile.data());
-      return _doc_.first_node();
+      _doc_ = new rapidxml::xml_document<>();
+      _doc_->parse<0>(xmlFile.data());
+      return _doc_->first_node();
+    }
+
+    /**
+     * @brief close xml input file
+     */
+    inline node* close_reader()
+    {
+      delete _doc_;
     }
 
     /**
@@ -87,10 +103,20 @@ namespace simula {
      * @brief apply function to each node
      */
     template<typename Func>
-    void for_each_node(const node* r, const simChar* name, Func func)
+    void for_each_node
+    (const node* r, const simChar* name, Func func, const simI1 max_num = 0)
     {
-      for (node* n = r->first_node(name); n; n = n->next_sibling(name)) {
-	func(n);
+      if (max_num <= 0) {
+	for (node* n = r->first_node(name); n; n = n->next_sibling(name))
+	  func(n); 
+      } else {
+	simI1 max_counter = 0;
+	for (node* n = r->first_node(name); n; n = n->next_sibling(name)) {
+	  // check maximum iteration
+	  if (max_counter++ >= max_num) { break; }
+	  // execute function
+	  func(n);
+	}
       }
     }
 

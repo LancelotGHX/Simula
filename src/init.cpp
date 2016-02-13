@@ -1,7 +1,8 @@
 #include "init.h"
 
-#include "molecule.h" // Molecule Type
-#include "reader.h"   // reader functions
+#include "molecule.h"  // Molecule Type
+#include "substrate.h" // Substrate
+#include "reader.h"    // reader functions
 
 using namespace simula;
 
@@ -19,7 +20,7 @@ namespace {
   /**
    * @brief initialize all molecule types
    */
-  void init_molecule_type (reader::node* n) 
+  void init_molecule_type (const reader::node* n) 
   {
     using namespace reader;
 #ifndef NDEBUG
@@ -49,16 +50,34 @@ namespace {
 #endif
   }
 
+  void init_substrate (const reader::node* n)
+  {
+    simI2 v = reader::parse_str<simI2>(n->value());
+#ifndef NDEBUG
+    cout << "initialize substrate: ";
+    cout << "(" << v.x << "," << v.y << ")" << endl;
+#endif
+    gen_sub(v.x,v.y);
+  }
+
 };
 
 void simula::init(const simChar* input) 
 {
+  /** @brief initialize user defined constants */
   using namespace reader;
+  node* r = open_reader(input);
   // initialize molecule type
-  for_each_node(parse(input), "molecule", init_molecule_type);
+  for_each_node(r, "molecule", init_molecule_type);
+  // initialize substrate
+  for_each_node(r, "substrate", init_substrate, 1);
+  close_reader();
+ 
+  /** @brief initialize the simulation system */
   // initialize molecules
   for (simI1 i = 0; i < get_molecule_type_size(); ++i)
     init_molecule(get_molecule_type(i));
-  // initialize substrate
+  // initialize random seed
   initRandSeed();
+
 }

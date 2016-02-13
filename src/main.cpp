@@ -14,7 +14,6 @@ int main(int argc, char *argv[])
     return -1;
   } else {
     init(argv[1]);
-    gen_sub(subYsize, subYsize);
 #ifndef NDEBUG
     cout << "successfully initialized program" << endl;
 #endif
