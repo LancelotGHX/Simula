@@ -59,5 +59,30 @@ namespace simula {
 
 };
 
+/** @brief local variable namespace */
+namespace _substrate_ {
+  extern simula::Substrate * _sub_;
+};
+
+/** @brief project namespace */
+namespace simula {
+
+  /** @brief generate the substrate */
+  void gen_sub(simI1 xlen, simI1 ylen);
+
+  /** @brief clean the substrate */
+  inline void clean_sub()
+  {
+    delete _substrate_::_sub_;
+  }
+
+  /** @brief accessor to the substrate */
+  inline Substrate& get_sub()
+  {
+    return *_substrate_::_sub_;
+  }
+
+};
+
 
 #endif // _SIMULA_SUBSTRATE_

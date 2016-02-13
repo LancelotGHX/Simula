@@ -1,5 +1,5 @@
-#ifndef _SIMULA_MOLECULE_H_
-#define _SIMULA_MOLECULE_H_
+#ifndef _SIMULA_MOLECULE_
+#define _SIMULA_MOLECULE_
 
 #include "molecule/molecule_define.h"
 
@@ -37,4 +37,4 @@ namespace simula {
 
 };
 
-#endif // _SIMULA_MOLECULE_H_
+#endif // _SIMULA_MOLECULE_

@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     return -1;
   } else {
     init(argv[1]);
-    Substrate sub(subYsize, subYsize);
+    gen_sub(subYsize, subYsize);
 #ifndef NDEBUG
     cout << "successfully initialized program" << endl;
 #endif
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     while (id < get_molecule_size()) {
       simI1 Xpos = randInt(1,subXsize);
       simI1 Ypos = randInt(1,subYsize);
-      if ( sub.land(get_molecule(id), Xpos, Ypos, 0) ) { 
+      if ( get_sub().land(get_molecule(id), Xpos, Ypos, 0) ) { 
 #ifndef NDEBUG
 	get_molecule(id).debug();
 #endif
@@ -38,11 +38,10 @@ int main(int argc, char *argv[])
     cout << "successfully landed all molecules on thr substrate" << endl;
 #endif
     // output substrate to file
-    sub.print("output.txt");
+    get_sub().print("output.txt");
 #ifndef NDEBUG
     cout << "successfully printed substrate" << endl;
 #endif
   }
   return 0;
 }
-

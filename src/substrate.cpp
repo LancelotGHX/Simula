@@ -6,7 +6,8 @@
 using namespace _substrate_;
 using namespace simula;
 
-const simI1 _substrate_::_bg_ = 0; //< background value
+const simI1 _substrate_::_bg_  = 0; //< background value
+Substrate * _substrate_::_sub_ = NULL;
 
 /** @brief Initialize substrate with value background value **/
 void Substrate::_init_ ()
@@ -106,4 +107,15 @@ std::ostream& simula::operator<<(std::ostream& os, const Substrate& sub)
     os << std::endl;
   }
   return os;
+}
+
+void simula::gen_sub(simI1 xlen, simI1 ylen)
+{
+  if (!_substrate_::_sub_) {
+    _substrate_::_sub_ = new Substrate(xlen, ylen);
+  } else {
+#ifndef NDEBUG
+    cout << "substrate is already generated" << endl;
+#endif
+  }
 }
