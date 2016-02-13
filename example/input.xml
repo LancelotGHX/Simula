@@ -1,6 +1,6 @@
 <doc>
 
-  <molecule id='100' name=' LEAD ' amount=' 10 '>
+  <molecule id='100' name=' LEAD ' amount=' 100'>
 
     <shape>
 
@@ -15,7 +15,7 @@
   </molecule>
 
 
-  <molecule id='150' name=' TPyP ' amount=' 10 '>
+  <molecule id='150' name=' TPyP ' amount=' 100'>
 
     <!-- Geometry -->
 
