@@ -6,9 +6,9 @@ using namespace simula;
 /** @brief debug function */
 void Molecule::debug()
 {
-  cout << "molecule:" << endl;
-  cout << "  index: " << _id_      << endl;
-  cout << "  type : " << type_id() << endl;
+  cout << "molecule:";
+  cout << " index: " << _id_;
+  cout << " type : " << type_id();
   cout << " (" << _x_ << "," << _y_ <<")" << endl;
 }
 #endif
