@@ -17,8 +17,8 @@ using namespace std;
 namespace simula
 {
 
-  const simI1 subYsize = 100;
-  const simI1 subXsize = 100;
+	const simI1 subYsize = 100;
+	const simI1 subXsize = 100;
 
 };
 

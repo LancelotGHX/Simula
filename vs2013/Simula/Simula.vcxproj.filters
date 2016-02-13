@@ -1,6 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Text Include="..\..\src\example.txt" />
+    <Filter Include="molecule">
+      <UniqueIdentifier>{da8e7ba3-223e-45ea-8c3f-7f60bbb84483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="global">
+      <UniqueIdentifier>{45d381f7-d361-4a08-bfb1-ead92b0950df}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\global\global_type.h">
+      <Filter>global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\global\global_function.h">
+      <Filter>global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\molecule\molecule_define.h">
+      <Filter>molecule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\molecule\molecule_type_define.h">
+      <Filter>molecule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\global.h" />
+    <ClInclude Include="..\..\include\init.h" />
+    <ClInclude Include="..\..\include\molecule.h" />
+    <ClInclude Include="..\..\include\reader.h" />
+    <ClInclude Include="..\..\include\substrate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\global_function.cpp" />
+    <ClCompile Include="..\..\src\init.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\molecule.cpp" />
+    <ClCompile Include="..\..\src\molecule_define.cpp" />
+    <ClCompile Include="..\..\src\molecule_type_define.cpp" />
+    <ClCompile Include="..\..\src\substrate.cpp" />
   </ItemGroup>
 </Project>

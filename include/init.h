@@ -5,7 +5,7 @@
 
 namespace simula
 {
-  void init(const simChar* input);
+	void init(const simChar* input);
 };
 
 #endif // _SIMULA_INIT_

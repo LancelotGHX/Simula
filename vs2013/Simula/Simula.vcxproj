@@ -19,17 +19,24 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\global.h" />
-    <ClInclude Include="..\..\src\molecule.h" />
+    <ClInclude Include="..\..\include\global.h" />
+    <ClInclude Include="..\..\include\global\global_function.h" />
+    <ClInclude Include="..\..\include\global\global_type.h" />
+    <ClInclude Include="..\..\include\init.h" />
+    <ClInclude Include="..\..\include\molecule.h" />
+    <ClInclude Include="..\..\include\molecule\molecule_define.h" />
+    <ClInclude Include="..\..\include\molecule\molecule_type_define.h" />
+    <ClInclude Include="..\..\include\reader.h" />
+    <ClInclude Include="..\..\include\substrate.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\src\kernel.cu" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="..\..\src\global_function.cpp" />
+    <ClCompile Include="..\..\src\init.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\src\example.txt" />
+    <ClCompile Include="..\..\src\molecule.cpp" />
+    <ClCompile Include="..\..\src\molecule_define.cpp" />
+    <ClCompile Include="..\..\src\molecule_type_define.cpp" />
+    <ClCompile Include="..\..\src\substrate.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9C12EA9F-00EE-4F16-9230-96E785BBE8B2}</ProjectGuid>
@@ -84,6 +91,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,6 +117,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -119,6 +131,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PreBuildEvent>
+      <Command>echo $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

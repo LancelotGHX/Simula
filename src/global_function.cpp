@@ -8,7 +8,7 @@ using namespace simula;
 /** @brief initialize random seed */
 void simula::initRandSeed()
 {
-  srand(time(NULL));
+	srand(time(NULL));
 }
 
 /**
@@ -18,5 +18,5 @@ void simula::initRandSeed()
  */
 simI1 simula::randInt(simI1 lowerBound, simI1 upperBound)
 {
-  return static_cast<simI1>(rand()) % (upperBound - lowerBound) + lowerBound;
+	return static_cast<simI1>(rand()) % (upperBound - lowerBound) + lowerBound;
 }
