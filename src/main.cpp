@@ -43,5 +43,7 @@ int main(int argc, char *argv[])
     cout << "successfully printed substrate" << endl;
 #endif
   }
+  // clean up
+  clean_sub();
   return 0;
 }
