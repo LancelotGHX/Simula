@@ -3,7 +3,17 @@
 
 #include "molecule_type_define.h"
 
+namespace _molecule_ {
+	extern simula::simI1 _max_rpos_idx_;
+};
+
 namespace simula {
+
+	/** @brief convert land id to molecule self id */
+	inline simI1 lid2sid(simI1 v) { return static_cast<simI1>(v / _molecule_::_max_rpos_idx_); }
+	/** @brief convert land id to molecule rpos id */
+	inline simI1 lid2rid(simI1 v) { return static_cast<simI1>(v % _molecule_::_max_rpos_idx_); }
+
 	/**
 	 * @brief Molecule class defining every simulation object
 	 * @var type
@@ -17,8 +27,8 @@ namespace simula {
 	 */
 	class Molecule {
 	private:
-		const Molecule_Type * _tp_; // pointer to its molecule type
-		simI1                 _id_; // molecule instance index
+		const Molecule_Type * _tp_ = NULL; // pointer to its molecule type
+		simI1                 _id_;        // molecule instance index
 		//--- changable values
 		simI1 _d_; // molecular direction
 		simI1 _x_; // molecular x-position
@@ -34,21 +44,23 @@ namespace simula {
 			: _tp_(tp), _id_(id) {}
 
 		/**
-		 * @defgroup Setters
+		 * @defgroup Getters
 		 * @{
 		 */
-		inline const Molecule_Type* type() const { return _tp_; }
-		inline const simI1 type_id() const { return _tp_->data_id(); }
+		const simI1 land_id(simI1 i) const;
+		inline const simI1 type_id() const { return _tp_->gen_id(); }
 		inline const simI1 self_id() const { return _id_; }
 		inline const simI1 x() const { return _x_; }
 		inline const simI1 y() const { return _y_; }
 		inline const simI1 d() const { return _d_; }
-		inline const simI1   size() const { return _tp_->size(); }
+		inline const Molecule_Type* type() const { return _tp_; }
+		inline const simSize size() const { return _tp_->size(); }
 		inline const simVI2& rpos() const { return this->_tp_->rpos(); }
+		inline const simVI1& ridx() const { return this->_tp_->ridx(); }
 		/** @} */
 
 		/**
-		 * @defgroup Getters
+		 * @defgroup Setters
 		 * @{
 		 */
 		inline void set_x(const simI1 xpos) { _x_ = xpos; }

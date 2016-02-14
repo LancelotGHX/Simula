@@ -25,12 +25,12 @@ namespace simula {
 		return _molecule_::_rcd_list_[i];
 	}
 	/** @brief get the number of Molecule_Type */
-	inline const simI1 get_molecule_type_size()
+	inline const simSize get_molecule_type_size()
 	{
 		return _molecule_::_rcd_type_.size();
 	}
 	/** @brief get the number of Molecule */
-	inline const simI1 get_molecule_size()
+	inline const simSize get_molecule_size()
 	{
 		return _molecule_::_rcd_list_.size();
 	}

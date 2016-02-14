@@ -7,33 +7,90 @@
     <Filter Include="global">
       <UniqueIdentifier>{45d381f7-d361-4a08-bfb1-ead92b0950df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="substrate">
+      <UniqueIdentifier>{83a06337-2c03-422e-bc74-0e32e82b971e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="init">
+      <UniqueIdentifier>{88dacf9a-e008-4823-94ca-2decf27efbf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GPU-kernel">
+      <UniqueIdentifier>{812372da-4be0-4fdd-8dbb-fde65964c391}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xmlreader">
+      <UniqueIdentifier>{a06ff443-3552-40c0-94f5-927933cd1d34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="global\Type">
+      <UniqueIdentifier>{83336437-41ec-4f3d-b7bb-2fe623927454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="global\Function">
+      <UniqueIdentifier>{d782c4d7-6f21-405c-8be1-f929ca05ac2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="molecule\Molecule_Type">
+      <UniqueIdentifier>{dbf69c04-b5cf-4b8a-a7da-14843909299c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="molecule\Molecule">
+      <UniqueIdentifier>{d6e784b5-a337-4532-a152-08f3ce4751a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\global\global_type.h">
+    <ClInclude Include="..\..\include\substrate.h">
+      <Filter>substrate</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\molecule.h">
+      <Filter>molecule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\global.h">
       <Filter>global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\init.h">
+      <Filter>init</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\kernel.h">
+      <Filter>GPU-kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\reader.h">
+      <Filter>xmlreader</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\global\global_function.h">
-      <Filter>global</Filter>
+      <Filter>global\Function</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\molecule\molecule_define.h">
-      <Filter>molecule</Filter>
+    <ClInclude Include="..\..\include\global\global_type.h">
+      <Filter>global\Type</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\molecule\molecule_type_define.h">
-      <Filter>molecule</Filter>
+      <Filter>molecule\Molecule_Type</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\global.h" />
-    <ClInclude Include="..\..\include\init.h" />
-    <ClInclude Include="..\..\include\molecule.h" />
-    <ClInclude Include="..\..\include\reader.h" />
-    <ClInclude Include="..\..\include\substrate.h" />
+    <ClInclude Include="..\..\include\molecule\molecule_define.h">
+      <Filter>molecule\Molecule</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\global_function.cpp" />
-    <ClCompile Include="..\..\src\init.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
-    <ClCompile Include="..\..\src\molecule.cpp" />
-    <ClCompile Include="..\..\src\molecule_define.cpp" />
-    <ClCompile Include="..\..\src\molecule_type_define.cpp" />
-    <ClCompile Include="..\..\src\substrate.cpp" />
+    <ClCompile Include="..\..\src\substrate.cpp">
+      <Filter>substrate</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\molecule.cpp">
+      <Filter>molecule</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\init.cpp">
+      <Filter>init</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\global_function.cpp">
+      <Filter>global\Function</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\molecule_type_define.cpp">
+      <Filter>molecule\Molecule_Type</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\molecule_define.cpp">
+      <Filter>molecule\Molecule</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\example\input.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\src\kernel.cu">
+      <Filter>GPU-kernel</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

@@ -18,7 +18,7 @@ namespace simula {
 	private:
 		const simI1 _xlen_; //< X dimension size
 		const simI1 _ylen_; //< Y dimemsion size
-		std::vector<simVI1> _sub_; //< array of pointers to Molecule
+		simI1* _data_ = NULL;      //< array of pointers to Molecule
 	private:
 
 		/** @brief Initialize substrate with value background value **/
@@ -33,8 +33,23 @@ namespace simula {
 			_init_();
 		}
 
+		/** @brief Destructor **/
+		~Substrate()
+		{
+			if (_data_) { delete[] _data_; }
+		}
+
+		/** @brief Read data **/
+		inline simI1* data()
+		{
+			return _data_;
+		}
+
 		/** @brief Point value getter **/
 		const simI1 get_sub(const simI1 x, const simI1 y) const;
+
+		/** @brief Point value setter **/
+		void set_sub(const simI1 x, const simI1 y, const simI1 value);
 
 		/** @brief Check if the point is empty **/
 		inline simBool is_empty(const simI1 x, const simI1 y) const
@@ -44,9 +59,6 @@ namespace simula {
 
 		/** @brief Check if the relative positions are all empty **/
 		simBool is_empty(const simVI2& rp, const simI1 xc, const simI1 yc) const;
-
-		/** @brief Point value setter **/
-		void set_sub(const simI1 x, const simI1 y, const simI1 value);
 
 		/** @brief Land molecule on the position **/
 		simBool land(Molecule& m, const simI1 xc, const simI1 yc, const simI1 dc);

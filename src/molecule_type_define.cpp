@@ -9,35 +9,42 @@ void Molecule_Type::set_name(const simString& name)
 }
 
 /** @brief set type index **/
-void Molecule_Type::set_data_id(const simI1 id)
+void Molecule_Type::set_gen_id(const simI1 id)
 {
-	_dd_idx_ = id;
+	_gen_idx_ = id;
 }
 
 /** @brief set type index **/
-void Molecule_Type::set_type_id(const simI1 id)
+void Molecule_Type::set_usr_id(const simI1 id)
 {
-	_tp_idx_ = id;
+	_usr_idx_ = id;
 }
 
 /** @brief set type amount **/
-void Molecule_Type::set_amount(const simI1 am)
+void Molecule_Type::set_amount(const simI1 number)
 {
-	_amount_ = am;
+	_amount_ = number;
 }
 
 /** @brief set relative component position with a list of integer pairs **/
 void Molecule_Type::set_rpos(const simVI2& rpos, const simVI1& ridx)
 {
-	_rpos_ = rpos; _ridx_ = ridx;
+	_dot_pos_ = rpos; 
+	_dot_idx_ = ridx;
 }
 void Molecule_Type::set_rpos(const simI1 sz, const simI1* ls)
 {
-	for (simI1 i = 0; i < sz; ++i) {
+	for (simI1 i = 0; i < sz; ++i) 
+	{
 		simI1 xid = 2 * i;
 		simI1 yid = 2 * i + 1;
-		_rpos_.push_back(simI2(ls[xid], ls[yid]));
+		_dot_pos_.push_back(simI2(ls[xid], ls[yid]));
 	}
+}
+
+void Molecule_Type::set_bond(const std::vector<simOneBond>& bonds)
+{
+	_bond_ = bonds;
 }
 
 #ifndef NDEBUG
@@ -47,13 +54,33 @@ void Molecule_Type::debug()
 	cout << "==> Molecule" << endl;
 	cout << " ** name: " << _name_ << endl;
 	cout << " ** amount: " << _amount_ << endl;
-	cout << " ** data index: " << _dd_idx_ << endl;
-	cout << " ** type index: " << _tp_idx_ << endl;
+	cout << " ** gen index: " << _gen_idx_ << endl;
+	cout << " ** usr index: " << _usr_idx_ << endl;
 	for (simI1 i = 0; i < this->size(); ++i) {
-		cout << " ** rpos id = " << _ridx_[i] << " (";
-		cout << _rpos_[i].x << ",";
-		cout << _rpos_[i].y << ")\n";
+		cout << " ** pos id = " << _dot_idx_[i] << " (";
+		cout << _dot_pos_[i].x << ",";
+		cout << _dot_pos_[i].y << ")\n";
 	}
 	cout << endl;
+
+	if (_bond_.size() != 0) {
+		for (simI1 i = 0; i < _bond_.size(); ++i) {
+			cout << " ==> bond information:";
+			cout << "\n    => number " << _bond_[i].rpos.size();
+			cout << "\n    => energy " << _bond_[i].energy;
+			cout << "\n    => target " << _bond_[i].target;
+			for (simI1 j = 0; j < _bond_[i].rpos.size(); ++j) {
+				cout << "\n    => rpos (id,rx,ry) = (" << _bond_[i].rpos[j].z;
+				cout << "," << _bond_[i].rpos[j].x;
+				cout << "," << _bond_[i].rpos[j].y;
+				cout << ")";
+			}
+			cout << "\n\n";
+		}
+	}
+	else {
+		cout << " no bound !!!!!\n\n" << endl;
+	}
+
 }
 #endif

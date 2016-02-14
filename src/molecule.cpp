@@ -12,6 +12,7 @@ simI1 simula::gen_molecule_type()
 {
 	// construct a molecule inplace
 	_rcd_type_.emplace_back();
+	_rcd_type_.back().set_gen_id(_rcd_type_.size());
 	return _rcd_type_.size() - 1;
 }
 

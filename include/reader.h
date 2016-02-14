@@ -1,9 +1,9 @@
 #ifndef _SIMULA_READER_XML_
 #define _SIMULA_READER_XML_
 
-#include <boost/lexical_cast.hpp>
+#include <boost/lexical_cast.hpp>      // lexical casting function
 #include <rapidxml/rapidxml_utils.hpp> // read file
-#include <rapidxml/rapidxml.hpp>       //
+#include <rapidxml/rapidxml.hpp>       // xml file parser
 #include <iostream>
 #include <vector>
 #include "global.h"
@@ -12,8 +12,8 @@ namespace simula {
 	namespace reader {
 		typedef rapidxml::xml_document<>  doc_t;
 		typedef rapidxml::file<>          xml_t;
-		typedef rapidxml::xml_node<>      node;
-		typedef rapidxml::xml_attribute<> attr;
+		typedef rapidxml::xml_node<>      node_t;
+		typedef rapidxml::xml_attribute<> attr_t;
 
 		/**
 		 * @brief template string parser
@@ -51,11 +51,11 @@ namespace simula {
 		/**
 		 * @brief get attribute/node value
 		 */
-		inline const simChar* attr_value(const node* n, const simChar* name)
+		inline const simChar* attr_value(const node_t* n, const simChar* name)
 		{
 			return n->first_attribute(name)->value();
 		}
-		inline const simChar* node_value(const node* n, const simChar* name)
+		inline const simChar* node_value(const node_t* n, const simChar* name)
 		{
 			return n->first_node(name)->value();
 		}
@@ -64,7 +64,7 @@ namespace simula {
 		 * @brief convention function to parse node attribute
 		 */
 		template<typename T>
-		T parse_attr(const node* n, const simChar* name)
+		T parse_attr(const node_t* n, const simChar* name)
 		{
 			return parse_str<T>(attr_value(n, name));
 		}
@@ -74,21 +74,25 @@ namespace simula {
 		 */
 		template<typename Func>
 		void for_each_node
-			(const node* r, const simChar* name, Func func, const simI1 max_num = 0)
+			(const node_t* r, const simChar* name, Func func, const simI1 max_num = 0)
 		{
 			if (max_num == 0)
 			{
 #ifndef NDEBUG
-				cout << "debug here: " << r->name() << endl;
+				cout << " entering for_each under node " << r->name() << endl;
 #endif
-				for (node* n = r->first_node(name); n; n = n->next_sibling(name))
+				for (node_t* n = r->first_node(name); n; n = n->next_sibling(name))
+				{
+#ifndef NDEBUG
+					cout << "     for each debug: looping in " << r->name() << endl;
+#endif
 					func(n);
-
+				}
 			}
 			else
 			{
 				simI1 max_counter = 0;
-				for (node* n = r->first_node(name); n; n = n->next_sibling(name))
+				for (node_t* n = r->first_node(name); n; n = n->next_sibling(name))
 				{
 					// check maximum iteration
 					if (max_counter++ >= max_num) { break; }
@@ -96,7 +100,9 @@ namespace simula {
 					func(n);
 				}
 			}
-
+#ifndef NDEBUG
+			cout << " leaving for_each under node " << r->name() << endl << endl;
+#endif
 		}
 
 	};

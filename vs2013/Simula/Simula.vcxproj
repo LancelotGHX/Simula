@@ -23,6 +23,7 @@
     <ClInclude Include="..\..\include\global\global_function.h" />
     <ClInclude Include="..\..\include\global\global_type.h" />
     <ClInclude Include="..\..\include\init.h" />
+    <ClInclude Include="..\..\include\kernel.h" />
     <ClInclude Include="..\..\include\molecule.h" />
     <ClInclude Include="..\..\include\molecule\molecule_define.h" />
     <ClInclude Include="..\..\include\molecule\molecule_type_define.h" />
@@ -37,6 +38,12 @@
     <ClCompile Include="..\..\src\molecule_define.cpp" />
     <ClCompile Include="..\..\src\molecule_type_define.cpp" />
     <ClCompile Include="..\..\src\substrate.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\src\kernel.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\example\input.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9C12EA9F-00EE-4F16-9230-96E785BBE8B2}</ProjectGuid>

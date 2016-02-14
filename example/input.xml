@@ -1,35 +1,46 @@
 <doc>
 
-  <substrate>100,100</substrate>
+  <substrate>20,20</substrate>
 
-  <molecule id='100' name=' LEAD ' amount=' 100'>
+  <molecule id='100' name='LEAD' amount='2'>
     <shape>
+      <!-- rpos pair number should be smaller than 100 -->
       <rpos id='1'>0, 0</rpos>
       <rpos id='2'>1, 0</rpos>
-      <rpos id='3'>-1,0</rpos>
-      <rpos id='4'>2, 0</rpos>
-      <rpos id='5'>-2,0</rpos>
+      <rpos id='2'>-1,0</rpos>
+      <rpos id='3'>2, 0</rpos>
+      <rpos id='3'>-2,0</rpos>
     </shape>
+    <!-- Chemical -->
+    <bond target='150' energy='0.1'>
+      <rpos id='1'>3, 0</rpos>
+      <rpos id='2'>2, 0</rpos>
+      <rpos id='0'>1, 1</rpos>
+      <rpos id='0'>2,-1</rpos>
+      <rpos id='0'>1, 1</rpos>
+      <rpos id='0'>2,-1</rpos>
+    </bond>
   </molecule>
 
-  <molecule id='150' name=' TPyP ' amount=' 100'>
+  <molecule id='150' name='TPyP' amount='2'>
     <!-- Geometry -->
     <shape>
       <rpos id='1'>0, 0</rpos>
       <rpos id='2'>1, 0</rpos>
-      <rpos id='3'>0, 1</rpos>
-      <rpos id='4'>-1,0</rpos>
-      <rpos id='5'>0,-1</rpos>
+      <rpos id='2'>0, 1</rpos>
+      <rpos id='2'>-1,0</rpos>
+      <rpos id='2'>0,-1</rpos>
     </shape>
-    <!-- Chemical Reaction -->
+    <!-- Chemical -->
     <bond target='100' energy='0.1'>
       <rpos id='1'>3, 0</rpos>
       <rpos id='2'>2, 0</rpos>
       <rpos id='0'>1, 1</rpos>
-      <rpos id='0'>1,-1</rpos>
-      <rpos id='0'>2, 1</rpos>
+      <rpos id='0'>2,-1</rpos>
+      <rpos id='0'>1, 1</rpos>
       <rpos id='0'>2,-1</rpos>
     </bond>
+    
   </molecule>
 
 </doc>

@@ -1,4 +1,4 @@
 # ignore building folder #
 build/
 vs2013/x64/
-vs2013/Simula/x64
+vs2013/Simula/x64/
