@@ -1,190 +1,150 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// CUDA function definitions
+//
+///////////////////////////////////////////////////////////////////////////////
 #include "kernel.h"
 
+#include "cuda.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
 
-cudaError_t funcCuda(int *c, const int *a, const int *b, const int* r, unsigned int size);
-
-int main_temp()
+///////////////////////////////////////////////////////////////////////////////
+// error check function
+#define cuda_safe_call(ans) { simCudaAssert((ans), __FILE__, __LINE__); }
+void simCudaAssert(cudaError_t code, const char *file, int line, bool abort = true)
 {
-	const int arraySize = 5;
-
-	const int a[arraySize] = { 1, 2, 3, 4, 5 }; // x position
-	const int b[arraySize] = { 1, 1, 1, 1, 1 }; // y position
-
-	int c[arraySize * 4] = { 0 };
-
-	const int r[2] = { 1, 0 };      // constant memory
-
-	// Test overlap.
-	cudaError_t cudaStatus = funcCuda(c, a, b, r, arraySize);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "function failed!");
-		return 1;
+	if (code != cudaSuccess) {
+		fprintf(stderr, "CUDA assert: %s %s %d\n", cudaGetErrorString(code), file, line);
+		if (abort) exit(code);
 	}
-
-	printf("#1 {1,2,3,4} = {%d,%d,%d,%d}\n", c[0], c[1], c[2], c[3]);
-	printf("#2 {1,2,3,4} = {%d,%d,%d,%d}\n", c[4], c[5], c[6], c[7]);
-	printf("#3 {1,2,3,4} = {%d,%d,%d,%d}\n", c[8], c[9], c[10], c[11]);
-	printf("#4 {1,2,3,4} = {%d,%d,%d,%d}\n", c[12], c[13], c[14], c[15]);
-	printf("#5 {1,2,3,4} = {%d,%d,%d,%d}\n", c[16], c[17], c[18], c[19]);
-
-	// cudaDeviceReset must be called before exiting in order for profiling and
-	// tracing tools such as Nsight and Visual Profiler to show complete traces.
-	cudaStatus = cudaDeviceReset();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaDeviceReset failed!");
-		return 1;
-	}
-
-	return 0;
 }
 
-// constant memory test
-__constant__ int dev_r[2];
+///////////////////////////////////////////////////////////////////////////////
+// used namespace
+using namespace simula;
+using namespace simCuda;
 
-// kernel function
-__global__ void addKernel(int *c, const int *x, const int *y, const int size)
-{
-	int idx = threadIdx.x;
-	int i = idx % size;
-	int j = idx / size;
+///////////////////////////////////////////////////////////////////////////////
+// local namespace
+namespace {
 
-	int sx = x[i];
-	int sy = y[i];
-	int tx = x[j];
-	int ty = y[j];
+	/////////////////////////////////////////////////////////////////////////////
+	// device variable
+	kMolecule* mlist_d;
+	kMolecule* mlist_h;
 
-	if (sx + 1 == tx && sy == ty) {
-		c[i * 4 + 0] = dev_r[0];
-	}
-	else { 
-		c[i * 4 + 0] = dev_r[1];
-	}
-
-	if (sx == tx && sy + 1 == ty) {
-		c[i * 4 + 1] = dev_r[0];
-	}
-	else {
-		c[i * 4 + 1] = dev_r[1];
-	}
-
-	if (sx - 1 == tx && sy == ty) {
-		c[i * 4 + 2] = dev_r[0];
-	}
-	else {
-		c[i * 4 + 2] = dev_r[1];
-	}
-
-	if (sx == tx && sy - 1 == ty) {
-		c[i * 4 + 3] = dev_r[0];
-	}
-	else {
-		c[i * 4 + 3] = dev_r[1];
+	/////////////////////////////////////////////////////////////////////////////
+	// deep copy molecule list to device
+	cudaError_t mlist_to_dev(simBool free_flag = false)
+	{
+		// allocate memory
+		simSize msize = get_molecule_size();
+		mlist_h = (kMolecule*)malloc(msize * sizeof(kMolecule));
+		cuda_safe_call(cudaMalloc((void**)&mlist_d, msize * sizeof(kMolecule)));
+		// deep copy molecule data into C struct
+		for (simI1 i = 0; i < msize; ++i) {
+			mlist_h[i].x = get_molecule(i).x();
+			mlist_h[i].y = get_molecule(i).y();
+			mlist_h[i].d = get_molecule(i).d();
+			mlist_h[i].i = get_molecule(i).self_id();
+			mlist_h[i].t = get_molecule(i).type_id();
+		}
+		// copy data into device
+		cudaError_t err = cudaMemcpy(mlist_d, mlist_h, msize * sizeof(kMolecule), cudaMemcpyHostToDevice);
+		// free mlist_h
+		if (free_flag) {
+			free(mlist_h);
+		}
+		return err;
 	}
 
-}
+	/////////////////////////////////////////////////////////////////////////////
+	// deep copy molecule list to host
+	cudaError_t mlist_to_host()
+	{
+		// allocate memory
+		simSize msize = get_molecule_size();
+		// copy data back to host
+		cudaError_t err = cudaMemcpy(mlist_h, mlist_d, msize * sizeof(kMolecule), cudaMemcpyDeviceToHost);
+		// deep copy back to struct
+		if (err = cudaSuccess) {
+			for (simI1 i = 0; i < msize; ++i) {
+				get_molecule(i).set_x(mlist_h[i].x);
+				get_molecule(i).set_y(mlist_h[i].y);
+				get_molecule(i).set_d(mlist_h[i].d);
+			}
+		}
+		return err;
+	}
+	/////////////////////////////////////////////////////////////////////////////
+	// kernel function
+	// ==> to check if its neighboring points are occupied
+	__global__ void addKernel(kMolecule* mlist, simI1* r, simI1 size)
+	{
+		simI1 idx = threadIdx.x;
+		simI1 sx = mlist[idx].x, sy = mlist[idx].y;
 
-// Helper function for using CUDA to add vectors in parallel.
-cudaError_t funcCuda(int *c, const int *a, const int *b, const int* r, unsigned int size)
-{
-	int *dev_a = 0;
-	int *dev_b = 0;
-	int *dev_c = 0;
+		r[idx * 4 + 0] = 1; 
+		r[idx * 4 + 1] = 1;
+		r[idx * 4 + 2] = 1; 
+		r[idx * 4 + 3] = 1;
+		
+		for (simI1 i = 0; i < size; ++i) {
+			simI1 tx = mlist[i].x, ty = mlist[i].y;
+			if (sx + 1 == tx && sy == ty) { r[idx * 4 + 0] = 0; }
+			if (sx == tx && sy + 1 == ty) { r[idx * 4 + 1] = 0; }
+			if (sx - 1 == tx && sy == ty) { r[idx * 4 + 2] = 0; }
+			if (sx == tx && sy - 1 == ty)	{ r[idx * 4 + 3] = 0; }
+		}
+		
+	}
 
-	cudaError_t cudaStatus;
+	simI1* result_d;
+	simI1* result_h;
 
-	printf("r: %d, %d\n", r[0], r[1]);
-
-	try {
+	// Helper function for using CUDA to add vectors in parallel.
+	void funcCuda()
+	{
+		simI1 msize = get_molecule_size();
 
 		// Choose which GPU to run on, change this on a multi-GPU system.
-		cudaStatus = cudaSetDevice(0);
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-			throw - 1;
-		}
+		cuda_safe_call(cudaSetDevice(0));
 
 		// Allocate constant memory
-		cudaStatus = cudaMemcpyToSymbol(dev_r, r, 2 * sizeof(int));
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMemcpyToSymbol failed! Fail to allocate constant memory");
-			throw - 1;
-		}
-
-		// Allocate GPU buffers for three vectors (two input, one output)    .
-		cudaStatus = cudaMalloc((void**)&dev_c, 4 * size * sizeof(int));
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMalloc failed!");
-			throw - 1;
-		}
-
-		cudaStatus = cudaMalloc((void**)&dev_a, size * sizeof(int));
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMalloc failed!");
-			throw - 1;
-		}
-
-		cudaStatus = cudaMalloc((void**)&dev_b, size * sizeof(int));
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMalloc failed!");
-			throw - 1;
-		}
-
-		// Copy input vectors from host memory to GPU buffers.
-		cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMemcpy failed!");
-			throw - 1;
-		}
-
-		cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMemcpy failed!");
-			throw - 1;
-		}
+		result_h = (simI1*)malloc(4 * msize * sizeof(simI1));
+		cuda_safe_call(cudaMalloc((void**)&result_d, 4 * msize * sizeof(simI1)));
+		
+		// Copy data
+		cuda_safe_call(mlist_to_dev(true));
 
 		// Launch a kernel on the GPU with one thread for each element.
-		addKernel <<<1, size * size>>>(dev_c, dev_a, dev_b, size);
+		addKernel <<< 1, msize >>> (mlist_d, result_d, msize);
 
 		// Check for any errors launching the kernel
-		cudaStatus = cudaGetLastError();
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-			throw - 1;
-		}
+		cuda_safe_call(cudaGetLastError());
 
-		// cudaDeviceSynchronize waits for the kernel to finish, and returns
-		// any errors encountered during the launch.
-		cudaStatus = cudaDeviceSynchronize();
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-			throw - 1;
-		}
+		// Check any errors encountered during the launch.
+		cuda_safe_call(cudaDeviceSynchronize());
 
 		// Copy output vector from GPU buffer to host memory.
-		cudaStatus = cudaMemcpy(c, dev_c, 4 * size * sizeof(int), cudaMemcpyDeviceToHost);
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMemcpy failed!");
-			throw - 1;
-		}
-
+		cuda_safe_call(cudaMemcpy(result_h, result_d, 4 * msize * sizeof(simI1), cudaMemcpyDeviceToHost));
 	}
 
-	catch (int e) {
+};
 
-		if (e == -1) {
-			cudaFree(dev_c);
-			cudaFree(dev_a);
-			cudaFree(dev_b);
-		}
-		else {
-			throw;
-		}
-
+int simCuda::main_temp()
+{
+	// Test overlap.
+	funcCuda();
+	// print result
+	for (simI1 i = 0; i < get_molecule_size(); ++i) {
+		printf("{%d,%d,%d,%d}\n", result_h[4 * i + 0], result_h[4 * i + 1], result_h[4 * i + 2], result_h[4 * i + 3]);
 	}
 
-	return cudaStatus;
+	// for tracing tools such as Nsight and Visual Profiler
+	cuda_safe_call(cudaDeviceReset());
+	return 0;
 }

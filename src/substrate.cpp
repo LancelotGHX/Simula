@@ -1,25 +1,35 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// substrate class definition
+//
+///////////////////////////////////////////////////////////////////////////////
 #include "substrate.h"
 
 #include <ostream> // ostream
 #include <fstream> // ofstream
 
+///////////////////////////////////////////////////////////////////////////////
+// used namespace
 using namespace _substrate_;
 using namespace simula;
 
-const simI1 _substrate_::_bg_ = 0; //< background value
+///////////////////////////////////////////////////////////////////////////////
+// initialize variables from header file
+const simI1 _substrate_::_bg_ = 0; // background value
 Substrate * _substrate_::_sub_ = NULL;
 
-/** @brief Initialize substrate with value background value **/
+///////////////////////////////////////////////////////////////////////////////
+// Initialize substrate with value background value
 void Substrate::_init_()
 {
-	_data_ = new simI1[_xlen_ * _ylen_];
 	for (simI1 i = 0; i < _xlen_ * _ylen_; ++i)
 	{
-		_data_[i] = _bg_;
+		_data_.push_back(_bg_);
 	}
 }
 
-/** @brief Point value getter **/
+///////////////////////////////////////////////////////////////////////////////
+// Point value getter
 const simI1 Substrate::get_sub(const simI1 x, const simI1 y) const
 {
 	simI1 mx = pmod(x, _xlen_);
@@ -27,7 +37,8 @@ const simI1 Substrate::get_sub(const simI1 x, const simI1 y) const
 	return _data_[my * _xlen_ + mx];
 }
 
-/** @brief Point value setter **/
+///////////////////////////////////////////////////////////////////////////////
+// Point value setter
 void Substrate::set_sub(const simI1 x, const simI1 y, const simI1 value)
 {
 	simI1 mx = pmod(x, _xlen_);
@@ -35,7 +46,8 @@ void Substrate::set_sub(const simI1 x, const simI1 y, const simI1 value)
 	_data_[my * _xlen_ + mx] = value;
 }
 
-/** @brief Check if the relative positions are all empty **/
+///////////////////////////////////////////////////////////////////////////////
+// Check if the relative positions are all empty
 simBool Substrate::is_empty
 (const simVI2& rp, const simI1 xc, const simI1 yc) const
 {
@@ -48,18 +60,19 @@ simBool Substrate::is_empty
 	return empty;
 }
 
-/** @brief Land molecule on the position **/
+///////////////////////////////////////////////////////////////////////////////
+// Land molecule on the position
 simBool Substrate::land
 (Molecule& m, const simI1 xc, const simI1 yc, const simI1 dc)
 {
-	//--- check overlap
+	// check overlap
 	if (is_empty(m.rpos(), xc, yc))
 	{
-		//--- set molecular position & direction
+		// set molecular position & direction
 		m.set_x(xc);
 		m.set_y(yc);
 		m.set_d(dc);
-		//--- set point values on substrate
+		// set point values on substrate
 		for (simI1 i = 0; i < m.size(); ++i) {
 			simI1 x = xc + m.rpos()[i].x;
 			simI1 y = yc + m.rpos()[i].y;
@@ -71,12 +84,13 @@ simBool Substrate::land
 #ifndef NDEBUG
 		cout << "landing fail" << endl;
 #endif
-		//--- make no changes for checking failure
+		// make no changes for checking failure
 		return false;
 	}
 }
 
-/** @brief print substrate into file **/
+///////////////////////////////////////////////////////////////////////////////
+// print substrate into file
 void Substrate::print(const simChar* name)
 {
 	std::ofstream file(name);
@@ -92,7 +106,8 @@ void Substrate::print(const simChar* name)
 	}
 }
 
-/** @brief overload output function **/
+///////////////////////////////////////////////////////////////////////////////
+// overload output function
 std::ostream& simula::operator<<(std::ostream& os, const Substrate& sub)
 {
 	for (simI1 i = 0; i < sub._xlen_; ++i) {
@@ -114,6 +129,8 @@ std::ostream& simula::operator<<(std::ostream& os, const Substrate& sub)
 	return os;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// generate substrate
 void simula::gen_sub(simI1 xlen, simI1 ylen)
 {
 	if (!_substrate_::_sub_) 
@@ -122,10 +139,13 @@ void simula::gen_sub(simI1 xlen, simI1 ylen)
 		cout << " **** generating substrate ****\n\n";
 #endif
 		_substrate_::_sub_ = new Substrate(xlen, ylen);
+		// need to be modified once the substrate class is fully implemented
+		subXsize = xlen;
+		subYsize = ylen;
 	}
-	else {
 #ifndef NDEBUG
+	else {
 		cout << " ERROR: substrate is already generated\n\n";
-#endif
 	}
+#endif
 }

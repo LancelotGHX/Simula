@@ -1,18 +1,16 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////////////////////
 #ifndef _SIMULA_MOLECULE_TYPE_DEFINE_
 #define _SIMULA_MOLECULE_TYPE_DEFINE_
 
 #include "global.h"
 
+///////////////////////////////////////////////////////////////////////////////
+// project namespace
 namespace simula {
-
-	struct simOneBond {	
-		simF1 energy;
-		simI1 target;
-		std::vector<simI3> rpos;
-	};
-
-	typedef std::vector<simOneBond> simBonds;
-
 	/**
 	 * @brief Store molecule type information
 	 * @var name
@@ -22,11 +20,18 @@ namespace simula {
 	 * @var size
 	 * @var rpos (with id)
 	 */
-	class Molecule_Type {
+	class MoleculeType {
+	public:
+		struct simOneBond {
+			simF1 energy;
+			simI1 target;
+			std::vector<simI3> rpos;
+		};
+		typedef std::vector<simOneBond> simBonds;
 	private:
 		simString _name_; //< type name in string
 		simBonds  _bond_; //< bonding definition
-		simI1  _amount_;  //< total amount of molecule will be created
+		simI1   _amount_; //< total amount of molecule will be created
 		simI1  _gen_idx_; //< data index determined by the program (count from 1)
 		simI1  _usr_idx_; //< type index defined by user
 		simVI2 _dot_pos_; //< relative position of components

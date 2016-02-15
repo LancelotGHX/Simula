@@ -4,10 +4,10 @@ using namespace _molecule_;
 using namespace simula;
 
 /** define global variables */
-std::vector<Molecule_Type> _molecule_::_rcd_type_;
+std::vector<MoleculeType> _molecule_::_rcd_type_;
 std::vector<Molecule>      _molecule_::_rcd_list_;
 
-/** @brief generate a new Molecule_Type */
+/** @brief generate a new MoleculeType */
 simI1 simula::gen_molecule_type()
 {
 	// construct a molecule inplace
@@ -17,7 +17,7 @@ simI1 simula::gen_molecule_type()
 }
 
 /** @brief generate a new Molecule */
-simI1 simula::gen_molecule(const Molecule_Type& type)
+simI1 simula::gen_molecule(const MoleculeType& type)
 {
 	// get current molecule index
 	simI1 id = _rcd_list_.size();

@@ -31,6 +31,7 @@
     <ClInclude Include="..\..\include\substrate.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\global.cpp" />
     <ClCompile Include="..\..\src\global_function.cpp" />
     <ClCompile Include="..\..\src\init.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
@@ -98,10 +99,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13</IncludePath>
+    <IncludePath>$(CUDA_INC_PATH);$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13;</IncludePath>
+    <IncludePath>$(CUDA_INC_PATH);$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\..\include;..\..\utils\boost_1_60_0;..\..\utils\rapidxml_1_13;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

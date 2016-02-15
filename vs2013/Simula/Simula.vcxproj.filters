@@ -84,6 +84,9 @@
     <ClCompile Include="..\..\src\molecule_define.cpp">
       <Filter>molecule\Molecule</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\global.cpp">
+      <Filter>global</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\example\input.xml" />

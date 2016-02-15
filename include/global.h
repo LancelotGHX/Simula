@@ -1,25 +1,28 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// define global constants
+//
+///////////////////////////////////////////////////////////////////////////////
 #ifndef _SIMULA_GLOBAL_
 #define _SIMULA_GLOBAL_
 
 #include "global/global_function.h"
 
+///////////////////////////////////////////////////////////////////////////////
+// debug settings
 #ifndef NDEBUG
 #  include <iostream>
 #endif
-
 #ifndef NDEBUG
 using namespace std;
 #endif
 
-/**
- * @brief constant definitions
- */
+///////////////////////////////////////////////////////////////////////////////
+// constant definitions
 namespace simula
 {
-
-	const simI1 subYsize = 100;
-	const simI1 subXsize = 100;
-
+	extern simI1 subYsize;
+	extern simI1 subXsize;
 };
 
 #endif // _SIMULA_GLOBAL_

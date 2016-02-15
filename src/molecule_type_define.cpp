@@ -3,36 +3,36 @@
 using namespace simula;
 
 /** @brief set type name **/
-void Molecule_Type::set_name(const simString& name)
+void MoleculeType::set_name(const simString& name)
 {
 	_name_ = name;
 }
 
 /** @brief set type index **/
-void Molecule_Type::set_gen_id(const simI1 id)
+void MoleculeType::set_gen_id(const simI1 id)
 {
 	_gen_idx_ = id;
 }
 
 /** @brief set type index **/
-void Molecule_Type::set_usr_id(const simI1 id)
+void MoleculeType::set_usr_id(const simI1 id)
 {
 	_usr_idx_ = id;
 }
 
 /** @brief set type amount **/
-void Molecule_Type::set_amount(const simI1 number)
+void MoleculeType::set_amount(const simI1 number)
 {
 	_amount_ = number;
 }
 
 /** @brief set relative component position with a list of integer pairs **/
-void Molecule_Type::set_rpos(const simVI2& rpos, const simVI1& ridx)
+void MoleculeType::set_rpos(const simVI2& rpos, const simVI1& ridx)
 {
 	_dot_pos_ = rpos; 
 	_dot_idx_ = ridx;
 }
-void Molecule_Type::set_rpos(const simI1 sz, const simI1* ls)
+void MoleculeType::set_rpos(const simI1 sz, const simI1* ls)
 {
 	for (simI1 i = 0; i < sz; ++i) 
 	{
@@ -42,14 +42,14 @@ void Molecule_Type::set_rpos(const simI1 sz, const simI1* ls)
 	}
 }
 
-void Molecule_Type::set_bond(const std::vector<simOneBond>& bonds)
+void MoleculeType::set_bond(const std::vector<simOneBond>& bonds)
 {
 	_bond_ = bonds;
 }
 
 #ifndef NDEBUG
 /** @brief  properties **/
-void Molecule_Type::debug()
+void MoleculeType::debug()
 {
 	cout << "==> Molecule" << endl;
 	cout << " ** name: " << _name_ << endl;

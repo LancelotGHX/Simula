@@ -1,22 +1,29 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// initialization function definitions
+//
+///////////////////////////////////////////////////////////////////////////////
 #include "init.h"
 #include "substrate.h" // Substrate, Molecule
 #include "reader.h"    // reader functions
 
+///////////////////////////////////////////////////////////////////////////////
+// used namespace
 using namespace simula;
 
+///////////////////////////////////////////////////////////////////////////////
+// private variable/function namespace
 namespace {
-	/**
-	 * @brief initialize molecules
-	 */
-	void init_molecule(const Molecule_Type& t)
+	/////////////////////////////////////////////////////////////////////////////
+	// initialize molecules
+	void init_molecule(const MoleculeType& t)
 	{
 		for (simI1 i = 0; i < t.amount(); ++i)
 			gen_molecule(t);
 	}
 
-	/**
-	 * @brief initialize all molecule types
-	 */
+	/////////////////////////////////////////////////////////////////////////////
+	// initialize all molecule types
 	void init_molecule_type(const reader::node_t* n)
 	{
 		using namespace reader;
@@ -26,7 +33,7 @@ namespace {
 		/** @todo parsing molecule information */
 		///////////////////////////////////////////////////////////////////////////
 		simI1 id = gen_molecule_type();
-		Molecule_Type& tp = get_molecule_type(id);
+		MoleculeType& tp = get_molecule_type(id);
 		///////////////////////////////////////////////////////////////////////////
 		// molecule: user defined index
 		tp.set_usr_id(parse_attr<simI1>(n, "id"));
@@ -54,10 +61,10 @@ namespace {
 		ridx.clear();
 		///////////////////////////////////////////////////////////////////////////
 		// molecule: bonding
-		simBonds bonds;
+		MoleculeType::simBonds bonds;
 		auto bond_func = [&](node_t* sn /* node 'bond' */) {
 			bonds.emplace_back();
-			simOneBond& new_bond = bonds.back();
+			MoleculeType::simOneBond& new_bond = bonds.back();
 			new_bond.energy = parse_attr<simF1>(sn, "energy");
 			new_bond.target = parse_attr<simI1>(sn, "target");
 			// get all bond rpos
@@ -78,9 +85,8 @@ namespace {
 		///////////////////////////////////////////////////////////////////////////
 	}
 
-	/**
-	* @brief initialize substrate
-	*/
+	/////////////////////////////////////////////////////////////////////////////
+	// initialize substrate
 	void init_substrate(const reader::node_t* n)
 	{
 		simI2 v = reader::parse_str<simI2>(n->value());
@@ -90,35 +96,30 @@ namespace {
 #endif
 		gen_sub(v.x, v.y);
 	}
-
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// initialization function
 void simula::init(const simChar* input)
 {
 	using namespace reader;
-	/** @brief we cannot initialize a document with ptr, so open file here */
+	// we cannot initialize a document with ptr, so open file here
 	doc_t doc; 
 	xml_t xml(input);
 	doc.parse<0>(xml.data());
-
-	/** @brief initialize user defined constants */
+	// initialize user defined constants
 	for_each_node(doc.first_node(), "molecule", init_molecule_type);
 	for_each_node(doc.first_node(), "substrate", init_substrate, 1);
-
 #ifndef NDEBUG
 	for (simI1 i = 0; i < get_molecule_type_size(); ++i)
 	{
 		get_molecule_type(i).debug();
 	}
 #endif
-
-	/** @brief initialize the simulation system */
+	// initialize the simulation system
 	// initialize molecules
 	for (simI1 i = 0; i < get_molecule_type_size(); ++i)
-	{
 		init_molecule(get_molecule_type(i));
-	}
-
 	// initialize random seed
 	initRandSeed();
 }

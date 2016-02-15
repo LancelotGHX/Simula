@@ -1,33 +1,54 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// CUDA kernel function definition
+//
+///////////////////////////////////////////////////////////////////////////////
 #ifndef _SIMULA_KERNEL_
 #define _SIMULA_KERNEL_
 
 #include "substrate.h"
 
+///////////////////////////////////////////////////////////////////////////////
+// project namespace
 namespace simula {
+	/////////////////////////////////////////////////////////////////////////////
+	// namespace for CUDA kernel
 	namespace simCuda {
-
-		/** @brief CUDA kernel type **/
-		struct kBonePos {	simI1 x, y, id;	};
-		/** @brief CUDA kernel type **/
-		struct kOneBond 
-		{
-			simF1 energy;
-			simI1 target;
-			simSize   size;
-			kBonePos* rpos;
+		///////////////////////////////////////////////////////////////////////////
+		// type for configuration (bond/shape)
+		struct kRpos { simI1 x, y, i; };
+		///////////////////////////////////////////////////////////////////////////
+		// type for defining one bond
+		struct kBond {
+			simF1 energy; // energy
+			simI1 target; // molecule target
+			simI1   type; // bond identity index
+			simSize size; // number of rpos for the bond 
 		};
-		/** @brief CUDA kernel type **/
-		struct kBonds {
-			simSize   size;
-			kOneBond* bond;
+		///////////////////////////////////////////////////////////////////////////
+		//
+		// corresponding to Molecule_Tyle
+		//
+		///////////////////////////////////////////////////////////////////////////
+		struct kMoleculeType {
+			simI1  id;
+			kBond* bond;
+			kRpos* bond_rpos;
+			kRpos* conf_rpos;
+		};
+		///////////////////////////////////////////////////////////////////////////
+		//
+		// corresponding to Molecule
+		//
+		///////////////////////////////////////////////////////////////////////////
+		struct kMolecule {
+			simI1 x, y, d, i, t;
 		};
 		
+		int main_temp();
 
-	
-	};	
-
+	};
 };
 
-int main_temp();
 
 #endif // _SIMULA_KERNEL_

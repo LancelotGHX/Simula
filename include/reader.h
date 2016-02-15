@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// tools for read xml input file
+//
+///////////////////////////////////////////////////////////////////////////////
 #ifndef _SIMULA_READER_XML_
 #define _SIMULA_READER_XML_
 
@@ -6,8 +11,11 @@
 #include <rapidxml/rapidxml.hpp>       // xml file parser
 #include <iostream>
 #include <vector>
+
 #include "global.h"
 
+///////////////////////////////////////////////////////////////////////////////
+// project namespace
 namespace simula {
 	namespace reader {
 		typedef rapidxml::xml_document<>  doc_t;
@@ -15,9 +23,8 @@ namespace simula {
 		typedef rapidxml::xml_node<>      node_t;
 		typedef rapidxml::xml_attribute<> attr_t;
 
-		/**
-		 * @brief template string parser
-		 */
+		/////////////////////////////////////////////////////////////////////////////
+		// template string parser
 		template<typename T>
 		T parse_str(simString str) // auto type conversion
 		{
@@ -48,9 +55,8 @@ namespace simula {
 			return result;
 		}
 
-		/**
-		 * @brief get attribute/node value
-		 */
+		/////////////////////////////////////////////////////////////////////////////
+		// get attribute/node value
 		inline const simChar* attr_value(const node_t* n, const simChar* name)
 		{
 			return n->first_attribute(name)->value();
@@ -60,18 +66,16 @@ namespace simula {
 			return n->first_node(name)->value();
 		}
 
-		/**
-		 * @brief convention function to parse node attribute
-		 */
+		/////////////////////////////////////////////////////////////////////////////
+		// convention function to parse node attribute
 		template<typename T>
 		T parse_attr(const node_t* n, const simChar* name)
 		{
 			return parse_str<T>(attr_value(n, name));
 		}
 
-		/**
-		 * @brief apply function to each node
-		 */
+		/////////////////////////////////////////////////////////////////////////////
+		// apply function to each node
 		template<typename Func>
 		void for_each_node
 			(const node_t* r, const simChar* name, Func func, const simI1 max_num = 0)

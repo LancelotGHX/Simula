@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
 #endif
 	/** @todo hopping */
 
-
-	main_temp();
+	
+	simCuda::main_temp();
 
 
 	/** @todo hopping */
