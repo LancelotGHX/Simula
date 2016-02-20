@@ -12,13 +12,14 @@ implicit none
 !---------------------------------------------------------------------------
 type :: reactant
    integer :: type_id
-   integer :: comp_id
-   !> initial condition
-   integer :: sta_i
-   integer :: pos_i (3) !> xpos, ypos, direction
-   !> final condition
-   integer :: sta_f
-   integer :: pos_f (3) !> xpos, ypos, direction
+   !> changes on MOLECULE CENTER position
+   integer, allocatable :: pos (:,:) !> xpos, ypos, direction
+   integer, allocatable :: mov (:,:) !> xpos, ypos, direction
+   !> changes on COMPONENT state
+   integer, allocatable :: comp_id(:)
+   integer :: state_i
+   integer :: state_f
+
 end type reactant
 
 !---------------------------------------------------------------------------  
@@ -35,13 +36,23 @@ end type reaction
 !> moledule type class
 !---------------------------------------------------------------------------  
 type :: mtype
-   !integer :: symm       !> number of symmetry (rotation)
-   !integer :: rmat (2,2) !> rotation matrix
+
+   integer :: symm       !> number of symmetry (rotation)
+   integer :: rmat (2,2) !> rotation matrix
+
    integer :: eva_num    !> evaporation number
+
    integer :: idx_def    !> user defined index for reference 
    integer :: idx_gen    !> data index in storage (handled by the program)
-   integer :: dot_num    !> component number
+   integer :: idx_offset !> molecule index offset (handled by the program)
+
+   integer              :: dot_num       !> component number
    integer, allocatable :: dot_pos (:,:) !> component geometry (x, y, state)
+   
+   integer                      :: react_num
+   type (reaction), allocatable :: react (:)
+
+   integer :: mov_pos (7,3) !< three rot + 4 mov (need more implementation)
 end type mtype
 
 type :: mtype_ptr
@@ -62,6 +73,42 @@ type (molecule),  allocatable :: mlist (:)
 
 contains
 
+subroutine react_num (obj, n)
+  type (mtype) :: obj
+  integer      :: n, status
+  obj % react_num = n
+  !> allocate reaction list
+  allocate (obj % react (n), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  return
+end subroutine react_num
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief define molecule rotational symmetry
+!> @param obj: target
+!> @param n  : symmetry number
+!---------------------------------------------------------------------------  
+subroutine symm (obj, n)
+  type (mtype) :: obj
+  integer      :: n
+  obj % symm = n
+  obj % rmat = 0
+  if (n == 1) then
+     obj % rmat (1,1) = 1
+     obj % rmat (2,2) = 1
+  else if (n == 2) then
+     obj % rmat (1,1) = -1
+     obj % rmat (2,2) = -1
+  else if (n == 4) then
+     obj % rmat (1,2) = -1
+     obj % rmat (2,1) = 1
+  else
+     stop "ERROR: Invalid symmetry"
+  end if
+  return
+end subroutine symm
+
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
 !> @brief set idx_def for mtype
@@ -73,7 +120,7 @@ subroutine idx_def (obj, idx)
   integer      :: idx
   obj % idx_def = idx
   return
-end subroutine
+end subroutine idx_def
 
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
@@ -86,7 +133,7 @@ subroutine eva_num (obj, num)
   integer      :: num
   obj % eva_num = num
   return
-end subroutine
+end subroutine eva_num
 
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
@@ -102,7 +149,7 @@ subroutine dot_num (obj, num)
   if (status /= 0) stop "ERROR: Not enough memory!"
   obj % dot_pos = 0
   return
-end subroutine
+end subroutine dot_num
 
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
@@ -124,7 +171,7 @@ subroutine dot_pos (obj, x, y, s)
   obj % dot_pos(obj % dot_num,2) = y
   obj % dot_pos(obj % dot_num,3) = s
   return
-end subroutine
+end subroutine dot_pos
 
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
@@ -157,14 +204,17 @@ end subroutine add_new_mtype
 !---------------------------------------------------------------------------  
 subroutine init_mlist()
   integer :: n, t, s, i, status
+
   !> calculate total number of molecules
   n = 0
   do t = 1,size(tlist)
      n = n + tlist(t) % ptr % eva_num
   end do
+
   !> allocate list
   allocate (mlist (n), STAT = status)
   if (status /= 0) stop "ERROR: Not enough memory!"
+
   !> initialize molecule
   t = 0
   s = 0
@@ -172,16 +222,16 @@ subroutine init_mlist()
      !> find current molecule type
      if (i > s) then
         t = t + 1
-        s = s + tlist(t) % ptr % eva_num
+        tlist(t) % ptr % idx_offset = s  !> set index offset for molecule
+        s = s + tlist(t) % ptr % eva_num !> set next index counter
+        !> debug check result
+        print *, "initalized type", t, "=>", tlist(t) % ptr % idx_def
      end if
      mlist(i) % id   = i
      mlist(i) % pos  = 0
      mlist(i) % type = t
   end do
-  !> check result
-  do i = 1,n
-     print *, mlist(i) % id, mlist(i) % type
-  end do
+
   return
 end subroutine init_mlist
 

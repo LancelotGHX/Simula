@@ -82,7 +82,7 @@
       
       <!-- Current molecule as reactant -->
       <reactant type='self'>
-        <component initial='1' final='2'/>
+        <component id='2' initial='1' final='2'/>
       </reactant>
 
       <!-- Other reactants -->
@@ -91,7 +91,7 @@
         <config x=' 0' y=' 3' d='0/1/2/3'/>
         <config x='-3' y=' 0' d='0/1/2/3'/>
         <config x=' 0' y=' 3' d='0/1/2/3'/>
-        <component initial='1' final='2'/>
+        <component id='2' initial='1' final='2'/>
       </reactant>
 
     </reaction>

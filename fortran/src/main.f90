@@ -1,9 +1,19 @@
 program hello
-use user_define
+  use type_define
+  use user_define
+  use substrate
 
-call init()
-print *, "Hello World!"
+  print *, "Simula"
+  print *, ""
 
-call evaporate(tpyp, 10)
+  print *, "Initialization"
+  call init()
+  print *, ""
 
+  print *, "Evaporation"
+  call evaporate(tpyp, 100)
+  call evaporate(lead, 100)
+  print *, ""
+
+  stop
 end program hello
