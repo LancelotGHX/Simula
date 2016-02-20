@@ -48,21 +48,21 @@ subroutine init ()
   call idx_def (tpyp, 2000)    !> type id should be within [1000, 9999]
   call eva_num (tpyp, 100)     !> evaporation number
   call dot_num (tpyp, 5)       !> number of components
-  call dot_pos (tpyp, 0, 0, 1) !> xpos, ypos, state
-  call dot_pos (tpyp, 1, 0, 2) !> xpos, ypos, state !> reaction 2->4
-  call dot_pos (tpyp, 0, 1, 3) !> xpos, ypos, state !> reaction 3->5
-  call dot_pos (tpyp,-1, 0, 2) !> xpos, ypos, state
-  call dot_pos (tpyp, 0,-1, 3) !> xpos, ypos, state
+  call dot_pos (tpyp, 0, 0, 1) !> xpos, ypos, comp
+  call dot_pos (tpyp, 1, 0, 2) !> xpos, ypos, comp !> reaction 2->4
+  call dot_pos (tpyp, 0, 1, 3) !> xpos, ypos, comp !> reaction 3->5
+  call dot_pos (tpyp,-1, 0, 2) !> xpos, ypos, comp
+  call dot_pos (tpyp, 0,-1, 3) !> xpos, ypos, comp
   
   !------------------------------------------------
   ! testing, will be clean up if it works
-  typt % mov_pos (1,:) = (/0,0,1/)
-  typt % mov_pos (2,:) = (/0,0,2/)
-  typt % mov_pos (3,:) = (/0,0,3/)
-  typt % mov_pos (4,:) = (/1,0,0/)
-  typt % mov_pos (5,:) = (/0,1,0/)
-  typt % mov_pos (6,:) = (/-1, 0,0/)
-  typt % mov_pos (7,:) = (/0 ,-1,0/)
+  tpyp % mov_pos (1,:) = (/0,0,1/)
+  tpyp % mov_pos (2,:) = (/0,0,2/)
+  tpyp % mov_pos (3,:) = (/0,0,3/)
+  tpyp % mov_pos (4,:) = (/1,0,0/)
+  tpyp % mov_pos (5,:) = (/0,1,0/)
+  tpyp % mov_pos (6,:) = (/-1, 0,0/)
+  tpyp % mov_pos (7,:) = (/0 ,-1,0/)
 
   tpyp % react_num = 1
   allocate ( tpyp % react(1) )
