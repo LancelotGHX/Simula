@@ -98,7 +98,7 @@ subroutine init ()
   call idx_def (lead, 1000)    !> type id should be within [1000, 9999]
   call eva_num (lead, 100)     !> evaporation number
   call dot_num (lead, 1)       !> number of components
-  call dot_pos (lead, 0, 0, 4) !> xpos, ypos, state
+  call dot_pos (lead, 0, 0, 4) !> xpos, ypos, comp
   !
   ! ends here
   !--------------------------------------------------
