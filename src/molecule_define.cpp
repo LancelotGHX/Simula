@@ -2,21 +2,18 @@
 
 using namespace simula;
 
-simI1 _molecule_::_max_rpos_idx_ = 100;
-
-/** @brief here we land molecule index * 100 + dot indices on substrate */
-const simI1 Molecule::land_id(simI1 i) const
+// here we land molecule index * 100 + dot indices on substrate */
+const simSize Molecule::land(simSize i) const
 {
-	simI1 id = 0;
-	if (i < size())
+	simSize id = 0;
+	if (i < m_type->dot_num())
 	{
-		id = self_id() * _molecule_::_max_rpos_idx_ + ridx()[i];
+		id = self_id() * max_dot_id + m_type->dot_pos()[i].z;
 	}
 #ifndef NDEBUG
 	else
 	{
-		cout << "ERROR: landing index out of bound" << endl;
-
+		cerr << "ERROR: landing index out of bound" << endl;
 	}
 #endif
 	return id;
@@ -26,9 +23,9 @@ const simI1 Molecule::land_id(simI1 i) const
 /** @brief debug function */
 void Molecule::debug()
 {
-	cout << "molecule:";
-	cout << " index: " << _id_;
-	cout << " type : " << type_id();
-	cout << " (" << _x_ << "," << _y_ << ")" << endl;
+	cout << " * molecule:";
+	cout << " self_id: " << m_core.self_id;
+	cout << " type_id: " << m_core.type_id;
+	cout << " (" << m_core.x << "," << m_core.y << ")\n";
 }
 #endif

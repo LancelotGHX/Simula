@@ -1,27 +1,36 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// Molecule List definition
+//
+///////////////////////////////////////////////////////////////////////////////
 #include "molecule.h"
 
-using namespace _molecule_;
+///////////////////////////////////////////////////////////////////////////////
+// used namespace
 using namespace simula;
 
-/** define global variables */
-std::vector<MoleculeType> _molecule_::_rcd_type_;
-std::vector<Molecule>      _molecule_::_rcd_list_;
+///////////////////////////////////////////////////////////////////////////////
+// global variable
+MoleculeList simula::molecules;
 
-/** @brief generate a new MoleculeType */
-simI1 simula::gen_molecule_type()
+///////////////////////////////////////////////////////////////////////////////
+// generate a new MoleculeType inplace
+MoleculeType& MoleculeList::new_type()
 {
-	// construct a molecule inplace
-	_rcd_type_.emplace_back();
-	_rcd_type_.back().set_gen_id(_rcd_type_.size());
-	return _rcd_type_.size() - 1;
+	simSize id = m_type_list.size();
+	m_type_list.emplace_back();
+	m_type_list.back().set_idx_gen(id + 1);
+	return m_type_list.back();
 }
 
-/** @brief generate a new Molecule */
-simI1 simula::gen_molecule(const MoleculeType& type)
+///////////////////////////////////////////////////////////////////////////////
+// generate a new Molecule inplace 
+Molecule& MoleculeList::new_molecule(const MoleculeType& type)
 {
-	// get current molecule index
-	simI1 id = _rcd_list_.size();
-	// construct a molecule type inplace
-	_rcd_list_.emplace_back(&type, id + 1);
-	return _rcd_list_.size() - 1;
+	simI1 id = m_main_list.size();
+	m_main_list.emplace_back();
+	m_main_list.back().set_type(type);
+	m_main_list.back().set_type_id(type.idx_gen());
+	m_main_list.back().set_self_id(id + 1);
+	return m_main_list.back();
 }

@@ -17,24 +17,29 @@ int main(int argc, char *argv[])
 #endif
 		return EXIT_FAILURE;
 	}
-	
+
 	// normal argument number
 	init(argv[1]);
 #ifndef NDEBUG
 	cout << "successfully initialized program" << endl;
 #endif
 #ifndef NDEBUG
-	cout << "number of molecule types: " << get_molecule_type_size() << endl;
-	cout << "number of molecule types: " << get_molecule_size() << endl;
+	for (simSize id = 0; id < molecules.molecule_num(); ++id) {
+		molecules.molecule(id).debug();
+	}
+#endif
+#ifndef NDEBUG
+	cout << "number of molecule types: " << molecules.type_num() << endl;
+	cout << "number of molecule types: " << molecules.molecule_num() << endl;
 #endif
 	// land all points
 	simI1 id = 0;
-	while (id < get_molecule_size()) {
+	while (id < molecules.molecule_num()) {
 		simI1 Xpos = randInt(1, subXsize);
 		simI1 Ypos = randInt(1, subYsize);
-		if (get_sub().land(get_molecule(id), Xpos, Ypos, 0)) {
+		if (sub.land(molecules.molecule(id), Xpos, Ypos, 0)) {
 #ifndef NDEBUG
-			get_molecule(id).debug();
+			molecules.molecule(id).debug();
 #endif
 			id++;
 		}
@@ -43,19 +48,17 @@ int main(int argc, char *argv[])
 	cout << "successfully landed all molecules on thr substrate" << endl;
 #endif
 	// output substrate to file
-	get_sub().print("output.txt");
+	sub.print("output.txt");
+	cout << sub << endl;
 #ifndef NDEBUG
 	cout << "successfully printed substrate" << endl;
 #endif
-	/** @todo hopping */
+	// @todo hopping
 
-	
+
 	simCuda::main_temp();
 
 
-	/** @todo hopping */
-
-	// clean up
-	clean_sub();
-	return EXIT_SUCCESS;
+	// @todo hopping
+	return 0;
 }

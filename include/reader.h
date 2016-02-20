@@ -11,19 +11,91 @@
 #include <rapidxml/rapidxml.hpp>       // xml file parser
 #include <iostream>
 #include <vector>
-
+#include <map>
 #include "global.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // project namespace
 namespace simula {
 	namespace reader {
+
 		typedef rapidxml::xml_document<>  doc_t;
 		typedef rapidxml::file<>          xml_t;
 		typedef rapidxml::xml_node<>      node_t;
 		typedef rapidxml::xml_attribute<> attr_t;
 
-		/////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////
+		//
+		class NodeString {
+		public:
+			static NodeString* root;
+		private:
+			simI1 m_level;
+			simString m_n; // name
+			simString m_v; // value
+			std::map<simString, simString>                m_attr;
+			std::map<simString, std::vector<NodeString*>> m_node;
+		public:
+			simString value() {
+				return m_v;
+			}
+
+			simString attr(simString attr_name) {
+				return m_attr[attr_name];
+			}
+
+			std::vector<NodeString*> node(simString node_name) {
+				return m_node[node_name];
+			}
+
+			friend NodeString* build_tree(const node_t*, const simString&, simI1);
+#ifndef NDEBUG
+			void print() {
+				for (simI1 i = 0; i < m_level; ++i) { cout << "  "; }
+				cout << "<" << m_n << "> " << m_v << " { ";
+				for (auto& attr : m_attr) {
+					cout << attr.first << "=" << attr.second << ", ";
+				}
+				cout << "}\n";
+				for (auto& name : m_node) {
+					for (auto& node : name.second) { node->print(); }
+				}
+			}
+#endif
+		};
+
+		NodeString* NodeString::root = NULL;
+
+		NodeString* build_tree(const node_t* r, const simString& node_name = "", simI1 level = 0)
+		{
+			NodeString* m_root = new NodeString();
+			// build basic values
+			m_root->m_level = level;
+			m_root->m_n = node_name == "" ? simString(r->name()) : node_name;
+			m_root->m_v = r->value();
+			// build attributions
+			for (attr_t* a = r->first_attribute(); a; a = a->next_attribute()) {
+				simString name = a->name();
+				if (name != "") { m_root->m_attr[name] = a->value(); }
+			}
+			// build sub nodes
+			for (node_t* n = r->first_node(); n; n = n->next_sibling())	{
+				simString name = n->name();
+				if (name != "") {
+					m_root->m_node[name].push_back(build_tree(n, name, level + 1));
+				}
+			}
+			return m_root;
+		}
+
+		void make_doc(const doc_t& doc) {
+			NodeString::root = build_tree(doc.first_node());
+#ifndef NDEBUG
+			NodeString::root->print();
+#endif
+		}
+
+		///////////////////////////////////////////////////////////////////////////
 		// template string parser
 		template<typename T>
 		T parse_str(simString str) // auto type conversion
@@ -77,8 +149,7 @@ namespace simula {
 		/////////////////////////////////////////////////////////////////////////////
 		// apply function to each node
 		template<typename Func>
-		void for_each_node
-			(const node_t* r, const simChar* name, Func func, const simI1 max_num = 0)
+		void for_each_node(const node_t* r, const simChar* name, Func func, const simI1 max_num = 0)
 		{
 			if (max_num == 0)
 			{

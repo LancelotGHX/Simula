@@ -11,7 +11,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // local variable namespace
-namespace _global_ {
+namespace m_global {
 	template<typename T1>
 	struct T2
 	{
@@ -36,18 +36,21 @@ namespace simula {
 
 	/////////////////////////////////////////////////////////////////////////////
 	// basic types
+	typedef int    simI1;
+	typedef double simF1;
+	typedef bool   simBool;
+	typedef char   simChar;
+	/////////////////////////////////////////////////////////////////////////////
+	// extended types
 	typedef std::string simString;
-	typedef bool        simBool;
-	typedef char        simChar;	
 	typedef size_t      simSize;
-	typedef int         simI1;
-	typedef double      simF1;
+
 	/////////////////////////////////////////////////////////////////////////////
 	// conbined types
-	typedef ::_global_::T2<simI1> simI2;
-	typedef ::_global_::T2<simF1> simF2;
-	typedef ::_global_::T3<simI1> simI3;
-	typedef ::_global_::T3<simF1> simF3;
+	typedef ::m_global::T2<simI1> simI2;
+	typedef ::m_global::T2<simF1> simF2;
+	typedef ::m_global::T3<simI1> simI3;
+	typedef ::m_global::T3<simF1> simF3;
 	/////////////////////////////////////////////////////////////////////////////
 	// list types
 	typedef ::std::vector<simI1> simVI1;

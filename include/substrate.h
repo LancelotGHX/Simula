@@ -5,44 +5,34 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // local variable namespace
-namespace _substrate_ {
-	extern const simula::simI1 _bg_; //< background value
+namespace m_substrate {
+	extern const simula::simI1 m_bg; //< background value
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // project namespace
 namespace simula {
-
 	/////////////////////////////////////////////////////////////////////////////
 	// Substrate class defining substrate behaviors
 	class Substrate {
 	private:
-		const simI1 _xlen_; //< X dimension size
-		const simI1 _ylen_; //< Y dimemsion size
-		simVI1 _data_;      //< array of pointers to Molecule
+		simBool m_init_flag = false;
+		simSize m_xlen; //< X dimension size
+		simSize m_ylen; //< Y dimemsion size
+		simVI1  m_data; //< array of pointers to Molecule
 	private:
-		///////////////////////////////////////////////////////////////////////////
-		// Initialize substrate with value background value
-		void _init_();
+
 	public:
-		///////////////////////////////////////////////////////////////////////////
-		// Constructor
-		Substrate(const simI1 Xsize, const simI1 Ysize)
-			: _xlen_(Xsize), _ylen_(Ysize) 
-		{
-			_init_();
-		}
-		
-		///////////////////////////////////////////////////////////////////////////
-		// Destructor
-		~Substrate() {}
 
 		///////////////////////////////////////////////////////////////////////////
-		// Read data
-		inline simI1* data()
-		{
-			return _data_.data();
-		}
+		// Getter
+		inline simI1* data() { return m_data.data(); }
+		inline simI1  xlen() { return m_xlen; }
+		inline simI1  ylen() { return m_ylen; }
+
+		///////////////////////////////////////////////////////////////////////////
+		// Initialize substrate with value background value
+		void init(simSize Xsize, simSize Ysize);
 
 		///////////////////////////////////////////////////////////////////////////
 		// Point value getter
@@ -56,12 +46,12 @@ namespace simula {
 		// Check if the point is empty
 		inline simBool is_empty(const simI1 x, const simI1 y) const
 		{
-			return (get_sub(x, y) == _substrate_::_bg_);
+			return (get_sub(x, y) == m_substrate::m_bg);
 		}
 
 		///////////////////////////////////////////////////////////////////////////
 		// Check if the relative positions are all empty
-		simBool is_empty(const simVI2& rp, const simI1 xc, const simI1 yc) const;
+		simBool is_empty(const MoleculeType& m, const simI1 xc, const simI1 yc) const;
 
 		///////////////////////////////////////////////////////////////////////////
 		// Land molecule on the position
@@ -81,37 +71,9 @@ namespace simula {
 	// overload output function
 	std::ostream& operator<<(std::ostream& os, const Substrate& sub);
 
-};
-
-///////////////////////////////////////////////////////////////////////////
-// local variable namespace
-namespace _substrate_ {
-	extern simula::Substrate * _sub_;
-};
-
-///////////////////////////////////////////////////////////////////////////
-// project namespace
-namespace simula {
-
 	///////////////////////////////////////////////////////////////////////////
-	// generate the substrate
-	void gen_sub(simI1 xlen, simI1 ylen);
-
-	///////////////////////////////////////////////////////////////////////////
-	// clean the substrate
-	inline void clean_sub()
-	{
-		delete _substrate_::_sub_;
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// accessor to the substrate
-	inline Substrate& get_sub()
-	{
-		return *_substrate_::_sub_;
-	}
-
+	// local variable
+	extern simula::Substrate sub;
 };
-
 
 #endif // _SIMULA_SUBSTRATE_

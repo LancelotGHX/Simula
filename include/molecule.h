@@ -9,45 +9,43 @@
 #include "molecule/molecule_define.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// private variable namespace
-namespace _molecule_ {
-	extern std::vector<simula::MoleculeType> _rcd_type_;
-	extern std::vector<simula::Molecule>      _rcd_list_;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // project namespace
 namespace simula {
 	/////////////////////////////////////////////////////////////////////////////
-	// generate a new MoleculeType
-	simI1 gen_molecule_type();
+	// List CLass
+	class MoleculeList {
+	private:
+		::std::vector<Molecule>     m_main_list;
+		::std::vector<MoleculeType> m_type_list;
+	public:
+
+		~MoleculeList() { clean(); }
+
+		// cleaning heap memory
+		inline void clean() {
+			for (simSize i = 0; i < m_type_list.size(); ++i) { m_type_list[i].clean(); }
+			for (simSize i = 0; i < m_main_list.size(); ++i) { m_main_list[i].clean(); }
+		}
+
+		// generate a new MoleculeType/Molecule
+		MoleculeType& new_type();
+		Molecule& new_molecule(const MoleculeType& type);
+
+		// get the MoleculeType by index
+		inline MoleculeType& type(simSize i) { return m_type_list[i]; }
+
+		// get the Molecule by index
+		inline Molecule& molecule(simSize i) { return m_main_list[i]; }
+
+		// get the number of MoleculeType/Molecule
+		inline const simSize type_num() { return m_type_list.size(); }
+		inline const simSize molecule_num()	{ return m_main_list.size(); }
+
+	};
+
 	/////////////////////////////////////////////////////////////////////////////
-	// generate a new Molecule
-	simI1 gen_molecule(const MoleculeType& type);
-	/////////////////////////////////////////////////////////////////////////////
-	// get the MoleculeType by index
-	inline MoleculeType& get_molecule_type(simI1 i)
-	{
-		return _molecule_::_rcd_type_[i];
-	}
-	/////////////////////////////////////////////////////////////////////////////
-	// get the Molecule by index
-	inline Molecule& get_molecule(simI1 i)
-	{
-		return _molecule_::_rcd_list_[i];
-	}
-	/////////////////////////////////////////////////////////////////////////////
-	// get the number of MoleculeType
-	inline const simSize get_molecule_type_size()
-	{
-		return _molecule_::_rcd_type_.size();
-	}
-	/////////////////////////////////////////////////////////////////////////////
-	// get the number of Molecule
-	inline const simSize get_molecule_size()
-	{
-		return _molecule_::_rcd_list_.size();
-	}
+	// global variable
+	extern MoleculeList molecules;
 };
 
 #endif // _SIMULA_MOLECULE_
