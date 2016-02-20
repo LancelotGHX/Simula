@@ -1,9 +1,9 @@
 program hello
-use helper_functions
-use constants
-use substrate
+use user_define
 
 call init()
 print *, "Hello World!"
+
+call evaporate(tpyp, 10)
 
 end program hello
