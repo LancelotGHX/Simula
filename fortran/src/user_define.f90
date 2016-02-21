@@ -64,55 +64,37 @@ subroutine init ()
   ! 3) check if ALL components' initial states match : cond->state
   ! pass the checking and do movement and update component state
   call beg_reaction (tpyp, 2) ! 2 condition
-    call set_react_info (0, 0.0, [ 0,0,1 ])
-    call set_react_cond_type  (1, 2000)
-    call set_react_cond_pos   (1, [ 0,0     ]) ! {x1,y1, x2,y2, ...}
-    call set_react_cond_dir   (1, [ 0       ]) ! {d1,d2,d3,...} relative angle
-    call set_react_cond_state (1, [ 2,0,1   ]) ! {c, state_i, state_f, ...}
-
-    call set_react_cond_type  (2, 2000)
-    ! {x1,y1, x2,y2, ...}
-    call set_react_cond_pos   (2, [ 3,0, 0,3, -3,0, 0,-3])
-    call set_react_cond_dir   (2, [ 0,2     ]) ! {d1,d2,d3,...}
-    call set_react_cond_state (2, [ 2,0,1   ]) ! {c, state_i, state_f, ...}
-
+    call set_react_info (0, 0.0, [ 0,0,0 ])
+    call set_react_cond_type  (1, 2000) ! the type of itself 
+    call set_react_cond_pos   (1, [ 0,0     ]) 
+    ! REMARK: molecule cetner pos {x1,y1, x2,y2, ...}
+    ! REMARK: it is always zero [0,0] sicne there is no relative distance
+    !   with respect to molecule itself    
+    call set_react_cond_dir   (1, [ 0       ]) 
+    ! REMARK: molecule relative direction {d1,d2,d3,...}
+    ! REMARK: again always zero for the first condition
+    call set_react_cond_state (1, [ 2,0,1   ]) 
+    ! REMARK: state changes {c, state_i, state_f, ...}
+    call set_react_cond_type  (2, 2000) ! target molecule
+    call set_react_cond_pos   (2, [ 3,0 ])
+    call set_react_cond_dir   (2, [ 0,2   ])
+    call set_react_cond_state (2, [ 2,0,1 ])
   call end_reaction ()
+  ! ... repeat 4 times for four directions      =.=
+  ! ... of course you can write a loop to do so =.=
 
-  ! tpyp % mov_pos (1,:) = (/0,0,1/)
-  ! tpyp % mov_pos (2,:) = (/0,0,2/)
-  ! tpyp % mov_pos (3,:) = (/0,0,3/)
-  ! tpyp % mov_pos (4,:) = (/1,0,0/)
-  ! tpyp % mov_pos (5,:) = (/0,1,0/)
-  ! tpyp % mov_pos (6,:) = (/-1, 0,0/)
-  ! tpyp % mov_pos (7,:) = (/0 ,-1,0/)
+  call beg_reaction (tpyp, 1) ! 1 condition just a movement
+    call set_react_info (0, 0.0, [ 1,0,0 ]) ! move left for one step
+    call set_react_cond_type  (1, 2000)     
+    call set_react_cond_pos   (1, [ 0,0 ]) 
+    call set_react_cond_dir   (1, [ 0   ]) ! 
+    call set_react_cond_state (1, [ 1,0,0, 2,0,0, 3,0,0 ])
+    ! REMARK: one molecule cannot move when it has any bonds. state zero means
+    !   there is no bond. so the initial state should always be zero
+  call end_reaction ()
+  ! ... again you need to repead those lines =.= i'am sorry
 
-  ! tpyp % react_num = 1
-  ! allocate ( tpyp % react(1) )
-  ! allocate ( tpyp % react(1) % fill(2) ) !> one self, one target
-  ! ! response from molecule itself
-  ! tpyp % react(1) % fill(1) % type_id = 0 !< indicating it's itself
-  ! allocate (tpyp % react(1) % fill(1) % comp_id (2)) !> component 2 & 4
-  ! allocate (tpyp % react(1) % fill(1) % pos (3,2))
-  ! allocate (tpyp % react(1) % fill(1) % mov (3,2))
-  ! tpyp % react(1) % fill(1) % comp_id = (/2,4/)
-  ! tpyp % react(1) % fill(1) % pos = 0               !> self reactant
-  ! tpyp % react(1) % fill(1) % mov (:,1) = (/ 1,0,0/)
-  ! tpyp % react(1) % fill(1) % mov (:,2) = (/-1,0,0/)
-  ! tpyp % react(1) % fill(1) % state_i = 2
-  ! tpyp % react(1) % fill(1) % state_f = 4
-  ! ! response from other molecule
-  ! tpyp % react(1) % fill(2) % type_id = 2000 !< also tpyp
-  ! allocate (tpyp % react(1) % fill(2) % comp_id (2)) !> component 2 & 4
-  ! allocate (tpyp % react(1) % fill(2) % pos (3,2))
-  ! allocate (tpyp % react(1) % fill(2) % mov (3,2))
-  ! tpyp % react(1) % fill(2) % comp_id = (/2,4/)
-  ! tpyp % react(1) % fill(2) % mov = 0               !> no movement for target
-  ! tpyp % react(1) % fill(2) % pos(:,1) = (/ 3,0,0/)
-  ! tpyp % react(1) % fill(2) % pos(:,2) = (/-3,0,0/)
-  ! tpyp % react(1) % fill(2) % state_i = 2
-  ! tpyp % react(1) % fill(2) % state_f = 4
   !------------------------------------------------
-
   !
   !> define molecule type Lead
   !
