@@ -10,49 +10,42 @@ implicit none
 !---------------------------------------------------------------------------  
 !> changes for one reactant within one reaction (bonding)
 !---------------------------------------------------------------------------
-type :: reactant
+type :: condition
    integer :: type_id
-   !> changes on MOLECULE CENTER position
-   integer, allocatable :: pos (:,:) !> xpos, ypos, direction
-   integer, allocatable :: mov (:,:) !> xpos, ypos, direction
-   !> changes on COMPONENT state
-   integer, allocatable :: comp_id(:)
-   integer :: state_i
-   integer :: state_f
-
-end type reactant
+   integer, allocatable :: pos   (:,:) ! (K,2) {xpos, ypos}
+   integer, allocatable :: dir   (:)   ! (M,1) {direction }
+   integer, allocatable :: state (:,:) ! (N,3) {comp, state_i, state_j}
+end type condition
 
 !---------------------------------------------------------------------------  
 !> descriotion for one reaction
 !---------------------------------------------------------------------------  
 type :: reaction
    real(8) :: energy
-   integer :: id
-   integer,         allocatable :: empty (:,:)
-   type (reactant), allocatable :: fill  (:)
+   integer :: id      ! reaction id
+   integer :: mov (3) ! {xpos, ypos, direction}
+   type (condition), allocatable :: conds(:) ! no allocation means all empty
 end type reaction
 
 !---------------------------------------------------------------------------  
 !> moledule type class
 !---------------------------------------------------------------------------  
 type :: mtype
-
-   integer :: symm       !> number of symmetry (rotation)
-   integer :: rmat (2,2) !> rotation matrix
-
-   integer :: eva_num    !> evaporation number
-
-   integer :: idx_def    !> user defined index for reference 
-   integer :: idx_gen    !> data index in storage (handled by the program)
-   integer :: idx_offset !> molecule index offset (handled by the program)
-
-   integer              :: dot_num       !> component number
-   integer, allocatable :: dot_pos (:,:) !> component geometry (x, y, state)
-   
+   !-- symmetry
+   integer :: symm       ! number of symmetry (rotation)
+   integer :: rmat (2,2) ! rotation matrix (auto)
+   !-- evaporation amount
+   integer :: eva_num    ! evaporation number
+   !-- indexing
+   integer :: idx_def    ! user defined index for reference 
+   integer :: idx_gen    ! data index in storage (handled by the program)
+   integer :: idx_offset ! molecule index offset (handled by the program)
+   !-- geometry
+   integer              :: dot_num       ! component number
+   integer, allocatable :: dot_pos (:,:) ! {x, y, componemt_id}
+   !-- chemical reaction / movement
    integer                      :: react_num
-   type (reaction), allocatable :: react (:)
-
-   integer :: mov_pos (7,3) !< three rot + 4 mov (need more implementation)
+   type (reaction), allocatable :: reactions (:)
 end type mtype
 
 type :: mtype_ptr
@@ -63,25 +56,167 @@ end type mtype_ptr
 !> each molecule 
 !---------------------------------------------------------------------------  
 type :: molecule
-   integer :: id
-   integer :: type
-   integer :: pos (3)
+   integer              :: id, type, pos(3)
+   integer, allocatable :: states(:) 
 end type molecule
 
-type (mtype_ptr), allocatable :: tlist (:)
-type (molecule),  allocatable :: mlist (:)
+!---------------------------------------------------------------------------  
+!> Global variables 
+!---------------------------------------------------------------------------  
+type (mtype_ptr), allocatable :: tlist (:) ! type list
+type (molecule),  allocatable :: mlist (:) ! molecule list
+
+!---------------------------------------------------------------------------  
+! this one should be local (handled automatically)
+!---------------------------------------------------------------------------
+type (reaction), pointer :: curr_react
 
 contains
 
-subroutine react_num (obj, n)
-  type (mtype) :: obj
-  integer      :: n, status
-  obj % react_num = n
-  !> allocate reaction list
-  allocate (obj % react (n), STAT = status)
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief set type id of ith condition for current reaction
+!> @param idx: idicating it is the idx-th condition
+!> @param num: type id number
+!---------------------------------------------------------------------------  
+subroutine set_react_cond_type (idx, num)
+  integer :: num, idx
+  if (idx > size(curr_react % conds)) stop "ERROR: Index out of bound"
+  curr_react % conds(idx) % type_id = num
+  return
+end subroutine set_react_cond_type
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief set 'pos' array for idx-th condition of current reaction
+!> @param pos: value for pos array in 1D form (x1,y1,x2,y2...)
+!---------------------------------------------------------------------------  
+subroutine set_react_cond_pos (idx, pos)
+  integer :: pos(:), idx, n, i, status
+  if (idx > size(curr_react % conds)) stop "ERROR: Index out of bound"
+  !> allocate array
+  n = size(pos) / 2
+  allocate(curr_react % conds(idx) % pos(n,2), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  !> assign matrix
+  do i = 1,n
+     curr_react % conds(idx) % pos(i,1) = pos(i * 2 - 1)
+     curr_react % conds(idx) % pos(i,2) = pos(i * 2    )
+  end do
+  return
+end subroutine set_react_cond_pos
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief set 'dir' array for idx-th condition of current reaction
+!> @param dir: value for dir array in the form of (d1, d2, d3, ...)
+!---------------------------------------------------------------------------  
+subroutine set_react_cond_dir (idx, dir)
+  integer :: dir(:), idx, n, status
+  if (idx > size(curr_react % conds)) stop "ERROR: Index out of bound"
+  !> allocate array
+  n = size(dir)
+  allocate(curr_react % conds(idx) % dir(n), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  !> assign matrix
+  curr_react % conds(idx) % dir = dir
+  return
+end subroutine set_react_cond_dir
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief set 'state' array for idx-th condition of current reaction
+!> @param state: value for state array in the form of 
+!    (comp_id, i_state, f_state, ...)
+!---------------------------------------------------------------------------  
+subroutine set_react_cond_state (idx, state)
+  integer :: state(:), idx, n, i, status
+  if (idx > size(curr_react % conds)) stop "ERROR: Index out of bound"
+  !> allocate array
+  n = size(state) / 3
+  allocate(curr_react % conds(idx) % state(n,3), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  !> assign matrix
+  do i = 1, n
+     curr_react % conds(idx) % state (i,1) = state (3 * i - 2)
+     curr_react % conds(idx) % state (i,2) = state (3 * i - 1)
+     curr_react % conds(idx) % state (i,3) = state (3 * i    )
+  end do
+  return
+end subroutine set_react_cond_state
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief set information (id, energy, movement) for current reaction
+!> @param id    : reaction index (any number, maybe it's useless)
+!> @param energy: just the reaction energy
+!> @param mov   : moving direction (including rotation)
+!---------------------------------------------------------------------------  
+subroutine set_react_info (id, energy, mov)
+  integer, intent(in) :: id, mov (3)
+  real(4), intent(in) :: energy
+  call check_curr_react()  
+  curr_react % id     = id
+  curr_react % mov    = mov
+  curr_react % energy = energy ! converted short real to long real
+  return
+end subroutine set_react_info
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief to check if 'curr_react' is pointing to something
+!    which means 'beg_reaction' is called before
+!---------------------------------------------------------------------------  
+subroutine check_curr_react()
+  if (.not. associated(curr_react)) then
+     stop "ERROR: no reaction session found"
+  end if
+  return
+end subroutine check_curr_react
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief begin reaction definition
+!> @remark this subroutine will increase 'react_num' by one
+!> @param obj: target
+!---------------------------------------------------------------------------  
+subroutine beg_reaction(obj, num)
+  type (mtype), target :: obj
+  integer :: num, status
+  obj % react_num = obj % react_num + 1
+  curr_react => obj % reactions (obj % react_num)
+  !> allocate condition number
+  allocate(curr_react % conds (num), STAT = status)
   if (status /= 0) stop "ERROR: Not enough memory!"
   return
-end subroutine react_num
+end subroutine beg_reaction
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief end reaction definition
+!---------------------------------------------------------------------------  
+subroutine end_reaction()
+  nullify(curr_react)
+  return
+end subroutine end_reaction
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief define total number of reactions
+!> @param obj: target
+!> @param n  : reaction number
+!---------------------------------------------------------------------------  
+subroutine reaction_num (obj, n)
+  type (mtype) :: obj
+  integer      :: n, status
+  !> react_num works as a counter
+  !  which will be increased when user defines reactions
+  obj % react_num = 0
+  !> allocate reaction list
+  allocate (obj % reactions (n), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  return
+end subroutine reaction_num
 
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
@@ -204,34 +339,38 @@ end subroutine add_new_mtype
 !---------------------------------------------------------------------------  
 subroutine init_mlist()
   integer :: n, t, s, i, status
-
+  !---------------------------------
   !> calculate total number of molecules
   n = 0
-  do t = 1,size(tlist)
+  do t = 1, size(tlist)
      n = n + tlist(t) % ptr % eva_num
   end do
-
+  !---------------------------------
   !> allocate list
   allocate (mlist (n), STAT = status)
   if (status /= 0) stop "ERROR: Not enough memory!"
-
+  !---------------------------------
   !> initialize molecule
-  t = 0
-  s = 0
-  do i = 1,n
+  t = 0 !> molecule type index
+  s = 0 !> index sum
+  do i = 1, n
      !> find current molecule type
-     if (i > s) then
+     if (i > s) then        
         t = t + 1
         tlist(t) % ptr % idx_offset = s  !> set index offset for molecule
         s = s + tlist(t) % ptr % eva_num !> set next index counter
         !> debug check result
         print *, "initalized type", t, "=>", tlist(t) % ptr % idx_def
      end if
-     mlist(i) % id   = i
-     mlist(i) % pos  = 0
-     mlist(i) % type = t
+     !> allocate state number
+     allocate (mlist(i) % states (tlist(t) % ptr % dot_num), STAT = status)
+     if (status /= 0) stop "ERROR: Not enough memory!"
+     !> set molecule properties
+     mlist(i) % id     = i
+     mlist(i) % pos    = 0
+     mlist(i) % type   = t
+     mlist(i) % states = 0
   end do
-
   return
 end subroutine init_mlist
 

@@ -41,7 +41,7 @@ function convert_to_land (mid, tid, comp, state)
   if (comp  > 99) stop "ERROR: number of dots cannot be larger than 99"
   if (state > 99) stop "ERROR: number of states cannot be larger than 99"
   !> compute values
-  convert_to_land = state + 100 * comp + 10000 * tid + 1000000 * mid  
+  convert_to_land = state + 100 * comp + 10000 * tid + 1000000 * mid 
   return
 end function convert_to_land
 
@@ -118,12 +118,17 @@ function land_one (mid, xc, yc, dc)
   integer, intent(in)  :: mid, xc, yc, dc
   integer, allocatable :: vec(:,:)
   integer              :: status
-  integer     :: i, x, y, v
+  integer     :: i, x, y, v, tid, state, comp
   logical     :: empty
-  type(mtype) :: mtp
+  
+  type(mtype)    :: mtp
+  type(molecule) :: obj 
 
-  !> retrieve molecule type & calculate all positions
-  mtp = tlist( mlist(mid) % type ) % ptr
+  !> retrieve molecule type & molecule object
+  obj = mlist(mid)
+  mtp = tlist(obj % type) % ptr
+
+  !> calculate all positions
   allocate(vec(2, mtp % dot_num), STAT=status)
   if (status /= 0) stop "ERROR: Not enough memory!"
 
@@ -145,9 +150,15 @@ function land_one (mid, xc, yc, dc)
      mlist(mid) % pos(3) = dc
      !> land each dots
      do i = 1, mtp % dot_num
-        v = convert_to_land(mid, mtp % idx_gen, i, mtp % dot_pos(i,3))
+        !> part 1
+        tid   = mtp % idx_gen
+        comp  = mtp % dot_pos(i,3)
+        state = obj%states(i)
+        !> part 2
         x = vec(1,i)
         y = vec(2,i)
+        v = convert_to_land(mid, tid, comp, state)
+        !> part 3
         call set_sub(x, y, v)
      end do
      land_one = .true.     
