@@ -1,3 +1,4 @@
+!> to calculate rate array
 subroutine compute_rate(rate, mid)
   use type_define
   use user_define

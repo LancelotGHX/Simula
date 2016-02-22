@@ -42,41 +42,6 @@ function rand_uniform(spnt, epnt)
 end function rand_uniform
 
 !---------------------------------------------------------------------------  
-! DESCRIPTION
-!> @brief rotate vector once by rotational matrix
-!> @param mat: matrix
-!> @param vec: vector
-!
-! MATRIX INDEX
-! (1,1) (1,2)
-! (2,1) (2,2)
-!---------------------------------------------------------------------------  
-function rotate_once(mat, vec)
-  integer, intent(in) :: mat(2,2), vec(2)
-  integer :: rotate_once(2)
-  rotate_once(1) = vec(1) * mat(1,1) + vec(2) * mat(1,2)
-  rotate_once(2) = vec(1) * mat(2,1) + vec(2) * mat(2,2)
-  return
-end function rotate_once
-!---------------------------------------------------------------------------  
-! DESCRIPTION
-!> @brief rotate vector n times by rotational matrix
-!> @param mat: matrix
-!> @param vec: vector
-!> @param n  : number of rotation
-!---------------------------------------------------------------------------  
-function rotate(mat, vec, n)
-  integer, intent(in) :: mat(2,2), vec(2), n
-  integer :: tmp(2), rotate(2), i
-  tmp = vec
-  do i = 1,n
-     tmp = rotate_once(mat, tmp)
-  end do
-  rotate = tmp
-  return
-end function rotate
-
-!---------------------------------------------------------------------------  
 ! Description:
 !> @reference https://gcc.gnu.org/onlinedocs/gfortran/RAND.html
 !
@@ -118,5 +83,68 @@ subroutine init_random_seed()
 
   deallocate(seed)
 end subroutine init_random_seed
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief rotate vector once by rotational matrix
+!> @param mat: matrix
+!> @param vec: vector
+!
+! MATRIX INDEX
+! (1,1) (1,2)
+! (2,1) (2,2)
+!---------------------------------------------------------------------------  
+function rotate_once(mat, vec)
+  integer, intent(in) :: mat(2,2), vec(2)
+  integer :: rotate_once(2)
+  rotate_once(1) = vec(1) * mat(1,1) + vec(2) * mat(1,2)
+  rotate_once(2) = vec(1) * mat(2,1) + vec(2) * mat(2,2)
+  return
+end function rotate_once
+
+!---------------------------------------------------------------------------  
+! DESCRIPTION
+!> @brief rotate vector n times by rotational matrix
+!> @param mat: matrix
+!> @param vec: vector
+!> @param n  : number of rotation
+!---------------------------------------------------------------------------  
+function rotate(mat, vec, n)
+  integer, intent(in) :: mat(2,2), vec(2), n
+  integer :: tmp(2), rotate(2), i
+  tmp = vec
+  do i = 1,n
+     tmp = rotate_once(mat, tmp)
+  end do
+  rotate = tmp
+  return
+end function rotate
+
+subroutine alloc_I1 (array, n)
+  integer, allocatable, intent(out) :: array(:)
+  integer, intent(in)  :: n
+  integer :: status
+  allocate(array(n), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  return
+end subroutine alloc_I1
+
+subroutine alloc_F1 (array, n)
+  real(8), allocatable, intent(out) :: array(:)
+  integer, intent(in)  :: n
+  integer :: status
+  allocate(array(n), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  return
+end subroutine alloc_F1
+
+subroutine alloc_I2 (array, n1, n2)
+  integer, allocatable, intent(out) :: array(:,:)
+  integer, intent(in)  :: n1, n2
+  integer :: status
+  allocate(array(n1,n2), STAT = status)
+  if (status /= 0) stop "ERROR: Not enough memory!"
+  return
+end subroutine alloc_I2
 
 end module helper_functions

@@ -1,7 +1,7 @@
 program hello
-  use type_define
+  !use type_define
   use user_define
-  use substrate
+  !use substrate
 
   print *, "Simula"
   print *, ""
@@ -11,8 +11,8 @@ program hello
   print *, ""
 
   print *, "Evaporation"
-  call evaporate(tpyp, 100)
-  call evaporate(lead, 100)
+  !call evaporate(tpyp, 100)
+  !call evaporate(lead, 100)
   print *, ""
 
   stop
