@@ -26,6 +26,7 @@ module class_mtype
      procedure :: set_amount    => mtype_set_eva_num
      procedure :: alloc_comps   => mtype_set_dot_num
      procedure :: alloc_reacts  => mtype_set_react_num
+     procedure :: to_abs_id     => mtype_to_absolute_index
   end type mtype
 
   !---------------------------------------------------------------------------  
@@ -44,6 +45,17 @@ module class_mtype
 
 contains
 
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief convert from relative index (index relatived to the same type) to
+  !    absolute index (index relative to all molecules)
+  !---------------------------------------------------------------------------  
+  function mtype_to_absolute_index(this, ri)
+    class(mtype) :: this
+    integer :: ri, mtype_to_absolute_index
+    mtype_to_absolute_index = ri + this % idx_offset
+    return
+  end function mtype_to_absolute_index
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief set molecule rotational symmetry and compute rotational matrix

@@ -12,9 +12,11 @@ program hello
 
   print *, "Evaporation"
   call evaporate(tpyp, 3)
-  !call evaporate(lead, 100)
+  call evaporate(lead, 1)
   print *, ""
 
+  call compute_rate()
+  
   call print_to_screen()
   stop
 end program hello
