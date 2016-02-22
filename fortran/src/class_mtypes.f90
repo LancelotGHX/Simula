@@ -9,7 +9,6 @@ module class_mtype
   
   !---------------------------------------------------------------------------  
   !> moledule type class
-  !---------------------------------------------------------------------------  
   type, public :: mtype
      integer :: symm       ! number of symmetry (rotation)
      integer :: rmat (2,2) ! rotation matrix (auto)
@@ -28,21 +27,26 @@ module class_mtype
      procedure :: alloc_comps   => mtype_set_dot_num
      procedure :: alloc_reacts  => mtype_set_react_num
   end type mtype
+
+  !---------------------------------------------------------------------------  
   !> derivated pointer type
-  type :: mtype_ptr
+  type, private :: mtype_ptr
      type (mtype), pointer :: ptr
   end type mtype_ptr
   
+  !---------------------------------------------------------------------------  
+  !> global type list
   type (mtype_ptr), public, allocatable :: tlist (:) ! type list
 
+  !---------------------------------------------------------------------------  
+  !> global functions
   public :: num_of_mtypes, add_new_mtype
 
 contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief define molecule rotational symmetry
-  !> @param this: target
+  !> @brief set molecule rotational symmetry and compute rotational matrix
   !> @param n  : symmetry number
   !---------------------------------------------------------------------------  
   subroutine mtype_set_symm (this, n)
@@ -68,7 +72,6 @@ contains
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief set idx_def for mtype
-  !> @param this: target
   !> @param idx: value
   !---------------------------------------------------------------------------  
   subroutine mtype_set_idx_def (this, idx)
@@ -81,7 +84,6 @@ contains
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief set evaporation amount for mtype
-  !> @param this: target
   !> @param num: number
   !---------------------------------------------------------------------------  
   subroutine mtype_set_eva_num (this, num)
@@ -93,8 +95,7 @@ contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief allocate component position for mtype
-  !> @param this: target
+  !> @brief define component number and allocate comps array
   !> @param num: maximum component (dot) number
   !---------------------------------------------------------------------------  
   subroutine mtype_set_dot_num (this, num)
@@ -108,27 +109,31 @@ contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief define total number of reactions and allocate react array
-  !> @param obj: target
+  !> @brief define total number of reactions and allocate reactions array
   !> @param n  : reaction number
   !---------------------------------------------------------------------------  
   subroutine mtype_set_react_num (this, n)
     class(mtype) :: this
-    integer      :: n, status
+    integer      :: n, i, status
     this % react_num = n
-    !> not a basic type, allocate manually
+    ! not a basic type, allocate manually
     allocate (this % reacts (n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
+    ! initialization
+    do i = 1, n
+       call this % reacts (i) % set_id (i)
+    end do
     return
   end subroutine mtype_set_react_num
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief set total number of molecule types
+  !> @brief set total number of molecule types and allocate data
   !> @param n: number
   !---------------------------------------------------------------------------  
   subroutine num_of_mtypes (n)
     integer :: n, status
+    ! not a basic type, allocate manually
     allocate (tlist (n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return

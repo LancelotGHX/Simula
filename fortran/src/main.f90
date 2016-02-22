@@ -11,9 +11,10 @@ program hello
   print *, ""
 
   print *, "Evaporation"
-  !call evaporate(tpyp, 100)
+  call evaporate(tpyp, 3)
   !call evaporate(lead, 100)
   print *, ""
 
+  call print_to_screen()
   stop
 end program hello

@@ -9,7 +9,6 @@ module class_reaction
 
   !---------------------------------------------------------------------------  
   !> descriotion for one reaction
-  !---------------------------------------------------------------------------  
   type, public :: reaction
      real(8) :: energy
      integer :: id      ! reaction id
@@ -17,24 +16,35 @@ module class_reaction
      integer                       :: cond_num
      type (condition), allocatable :: conds(:) ! no allocation means all empty
    contains
+     procedure :: set_id      => reaction_set_id
      procedure :: set_info    => reaction_set_info
      procedure :: alloc_conds => reaction_set_cond_num
   end type reaction
 
 contains
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief set reaction index
+  !> @param id    : reaction index (any number, maybe it's useless)
+  !---------------------------------------------------------------------------  
+  subroutine reaction_set_id (this, id)
+    class(reaction) :: this
+    integer :: id
+    this % id  = id
+    return
+  end subroutine reaction_set_id
   
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief set information (id, energy, movement) for current reaction
-  !> @param id    : reaction index (any number, maybe it's useless)
+  !> @brief set information (energy, movement) for reaction
   !> @param energy: just the reaction energy
   !> @param mov   : moving direction (including rotation)
   !---------------------------------------------------------------------------  
-  subroutine reaction_set_info (this, id, energy, mov)
+  subroutine reaction_set_info (this, energy, mov)
     class(reaction) :: this
-    integer :: id, mov (3)
-    real(4) :: energy
-    this % id     = id
+    integer :: mov (3)
+    real(4) :: energy ! default real number is real(4)
     this % mov    = mov
     this % energy = real(energy, 8) ! converted short real to long real
     return
@@ -42,8 +52,7 @@ contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief begin reaction definition
-  !> @remark this subroutine will increase 'react_num' by one
+  !> @brief set conds list size and allocate comps array
   !> @param obj: target
   !---------------------------------------------------------------------------  
   subroutine reaction_set_cond_num(this, num)

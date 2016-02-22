@@ -10,15 +10,9 @@ use class_condition
 use class_reaction
 use class_mtype
 use class_molecule
+use substrate
 
 implicit none
-
-!---------------------------------------------------------------------------  
-! DESCRIPTION
-!> module substrate
-!---------------------------------------------------------------------------  
-integer, parameter :: XSIZE = 100
-integer, parameter :: YSIZE = 100
 
 !---------------------------------------------------------------------------  
 ! DESCRIPTION
@@ -47,9 +41,14 @@ subroutine init ()
   !
   !> define molecule type TPyP
   !
+  ! how to check one condition
+  ! 1) check if one of the relative positions matches: cond->pos
+  ! 2) check if one of the relative direction matches: cond->dir
+  ! 3) check if ALL components' initial states match : cond->state
+  ! pass the checking and do movement and update component state
   call tpyp % set_symm    (4)
   call tpyp % set_id      (2000)
-  call tpyp % set_amount  (100)
+  call tpyp % set_amount  (10)
   call tpyp % alloc_comps (5)
   tpyp % comps(1,:) = (/ 0, 0, 1/)
   tpyp % comps(2,:) = (/ 1, 0, 2/)
@@ -57,7 +56,7 @@ subroutine init ()
   tpyp % comps(4,:) = (/-1, 0, 2/)
   tpyp % comps(5,:) = (/ 0,-1, 3/)
   call tpyp % alloc_reacts (1)
-  call tpyp % reacts (1) % set_info (0, 0.0, [1,0,0])
+  call tpyp % reacts (1) % set_info (0.0, [1,0,0])
   call tpyp % reacts (1) % alloc_conds (1)
   call tpyp % reacts (1) % conds (1) % set_type  (2000 )
   call tpyp % reacts (1) % conds (1) % set_pos   ([0,0])
@@ -92,11 +91,7 @@ subroutine init ()
   !------------------------------------------------
   ! testing, will be clean up if it works
   ! call reaction_num (tpyp, 8) ! 7 free movement + 1 chem reaction
-  ! ! how to check one condition
-  ! ! 1) check if one of the relative positions matches: cond->pos
-  ! ! 2) check if one of the relative direction matches: cond->dir
-  ! ! 3) check if ALL components' initial states match : cond->state
-  ! ! pass the checking and do movement and update component state
+
   ! call beg_reaction (tpyp, 2) ! 2 condition
   !   call set_react_info (0, 0.0, [ 0,0,0 ])
   !   call set_react_cond_type  (1, 2000) ! the type of itself 
@@ -128,21 +123,23 @@ subroutine init ()
   ! call end_reaction ()
   ! ! ... again you need to repead those lines =.= i'am sorry
 
-  ! !------------------------------------------------
-  ! !
-  ! !> define molecule type Lead
-  ! !
-  ! call symm    (lead, 1)       !> define symmetry
-  ! call idx_def (lead, 1000)    !> type id should be within [1000, 9999]
-  ! call eva_num (lead, 100)     !> evaporation number
-  ! call dot_num (lead, 1)       !> number of components
-  ! call dot_pos (lead, 0, 0, 4) !> xpos, ypos, comp
-  ! !
-  ! ! ends here
-  ! !--------------------------------------------------
+  !------------------------------------------------
+  !
+  !> define molecule type Lead
+  !
+  call lead % set_symm    (4)      !> define symmetry
+  call lead % set_id      (2000)   !> type id should be within [1000, 9999]
+  call lead % set_amount  (10)     !> evaporation number
+  call lead % alloc_comps (1)      !> number of components
+  lead % comps(1,:) = (/ 0, 0, 4/) !> xpos, ypos, comp
+  call lead % alloc_reacts (0)
+  !
+  ! ends here
+  !--------------------------------------------------
 
   ! !> Initialize molecules
-  ! call init_mlist()
+  call init_mlist()
+  call init_substrate(10,10)
   return
 end subroutine
 
