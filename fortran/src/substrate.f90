@@ -21,12 +21,14 @@ module substrate
   !--------------------------------------------------------------------------- 
   ! DESCRIPTION
   !> @brief substrate static variable
-  integer, save :: m_xsize, m_ysize
+  integer, save :: m_xsize
+  integer, save :: m_ysize
   integer, save, allocatable :: m_sub (:,:)
-  integer, public, save, allocatable :: activated_num (:)
 
   !---------------------------------------------------------------------------
   !> public variables
+  integer, public, save, allocatable :: activated_num (:)
+
   public :: init_substrate
   public :: get_sub, set_sub
   public :: convert_from_land
@@ -204,27 +206,27 @@ contains
     do j = 0, m_ysize+1
        !----------------------------------------------------------------------
        ! in case you want to print all substrate values
-       write (*, FMT="(100G2.5)") (convert_from_land(m_sub(i,j),3), i=1,m_xsize)
+       !write (*, "(100G2.5)") (convert_from_land(m_sub(i,j),3), i=1,m_xsize)
        !----------------------------------------------------------------------
        ! draw left boundary if you want
-       ! write (*, "(A1)",advance="no") "|"
-       ! do i = 1, m_xsize
-       !    ! draw upper and lower boundary 
-       !    if (j == 0 .or. j == m_ysize + 1) then
-       !       write (*, "(A2)",advance="no") "=="
-       !    else
-       !       v = convert_from_land(m_sub(i,j),3)
-       !       if (v /= 0) then
-       !          write (*, "(I2)",advance="no") v
-       !       else 
-       !          write (*, "(A2)",advance="no") "  "
-       !       end if
-       !    end if
-       ! end do
-       ! ! draw right boundary if you want
-       ! write (*, "(A1)",advance="no") "|"
-       ! ! change a new line
-       ! write (*,*) ""
+       write (*, "(A1)",advance="no") "|"
+       do i = 1, m_xsize
+          ! draw upper and lower boundary 
+          if (j == 0 .or. j == m_ysize + 1) then
+             write (*, "(A2)",advance="no") "=="
+          else
+             v = convert_from_land(m_sub(i,j),3)
+             if (v /= 0) then
+                write (*, "(I2)",advance="no") v
+             else 
+                write (*, "(A2)",advance="no") "  "
+             end if
+          end if
+       end do
+       ! draw right boundary if you want
+       write (*, "(A1)",advance="no") "|"
+       ! change a new line
+       write (*,*) ""
        !----------------------------------------------------------------------
     end do
     return

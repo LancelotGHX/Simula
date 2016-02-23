@@ -18,6 +18,7 @@ implicit none
 ! DESCRIPTION
 !> define molecule type here
 !---------------------------------------------------------------------------  
+type (mtype), save :: bg
 type (mtype), save :: tpyp
 type (mtype), save :: lead
 
@@ -35,7 +36,16 @@ subroutine init ()
   ! handled by user
   !
   !> adding types into the record
-  call num_of_mtypes (2)
+  call num_of_mtypes (3)
+
+  call add_new_mtype (bg)   ! we need a new type for substrate
+  call bg % set_symm    (1)
+  call bg % set_id      (0)
+  call bg % set_amount  (1)
+  call bg % alloc_comps (1)
+  bg % comps(1,:) = (/0,0,0/)
+  call bg % alloc_reacts (0)
+
   call add_new_mtype (tpyp)
   call add_new_mtype (lead)
   !
@@ -57,11 +67,18 @@ subroutine init ()
   tpyp % comps(5,:) = (/ 0,-1, 3/)
   call tpyp % alloc_reacts (1)
   call tpyp % reacts (1) % set_info (0.1, [1,0,0])
-  call tpyp % reacts (1) % alloc_conds (1)
-  call tpyp % reacts (1) % conds (1) % set_type  (2000 )
+  call tpyp % reacts (1) % alloc_conds (2)
+
+  call tpyp % reacts (1) % conds (1) % set_type  (2000)
   call tpyp % reacts (1) % conds (1) % set_pos   ([0,0])
   call tpyp % reacts (1) % conds (1) % set_dir   ([0  ])
   call tpyp % reacts (1) % conds (1) % set_state &
+       ([1,0,0,  2,0,0,  3,0,0])
+
+  call tpyp % reacts (1) % conds (2) % set_type  (0) ! background
+  call tpyp % reacts (1) % conds (2) % set_pos   ([3,0])
+  call tpyp % reacts (1) % conds (2) % set_dir   ([0  ])
+  call tpyp % reacts (1) % conds (2) % set_state &
        ([1,0,0,  2,0,0,  3,0,0])
 
   !   call set_react_cond_pos   (1, [ 0,0     ]) 
