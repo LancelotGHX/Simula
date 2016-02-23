@@ -1,25 +1,25 @@
 # CMake project file
-
 cmake_minimum_required (VERSION 2.6)
-project (Simula)
+project (simula-fortran)
 enable_language (Fortran)
 
 # make sure that the default is a RELEASE
 if (NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE RELEASE CACHE STRING
-      "Choose the type of build, options are: None Debug Release."
-      FORCE)
+    "Choose the type of build, options are: None Debug Release."
+    FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
 # default installation
-get_filename_component (default_prefix ".." ABSOLUTE)
-set (CMAKE_INSTALL_PREFIX ${default_prefix} CACHE STRING
-      "Choose the installation directory; by default it installs in the NORMA directory."
-      FORCE)
+get_filename_component (default_prefix "." ABSOLUTE)
+set (CMAKE_INSTALL_PREFIX ${default_prefix} 
+  CACHE 
+  STRING "Choose the installation directory as"
+  FORCE)
+message(STATUS "installation firectory: ${default_prefix}")
 
 # FFLAGS depend on the compiler
 get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
-
 if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
   # gfortran
   set (CMAKE_Fortran_FLAGS_RELEASE "-funroll-all-loops -fno-f2c -O3")
@@ -41,7 +41,11 @@ else (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 
 # build executables
-file(GLOB SRC_FILES "src/*.f90")
-add_executable ("simula.exe" ${SRC_FILES})
+file(GLOB_RECURSE SRCS "src/*.f90")
+foreach(f ${SRCS})
+  message ("-- " ${f})
+endforeach()
+
+add_executable ("simula.exe" ${SRCS})
 
 
