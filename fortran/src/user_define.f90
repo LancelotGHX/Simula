@@ -36,18 +36,18 @@ subroutine init ()
   ! handled by user
   !
   !> adding types into the record
-  call num_of_mtypes (3)
+  call alloc_tlist (3)
 
-  call add_new_mtype (bg)   ! we need a new type for substrate
+  call add_to_tlist (bg)   ! we need a new type for substrate
   call bg % set_symm    (1)
-  call bg % set_id      (0)
-  call bg % set_amount  (1)
+  call bg % set_idx_def (0)
+  call bg % set_eva_num (1)
   call bg % alloc_comps (1)
   bg % comps(1,:) = (/0,0,0/)
-  call bg % alloc_reacts (0)
+  call bg % alloc_reacs (0)
 
-  call add_new_mtype (tpyp)
-  call add_new_mtype (lead)
+  call add_to_tlist (tpyp)
+  call add_to_tlist (lead)
   !
   !> define molecule type TPyP
   !
@@ -57,28 +57,29 @@ subroutine init ()
   ! 3) check if ALL components' initial states match : cond->state
   ! pass the checking and do movement and update component state
   call tpyp % set_symm    (4)
-  call tpyp % set_id      (2000)
-  call tpyp % set_amount  (10)
+  call tpyp % set_idx_def (2000)
+  call tpyp % set_eva_num (10)
   call tpyp % alloc_comps (5)
   tpyp % comps(1,:) = (/ 0, 0, 1/)
   tpyp % comps(2,:) = (/ 1, 0, 2/)
   tpyp % comps(3,:) = (/ 0, 1, 3/)
   tpyp % comps(4,:) = (/-1, 0, 2/)
   tpyp % comps(5,:) = (/ 0,-1, 3/)
-  call tpyp % alloc_reacts (1)
-  call tpyp % reacts (1) % set_info (0.1, [1,0,0])
-  call tpyp % reacts (1) % alloc_conds (2)
+  call tpyp % alloc_reacs (1)
+  call tpyp % reacs (1) % set_ene (0.1)
+  call tpyp % reacs (1) % set_mov ([1,0,0])
+  call tpyp % reacs (1) % alloc_conds (2)
 
-  call tpyp % reacts (1) % conds (1) % set_type  (2000)
-  call tpyp % reacts (1) % conds (1) % set_pos   ([0,0])
-  call tpyp % reacts (1) % conds (1) % set_dir   ([0  ])
-  call tpyp % reacts (1) % conds (1) % set_state &
+  call tpyp % reacs (1) % conds (1) % set_tar (2000)
+  call tpyp % reacs (1) % conds (1) % set_pos ([0,0])
+  call tpyp % reacs (1) % conds (1) % set_dir ([0  ])
+  call tpyp % reacs (1) % conds (1) % set_sta &
        ([1,0,0,  2,0,0,  3,0,0])
 
-  call tpyp % reacts (1) % conds (2) % set_type  (0) ! background
-  call tpyp % reacts (1) % conds (2) % set_pos   ([3,0])
-  call tpyp % reacts (1) % conds (2) % set_dir   ([0  ])
-  call tpyp % reacts (1) % conds (2) % set_state &
+  call tpyp % reacs (1) % conds (2) % set_tar (0) ! background
+  call tpyp % reacs (1) % conds (2) % set_pos ([3,0])
+  call tpyp % reacs (1) % conds (2) % set_dir ([0  ])
+  call tpyp % reacs (1) % conds (2) % set_sta &
        ([1,0,0,  2,0,0,  3,0,0])
 
   !   call set_react_cond_pos   (1, [ 0,0     ]) 
@@ -145,11 +146,11 @@ subroutine init ()
   !> define molecule type Lead
   !
   call lead % set_symm    (4)      !> define symmetry
-  call lead % set_id      (2000)   !> type id should be within [1000, 9999]
-  call lead % set_amount  (10)     !> evaporation number
+  call lead % set_idx_def (2000)   !> type id should be within [1000, 9999]
+  call lead % set_eva_num (10)     !> evaporation number
   call lead % alloc_comps (1)      !> number of components
   lead % comps(1,:) = (/ 0, 0, 4/) !> xpos, ypos, comp
-  call lead % alloc_reacts (0)
+  call lead % alloc_reacs (0)
   !
   ! ends here
   !--------------------------------------------------

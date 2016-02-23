@@ -5,9 +5,9 @@
 !
 !> @type substrate
 !
-!> @function substrate_init
-!> @function substrate_set
-!> @function substrate_get
+!> @function init_substrate
+!> @function set_sub
+!> @function get_sub
 !
 !--------------------------------------------------------------------------- 
 module substrate
@@ -23,37 +23,74 @@ module substrate
   !> @brief substrate static variable
   integer, save :: m_xsize
   integer, save :: m_ysize
-  integer, save, allocatable :: m_sub (:,:)
-
-  !---------------------------------------------------------------------------
-  !> public variables
-  integer, public, save, allocatable :: activated_num (:)
+  integer, save, allocatable :: m_sub (:,:) ! substrate data
+  integer, save, allocatable :: m_num (:)   ! number of molecule activated
 
   public :: init_substrate
+  public :: land_one
   public :: get_sub, set_sub
-  public :: convert_from_land
-  public :: rand_subX, rand_subY, land_one
+  public :: rand_subX, rand_subY
+  public :: convert_from_land, convert_to_land
+  public :: activated_num, activate_new
   public :: print_to_screen
 
 contains
 
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief Get number of activated molecules of type i
+  !> @param i: ith molecule type
+  !--------------------------------------------------------------------------- 
+  function activated_num (i) result (r)
+    integer, intent (in) :: i
+    integer              :: r
+    if (i > size(tlist)) stop "ERROR: index out of bound (module-substrate)"
+    r = m_num(i)
+    return
+  end function activated_num
+
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief Increase activated molecules of type i by one
+  !> @param i: ith molecule type
+  !--------------------------------------------------------------------------- 
+  subroutine activate_new (i)
+    integer, intent (in) :: i
+    m_num (i) = m_num (i) + 1
+    return
+  end subroutine activate_new
+
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief Allocate and initialize substrate
+  !> @param xlen
+  !> @param ylen 
+  !--------------------------------------------------------------------------- 
   subroutine init_substrate (xlen, ylen)
-    integer :: xlen, ylen
+    integer, intent (in) :: xlen, ylen
     m_xsize = xlen
     m_ysize = ylen
     call alloc_I2(m_sub, xlen, ylen)
+    call alloc_I1(m_num, size(tlist))
     m_sub = 0
-    call alloc_I1(activated_num, size(tlist))
-    activated_num = 0
+    m_num = 0
     return
   end subroutine init_substrate
 
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief generate a random X coordinate
+  !--------------------------------------------------------------------------- 
   function rand_subX ()
     integer :: rand_subX
     rand_subX = rand_int(1, m_xsize)
     return
   end function rand_subX
 
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief generate a random Y coordinate
+  !--------------------------------------------------------------------------- 
   function rand_subY ()
     integer :: rand_subY
     rand_subY = rand_int(1, m_ysize)
@@ -130,36 +167,34 @@ contains
   !--------------------------------------------------------------------------- 
   ! DESCRIPTION
   !> @brief to land one molecule at xc, yc, dc position
-  !> @param 
-  !> @param 
-  !> @param 
-  !> @param 
+  !> @param m: molecule index
+  !> @param xc
+  !> @param yc
+  !> @param dc
   !> @return true if landing 
   !--------------------------------------------------------------------------- 
-  function land_one (mid, xc, yc, dc)
-
+  function land_one (m, xc, yc, dc)
     logical :: land_one
-    integer, intent(in)  :: mid, xc, yc, dc
+    logical :: empty
+    integer, intent(in)  :: m, xc, yc, dc
     integer, allocatable :: vec(:,:)
     integer              :: status
-    integer     :: i, x, y, v, tid, state, comp
-    logical     :: empty
-
+    integer              :: i, x, y, v, t, s, c
     type(mtype)    :: mtp
     type(molecule) :: obj 
 
     !> retrieve molecule type & molecule object
-    obj = mlist(mid)
+    obj = mlist(m)
     mtp = tlist(obj % type) % ptr
 
     !> calculate all positions
-    call alloc_I2 (vec, 2, mtp % comp_num)
+    call alloc_I2 ( vec, 2, mtp % comp_num() )
 
     !> check position is empty by the way
     empty = .true.
-    do i = 1, mtp % comp_num
+    do i = 1, mtp % comp_num()
        vec(:,i) = mtp % comps(i,1:2)
-       vec(:,i) = rotate(mtp % rmat, vec(:,i), dc) !> rotate molecule
+       vec(:,i) = mtp % rotate(vec(:,i), dc)
        x = vec(1,i) + xc
        y = vec(2,i) + yc
        if (get_sub(x, y) /= 0) empty = .false.
@@ -167,24 +202,19 @@ contains
 
     !> land molecule if the site is empty, do nothing otherwise
     if (empty) then
-       mlist(mid) % pos(1) = xc
-       mlist(mid) % pos(2) = yc
-       mlist(mid) % pos(3) = dc
+       mlist(m) % pos(1) = xc
+       mlist(m) % pos(2) = yc
+       mlist(m) % pos(3) = dc
        !> land each dots
-       do i = 1, mtp % comp_num
+       do i = 1, mtp % comp_num()
           !> part 1
-          tid   = mtp % idx_gen
-          comp  = mtp % comps (i,3)
-          state = obj % state (i)
+          t = mtp % idx_gen()
+          c = mtp % comps  (i,3)
+          s = obj % stas   (i)
           !> part 2
           x = vec(1,i) + xc
           y = vec(2,i) + yc
-          v = convert_to_land (mid, tid, comp, state)
-          !> debug for center
-          !if (i == 1) then
-          !   print *, "at:", x, y
-          !end if
-          !> debug for center
+          v = convert_to_land (m, t, c, s)
           !> part 3
           call set_sub(x, y, v)
        end do

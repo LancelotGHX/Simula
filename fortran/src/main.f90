@@ -14,10 +14,10 @@ program hello
 
   print *, "Evaporation"
 
-  activated_num(1) = activated_num(1) + 1
+  call activate_new(1)
   print *, land_one(1,6,5,0)
 
-  activated_num(2) = activated_num(2) + 1
+  call activate_new(2)
   print *, land_one(2,3,5,0)
 
   !call evaporate(tpyp, 3)

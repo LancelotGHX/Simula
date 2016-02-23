@@ -1,3 +1,20 @@
+!-----------------------------------------------------------------------------
+!
+! DESCRIPTION
+!> @brief This class defines the behaviors of one single general reaction. The
+!         word general means it contains not only chemical bondings, but also
+!         all free movements, bond breakings, etc. All those behaviors should
+!         be explicitly defined either by hard coding or a NAMELIST.
+!
+! FIELD
+!> @var idx: reaction index
+!> @var ene: reaction energy
+!> @var mov: reaction moving (rotation) direction / specification
+!> @var cond_num: length of condition list
+!> @var conds   : condition list, the reaction can be executed if and only if 
+!                 all the conditions listed here are passed
+!
+!-----------------------------------------------------------------------------
 module class_reaction
 
   !---------------------------------------------------------------------------
@@ -10,59 +27,85 @@ module class_reaction
   !---------------------------------------------------------------------------  
   !> descriotion for one reaction
   type, public :: reaction
-     real(8) :: energy
-     integer :: id      ! reaction id
-     integer :: mov (3) ! {xpos, ypos, direction}
-     integer                       :: cond_num
+     integer, private :: m_cond_num
+     real(dp) :: ene     ! reaction energy
+     integer  :: idx     ! reaction id for further reference
+     integer  :: mov (3) ! action specification {x, y, d}
      type (condition), allocatable :: conds(:) ! no allocation means all empty
    contains
-     procedure :: set_id      => reaction_set_id
-     procedure :: set_info    => reaction_set_info
-     procedure :: alloc_conds => reaction_set_cond_num
+     procedure :: cond_num    => m_cond_num
+     procedure :: set_idx     => m_set_idx
+     procedure :: set_ene     => m_set_ene
+     procedure :: set_mov     => m_set_mov
+     procedure :: alloc_conds => m_alloc_conds
   end type reaction
 
 contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief set reaction index
-  !> @param id    : reaction index (any number, maybe it's useless)
+  !> @brief Setter for reaction index
+  !> @param i : reaction index (automatically generated)
   !---------------------------------------------------------------------------  
-  subroutine reaction_set_id (this, id)
-    class(reaction) :: this
-    integer :: id
-    this % id  = id
+  subroutine m_set_idx (this, i)
+    class(reaction), intent (inout) :: this
+    integer        , intent (in)    :: i
+    this % idx  = i
     return
-  end subroutine reaction_set_id
-  
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief set information (energy, movement) for reaction
-  !> @param energy: just the reaction energy
-  !> @param mov   : moving direction (including rotation)
-  !---------------------------------------------------------------------------  
-  subroutine reaction_set_info (this, energy, mov)
-    class(reaction) :: this
-    integer :: mov (3)
-    real(4) :: energy ! default real number is real(4)
-    this % mov    = mov
-    this % energy = real(energy, 8) ! converted short real to long real
-    return
-  end subroutine reaction_set_info
+  end subroutine m_set_idx
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief set conds list size and allocate comps array
-  !> @param obj: target
+  !> @brief Setter for reaction energy
+  !> @param e : energy value 
+  !             since the default fortran real precision is short precision, a
+  !             type conversion from reak(4) to real(dp) is performed here
   !---------------------------------------------------------------------------  
-  subroutine reaction_set_cond_num(this, num)
-    class(reaction) :: this
-    integer :: num, status
-    this % cond_num = num
-    !> not a basic type, allocate manually
-    allocate(this % conds(num), STAT = status)
-    if (status /= 0) stop "ERROR: Not enough memory!"
+  subroutine m_set_ene (this, e)
+    class(reaction), intent (inout) :: this
+    real(4)        , intent (in)    :: e 
+    this % ene = real(e, dp) ! converted short real to long real
     return
-  end subroutine reaction_set_cond_num
+  end subroutine m_set_ene
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Setter for reaction action
+  !> @param m : moving specification
+  !---------------------------------------------------------------------------  
+  subroutine m_set_mov (this, m)
+    class(reaction), intent (inout) :: this
+    integer        , intent (in)    :: m (3)
+    this % mov = m
+    return
+  end subroutine m_set_mov
+  
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Allocator for conds list
+  !> @param n : number of conditions
+  !---------------------------------------------------------------------------  
+  subroutine m_alloc_conds (this, n)
+    class(reaction), intent (inout) :: this
+    integer        , intent (in)    :: n
+    integer                         :: status
+    ! assign number value
+    this % m_cond_num = n
+    ! not a basic type, allocate manually
+    allocate(this % conds(n), STAT = status)
+    if (status /= 0) stop "ERROR: Not enough memory! (class reaction)"
+    return
+  end subroutine m_alloc_conds
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for condition number
+  !---------------------------------------------------------------------------  
+  function m_cond_num (this) result (r)
+    class(reaction), intent (inout) :: this
+    integer :: r
+    r = this % m_cond_num
+    return
+  end function m_cond_num
   
 end module class_reaction

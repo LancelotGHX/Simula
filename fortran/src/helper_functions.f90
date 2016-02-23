@@ -8,6 +8,9 @@ module helper_functions
 
 implicit none
 
+!> @brief define double precision here
+integer, parameter :: dp = kind(0.0D0)
+
 contains
 
 !---------------------------------------------------------------------------  
