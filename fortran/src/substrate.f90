@@ -183,14 +183,14 @@ contains
     type(mtype)    :: mtp
     type(molecule) :: obj 
 
-    !> retrieve molecule type & molecule object
+    ! retrieve molecule type & molecule object
     obj = mlist(m)
     mtp = tlist(obj % type) % ptr
 
-    !> calculate all positions
+    ! calculate all positions
     call alloc_I2 ( vec, 2, mtp % comp_num() )
 
-    !> check position is empty by the way
+    ! check position is empty by the way
     empty = .true.
     do i = 1, mtp % comp_num()
        vec(:,i) = mtp % comps(i,1:2)
@@ -200,22 +200,22 @@ contains
        if (get_sub(x, y) /= 0) empty = .false.
     end do
 
-    !> land molecule if the site is empty, do nothing otherwise
+    ! land molecule if the site is empty, do nothing otherwise
     if (empty) then
        mlist(m) % pos(1) = xc
        mlist(m) % pos(2) = yc
        mlist(m) % pos(3) = dc
-       !> land each dots
+       ! land each dots
        do i = 1, mtp % comp_num()
-          !> part 1
+          ! part 1
           t = mtp % idx_gen()
           c = mtp % comps  (i,3)
-          s = obj % stas   (i)
-          !> part 2
+          s = obj % sta    (i)
+          ! part 2
           x = vec(1,i) + xc
           y = vec(2,i) + yc
           v = convert_to_land (m, t, c, s)
-          !> part 3
+          ! part 3
           call set_sub(x, y, v)
        end do
        land_one = .true.     
@@ -245,7 +245,7 @@ contains
           if (j == 0 .or. j == m_ysize + 1) then
              write (*, "(A2)",advance="no") "=="
           else
-             v = convert_from_land(m_sub(i,j),3)
+             v = convert_from_land(m_sub(i,j),1)
              if (v /= 0) then
                 write (*, "(I2)",advance="no") v
              else 

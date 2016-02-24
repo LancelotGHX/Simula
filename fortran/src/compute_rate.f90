@@ -8,97 +8,131 @@ subroutine compute_rate()
   use substrate
   implicit none
 
-  ! real(8), intent(out) :: rate(6)
-  ! integer, intent(in)  :: mid
-  type(molecule)  :: m_mole
-  type(mtype)     :: m_type
-  type(reaction)  :: m_reac
-  type(condition) :: m_cond
-
   ! how to check one condition
   ! 1) check if one of the relative positions matches: cond->pos
   ! 2) check if one of the relative direction matches: cond->dir
   ! 3) check if ALL components' initial states match : cond->state
   ! pass the checking and do movement and update component state
 
-  integer :: i, min_mid, max_mid
-  integer :: j, j_i, j_s
-  integer :: k
-  integer :: nr, r
-  integer :: nc, c
-  integer :: s_i, s_x, s_y, s_d, s_t
-  integer :: t_i, t_x, t_y, t_d, t_t
-  real(8) :: m_rate
-  logical :: m_conds_true
+  ! real(8), intent(out) :: rate(6)
 
-  do i = 1, size(tlist)
-     m_type = tlist(i) % ptr
-     min_mid = m_type % abs_id(1)
-     max_mid = m_type % abs_id(activated_num(i))
+  type(molecule)  :: m_obj
+  type(mtype)     :: t_obj
+  type(reaction)  :: r_obj
+  type(condition) :: c_obj
+
+  integer :: m, m_range(2), m_pos(3) ! molecule index counter
+  integer :: t                       ! type index counter
+  integer :: r                       ! reaction
+  integer :: c                       ! condition
+  integer :: loc (2)
+  
+  integer :: t_t, t_d, t_m
+  integer :: e_t
+
+  logical :: all_conds_true
+  real(8) :: rate
+
+  EACH_TYPE:  do t = 1, size(tlist)
+     ! retrieve current type
+     t_obj = tlist(t) % ptr
+     ! retrieve index range
+     m_range(1) = t_obj % abs_id(1)
+     m_range(2) = t_obj % abs_id(activated_num(t))
      
-     s_t = m_type % idx_def
-     print *, "activated molecule number: ", activated_num(i)
-     EACH_MOLECULE: do s_i = min_mid, max_mid
-        m_mole = mlist(s_i)
-
-        s_x = m_mole % pos(1)
-        s_y = m_mole % pos(2)
-        s_d = m_mole % pos(3)
+     EACH_MOLECULE: do m = m_range(1), m_range(2)
+        ! retrieve current molecule
+        m_obj = mlist(m)
+        m_pos = m_obj % pos
         
-        nr = m_type % reac_num() ! no of reactions
-        EACH_REACTION: do r = 1, nr
-           m_reac = m_type % reacs(r)
-           nc = m_reac % cond_num() ! no of conditions
+        EACH_REACTION: do r = 1, t_obj % reac_num()
+           ! retrieve current reaction
+           r_obj = t_obj % reacs(r)
 
-           m_conds_true = .true. ! all conditions must be fulfilled
-           m_rate = 0.0
-           EACH_COND: do c = 1, nc
-              m_cond = m_reac % conds(c)
-              t_x = s_x + m_cond % pos(1,1)
-              t_y = s_y + m_cond % pos(1,2)
-              t_i = convert_from_land(get_sub(t_x, t_y), 1) ! molecule index
+           ! all conditions must be fulfilled
+           all_conds_true = .true. 
+           
+           rate = 0.0
+           EACH_COND: do c = 1, r_obj % cond_num()
+              ! retrieve current condition
+              c_obj = r_obj % conds(c)
 
-              t_d = mlist(t_i) % pos(3)
-              t_t = m_cond % tar
-              
-              print *, t_x, t_y, t_i, s_i, t_t, tlist ( mlist(t_i) % type ) % ptr % idx_def
+              loc = m_pos(1:2) + c_obj % pos(1,1:2) ! condition position
 
-              ! check if type confirms with definition
-              if (t_t /= tlist( mlist(t_i) % type) % ptr % idx_def) then
-                 m_conds_true = .false.
-              end if
+              t_m = convert_from_land(get_sub(loc(1), loc(2)), 1) ! target molecule index
+              t_t = tlist(mlist(t_m) % type) % ptr % idx_def      ! target molecule defined type
+              t_d = mlist(t_m) % pos(3) - m_pos(3)                ! target molecule relative direction             
 
-              ! check if molecule direction fits
-              if ( all(m_cond % dir /= t_d- s_d) ) then                 
-                 m_conds_true = .false.
-              end if
-
+              ! check if type confirms with definition              
+              all_conds_true = check_type(c_obj, t_t)
+              ! check if molecule direction fits              
+              all_conds_true = check_dir(c_obj, t_d)
               ! check all comp states must be the same as initial
-              do j = 1, m_type % comp_num ()
-                 j_i = m_type % comps (j,3)
-                 j_s = m_mole % stas  (j)
-                 do k = 1, size(m_cond % sta, 1)
-                    if (m_cond % sta (k,1) == j_i) then
-                       if (m_cond % sta (k,2) /= j_s) then
-                          m_conds_true = .false.
-                       end if
-                    end if
-                 end do
-              end do
-              
+              all_conds_true = check_states(c_obj, t_m)
+
+              print *, loc, t_m, t_t, c_obj % tar
+
            end do EACH_COND
 
-           if (m_conds_true) then
-              m_rate = exp(-m_reac % ene / 0.01)
+           if (all_conds_true) then
+              rate = exp(- r_obj % ene / 0.01)
            else 
-              m_rate = 0.0
+              rate = 0.0
            end if
 
-           print *, m_rate, m_reac % ene
+           print *, "rate", rate, "energy", r_obj % ene
 
         end do EACH_REACTION
      end do EACH_MOLECULE
-  end do
+  end do EACH_TYPE
   return
+
+contains
+
+  function check_type (c_obj, t) result (p)
+    type(condition), intent (in) :: c_obj
+    integer        , intent (in) :: t
+    logical                      :: p
+    p = .true.
+    if (c_obj % tar /= t) then
+       p = .false.
+    end if
+    return
+  end function check_type
+
+  function check_dir (c_obj, d) result (p)
+    type(condition), intent (in) :: c_obj
+    integer        , intent (in) :: d
+    logical                      :: p
+    p = .true.
+    if (all(c_obj % dir /= d)) then                 
+       p = .false.
+    end if
+    return
+  end function check_dir
+
+  function check_states (c_obj, m) result (p)
+    type(condition), intent (in) :: c_obj
+    integer        , intent (in) :: m
+    logical                      :: p
+    type(mtype)    :: t_obj
+    type(molecule) :: m_obj
+    integer :: c, i, s, k
+    p = .true.
+    m_obj = mlist(m)
+    t_obj = tlist(m_obj % type) % ptr    
+    EACH_COMP: do c = 1, t_obj % comp_num ()
+       i = t_obj % comps (c,3) ! component index
+       s = m_obj % sta (c)                         ! component current state
+       EACH_COND: do k = 1, size(c_obj % sta, 1)
+          if (c_obj % sta (k,1) == i) then
+             if (c_obj % sta (k,2) /= s) then
+                p = .false.
+             end if
+          end if
+       end do EACH_COND
+    end do EACH_COMP
+    return
+  end function check_states
 
 end subroutine compute_rate

@@ -18,10 +18,10 @@ module class_molecule
   !---------------------------------------------------------------------------  
   !> each molecule 
   type, public :: molecule
+     integer              :: type
      integer              :: idx
      integer              :: pos (3)
-     integer              :: type
-     integer, allocatable :: stas (:) 
+     integer, allocatable :: sta (:) 
   end type molecule
 
   !---------------------------------------------------------------------------  
@@ -65,12 +65,12 @@ contains
           s = s + tlist(t) % ptr % eva_num       ! set next index step
        end if
        ! allocate state number
-       call alloc_I1 ( mlist(i) % stas, tlist(t) % ptr % comp_num() )
+       call alloc_I1 ( mlist(i) % sta, tlist(t) % ptr % comp_num() )
        ! set molecule properties
+       mlist(i) % type = t
        mlist(i) % idx  = i
        mlist(i) % pos  = 0
-       mlist(i) % type = t
-       mlist(i) % stas = 0
+       mlist(i) % sta  = 0
     end do EACH_MOLECULE
 
     return
