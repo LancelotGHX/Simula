@@ -26,7 +26,7 @@ subroutine evaporate (mtp, num)
   LAND_LOOP: do i = 1, num
      ! check if next landing will exceed maximum molecule number
      if (activated_num(t) >= mtp % eva_num) exit LAND_LOOP
-     ! land a new molecule 
+     ! land a new molecule
      call activate_new(t)
      SEARCH_LOOP: do while (.true.)
         k = activated_num(t) + mtp % idx_off() ! offset molecule id

@@ -19,21 +19,23 @@ module class_reaction
 
   !---------------------------------------------------------------------------
   ! used modules
-  use helper_functions
-  use class_condition
+  use helper_functions, only: dp
+  use class_condition , only: condition
   implicit none
   private
 
   !---------------------------------------------------------------------------  
   !> descriotion for one reaction
   type, public :: reaction
+     ! private
      integer, private :: m_cond_num
+     ! public
      real(dp) :: ene     ! reaction energy
      integer  :: idx     ! reaction id for further reference
      integer  :: mov (3) ! action specification {x, y, d}
      type (condition), allocatable :: conds(:) ! no allocation means all empty
    contains
-     procedure :: cond_num    => m_cond_num
+     procedure :: cond_num    => m_get_cond_num
      procedure :: set_idx     => m_set_idx
      procedure :: set_ene     => m_set_ene
      procedure :: set_mov     => m_set_mov
@@ -89,6 +91,8 @@ contains
     class(reaction), intent (inout) :: this
     integer        , intent (in)    :: n
     integer                         :: status
+    ! allocation check
+    if (allocated(this % conds)) stop "ERROR: multiple definitions"
     ! assign number value
     this % m_cond_num = n
     ! not a basic type, allocate manually
@@ -101,11 +105,11 @@ contains
   ! DESCRIPTION
   !> @brief Getter for condition number
   !---------------------------------------------------------------------------  
-  function m_cond_num (this) result (r)
+  function m_get_cond_num (this) result (r)
     class(reaction), intent (inout) :: this
     integer :: r
     r = this % m_cond_num
     return
-  end function m_cond_num
+  end function m_get_cond_num
   
 end module class_reaction

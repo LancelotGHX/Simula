@@ -10,8 +10,8 @@ module class_molecule
 
   !---------------------------------------------------------------------------  
   !> used module
-  use helper_functions
-  use class_mtype
+  use helper_functions, only: alloc_I1
+  use class_mtype     , only: mtype, tlist
   implicit none
   private
   
@@ -46,22 +46,27 @@ contains
 
     ! calculate total number of molecules
     n = 0
-    EACH_TYPE: do t = 1, size(tlist)
+    EACH_TYPE: do t = 1, size(tlist)-1
        n = n + tlist(t) % ptr % eva_num
     end do EACH_TYPE
 
+    print *, "total number of molecules", n
+
     ! not a basic type, allocate manually
-    allocate (mlist (n), STAT = status)
+    ! @remark id = 0 is researved for background type
+    if (allocated(mlist)) stop "ERROR: multiple definitions"
+    allocate (mlist (0:n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
 
     ! initialize molecule
-    t = 0 
+    t = 0
     s = 0 
-    EACH_MOLECULE: do i = 1, n
-       ! find current molecule type
-       if (i > s) then        
+    EACH_MOLECULE: do i = 0, n
+       ! @remark update current molecule type. this check should always be
+       !         done before other things. it will ignore the first case
+       if (i > s) then 
           t = t + 1
-          call tlist(t) % ptr % set_idx_off (s)  ! index offset for molecule
+          call tlist(t) % ptr % set_idx_off(s)   ! index offset for molecule
           s = s + tlist(t) % ptr % eva_num       ! set next index step
        end if
        ! allocate state number

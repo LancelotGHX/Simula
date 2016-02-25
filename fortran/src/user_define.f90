@@ -29,25 +29,14 @@ contains
 !> initialization
 !---------------------------------------------------------------------------  
 subroutine init ()
-  
   call init_random_seed() !> initialize random seed
-
   !--------------------------------------------------
   ! handled by user
   !
   !> adding types into the record
-  call alloc_tlist (3)
-
-  call add_to_tlist (bg)   ! we need a new type for substrate
-  call bg % set_symm    (1)
-  call bg % set_idx_def (0)
-  call bg % set_eva_num (1)
-  call bg % alloc_comps (1)
-  bg % comps(1,:) = (/0,0,0/)
-  call bg % alloc_reacs (0)
-
-  call add_to_tlist (tpyp)
-  call add_to_tlist (lead)
+  call tlist_number (2)
+  call tlist_insert (tpyp)
+  call tlist_insert (lead)
   !
   !> define molecule type TPyP
   !
@@ -60,27 +49,35 @@ subroutine init ()
   call tpyp % set_idx_def (2000)
   call tpyp % set_eva_num (10)
   call tpyp % alloc_comps (5)
-  tpyp % comps(1,:) = (/ 0, 0, 1/)
-  tpyp % comps(2,:) = (/ 1, 0, 2/)
-  tpyp % comps(3,:) = (/ 0, 1, 3/)
-  tpyp % comps(4,:) = (/-1, 0, 2/)
-  tpyp % comps(5,:) = (/ 0,-1, 3/)
+  tpyp % comps(:,1) = (/ 0, 0, 1/)
+  tpyp % comps(:,2) = (/ 1, 0, 2/)
+  tpyp % comps(:,3) = (/ 0, 1, 3/)
+  tpyp % comps(:,4) = (/-1, 0, 2/)
+  tpyp % comps(:,5) = (/ 0,-1, 3/)
   call tpyp % alloc_reacs (1)
+
   call tpyp % reacs (1) % set_ene (0.1)
   call tpyp % reacs (1) % set_mov ([1,0,0])
   call tpyp % reacs (1) % alloc_conds (2)
 
   call tpyp % reacs (1) % conds (1) % set_tar (2000)
-  call tpyp % reacs (1) % conds (1) % set_pos ([0,0])
-  call tpyp % reacs (1) % conds (1) % set_dir ([0  ])
   call tpyp % reacs (1) % conds (1) % set_sta &
-       ([1,0,0,  2,0,0,  3,0,0])
+       ([1,0,0,  2,0,0,  3,0,0]) ! when moving, there is no bonds
+  call tpyp % reacs (1) % conds (1) % alloc_opt (1)
+  call tpyp % reacs (1) % conds (1) % opt(1) % set_pos ([0,0])
+  call tpyp % reacs (1) % conds (1) % opt(1) % set_dir ([0  ])
 
   call tpyp % reacs (1) % conds (2) % set_tar (0) ! background
-  call tpyp % reacs (1) % conds (2) % set_pos ([3,0])
-  call tpyp % reacs (1) % conds (2) % set_dir ([0  ])
-  call tpyp % reacs (1) % conds (2) % set_sta &
-       ([1,0,0,  2,0,0,  3,0,0])
+  call tpyp % reacs (1) % conds (2) % set_sta ([1,0,0])
+  call tpyp % reacs (1) % conds (2) % alloc_opt (4)
+  call tpyp % reacs (1) % conds (2) % opt(1) % set & 
+       ([3,0, 2,0, 4,0, 3,1, 3,-1], [0])
+  call tpyp % reacs (1) % conds (2) % opt(2) % set & 
+       ([3,0, 2,0, 4,0, 3,1, 3,-1], [1])
+  call tpyp % reacs (1) % conds (2) % opt(3) % set & 
+       ([3,0, 2,0, 4,0, 3,1, 3,-1], [2])
+  call tpyp % reacs (1) % conds (2) % opt(4) % set & 
+       ([3,0, 2,0, 4,0, 3,1, 3,-1], [3])
 
   !   call set_react_cond_pos   (1, [ 0,0     ]) 
   !   ! REMARK: molecule cetner pos {x1,y1, x2,y2, ...}
@@ -149,15 +146,15 @@ subroutine init ()
   call lead % set_idx_def (2000)   !> type id should be within [1000, 9999]
   call lead % set_eva_num (10)     !> evaporation number
   call lead % alloc_comps (1)      !> number of components
-  lead % comps(1,:) = (/ 0, 0, 4/) !> xpos, ypos, comp
+  lead % comps(:,1) = (/ 0, 0, 4/) !> xpos, ypos, comp
   call lead % alloc_reacs (0)
   !
   ! ends here
   !--------------------------------------------------
 
   ! !> Initialize molecules
+  call init_substrate(10,10) ! this should be placed after type definitions
   call init_mlist()
-  call init_substrate(10,10)
   return
 end subroutine
 

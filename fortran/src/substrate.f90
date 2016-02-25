@@ -12,9 +12,9 @@
 !--------------------------------------------------------------------------- 
 module substrate
 
-  use helper_functions
-  use class_mtype
-  use class_molecule
+  use helper_functions, only: alloc_I1, alloc_I2, rand_int
+  use class_mtype     , only: mtype, tlist
+  use class_molecule  , only: molecule, mlist
   implicit none
   private
 
@@ -44,7 +44,7 @@ contains
   function activated_num (i) result (r)
     integer, intent (in) :: i
     integer              :: r
-    if (i > size(tlist)) stop "ERROR: index out of bound (module-substrate)"
+    if (i > size(tlist)-1) stop "ERROR: index out of bound (module-substrate)"
     r = m_num(i)
     return
   end function activated_num
@@ -56,6 +56,7 @@ contains
   !--------------------------------------------------------------------------- 
   subroutine activate_new (i)
     integer, intent (in) :: i
+    if (i > size(tlist)-1) stop "ERROR: index out of bound (module-substrate)"
     m_num (i) = m_num (i) + 1
     return
   end subroutine activate_new
@@ -71,7 +72,7 @@ contains
     m_xsize = xlen
     m_ysize = ylen
     call alloc_I2(m_sub, xlen, ylen)
-    call alloc_I1(m_num, size(tlist))
+    call alloc_I1(m_num, size(tlist)-1)
     m_sub = 0
     m_num = 0
     return
@@ -188,12 +189,12 @@ contains
     mtp = tlist(obj % type) % ptr
 
     ! calculate all positions
-    call alloc_I2 ( vec, 2, mtp % comp_num() )
+    call alloc_I2 (vec, 2, mtp % comp_num())
 
     ! check position is empty by the way
     empty = .true.
     do i = 1, mtp % comp_num()
-       vec(:,i) = mtp % comps(i,1:2)
+       vec(:,i) = mtp % comps(1:2, i)
        vec(:,i) = mtp % rotate(vec(:,i), dc)
        x = vec(1,i) + xc
        y = vec(2,i) + yc
@@ -209,8 +210,8 @@ contains
        do i = 1, mtp % comp_num()
           ! part 1
           t = mtp % idx_gen()
-          c = mtp % comps  (i,3)
-          s = obj % sta    (i)
+          c = mtp % comps  (3,i)
+          s = obj % sta    (  i)
           ! part 2
           x = vec(1,i) + xc
           y = vec(2,i) + yc
@@ -218,7 +219,7 @@ contains
           ! part 3
           call set_sub(x, y, v)
        end do
-       land_one = .true.     
+       land_one = .true.
     else
        print *, "  landing failed once"
        land_one = .false.

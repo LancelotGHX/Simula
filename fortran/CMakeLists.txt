@@ -41,6 +41,7 @@ else (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 
 # build executables
+include_directories("include")
 file(GLOB_RECURSE SRCS "src/*.f90")
 foreach(f ${SRCS})
   message ("-- " ${f})

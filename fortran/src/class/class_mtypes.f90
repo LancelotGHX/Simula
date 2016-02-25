@@ -11,15 +11,15 @@ module class_mtype
 
   !---------------------------------------------------------------------------  
   !> used modules
-  use helper_functions
-  use class_reaction
+  use helper_functions, only: alloc_I1, alloc_I2, rotate
+  use class_reaction  , only: reaction
   implicit none
   private
   
   !---------------------------------------------------------------------------  
   !> moledule type class
   type, public :: mtype
-     ! protected fields
+     ! private
      integer, private :: m_rmat (2,2) ! rotation matrix (auto)
      integer, private :: m_idx_off    ! molecule index offset (auto)
      integer, private :: m_idx_gen    ! data index in storage (auto)
@@ -29,19 +29,23 @@ module class_mtype
      integer :: symm       ! number of symmetry (rotation)
      integer :: eva_num    ! evaporation number
      integer :: idx_def    ! user defined index for reference 
-     integer        , allocatable :: comps (:,:) ! {x, y, component_id}
+     integer        , allocatable :: comps (:,:) ! 3xN {x, y, component_id}
      type (reaction), allocatable :: reacs (:)   ! reaction list
    contains
-     procedure :: idx_off  => m_idx_off
-     procedure :: idx_gen  => m_idx_gen
-     procedure :: comp_num => m_comp_num
-     procedure :: reac_num => m_reac_num
+     ! getters
+     procedure :: idx_off  => m_get_idx_off
+     procedure :: idx_gen  => m_get_idx_gen
+     procedure :: comp_num => m_get_comp_num
+     procedure :: reac_num => m_get_reac_num
+     ! setters / allocators
      procedure :: set_symm     => m_set_symm
      procedure :: set_idx_def  => m_set_idx_def
+     procedure :: set_idx_gen  => m_set_idx_gen
      procedure :: set_idx_off  => m_set_idx_off
      procedure :: set_eva_num  => m_set_eva_num
      procedure :: alloc_comps  => m_alloc_comps
      procedure :: alloc_reacs  => m_alloc_reacs
+     ! calculator
      procedure :: abs_id       => m_abs_idx
      procedure :: rel_id       => m_rel_idx
      procedure :: rotate       => m_rotate
@@ -61,66 +65,72 @@ module class_mtype
 
   !---------------------------------------------------------------------------  
   !> global functions
-  public :: alloc_tlist, add_to_tlist
+  public  :: tlist_number, tlist_insert
+
+  !---------------------------------------------------------------------------  
+  !> private functions (just a reminder)
+  private :: tlist_insert_background
 
 contains
+
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief Rotate vector v for N times using the rotational matrix
-  !> @param v: the input vector
-  !> @param n: number of rotations
+  !> @brief Allocate tlist
+  !> @param n: number
+  !> @remark allocate tlist from 0 to N, where #0 is prepared for the 
+  !          pre-defiend background type
   !---------------------------------------------------------------------------  
-  function m_rotate (this, v, n) result (r)
-    class(mtype), intent (in) :: this
-    integer     , intent (in) :: v(2), n
-    integer                   :: r(2)
-    r = rotate (this % m_rmat, v, n)
+  subroutine tlist_number (n)
+    integer, intent (in) :: n
+    integer              :: status
+    ! check multiple allocation
+    if (allocated(tlist)) stop "ERROR: multiple definitions"
+    ! not a basic type, allocate manually
+    allocate (tlist (0:n), STAT = status)
+    if (status /= 0) stop "ERROR: Not enough memory!"
+    ! insert background
+    call tlist_insert_background()
     return
-  end function m_rotate
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Getter for component number
-  !---------------------------------------------------------------------------  
-  function m_comp_num (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_comp_num
-    return 
-  end function m_comp_num
+  end subroutine tlist_number
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief Getter for reaction number
+  !> @brief add a new type (by reference) to the tlist
+  !> @param tp: the new molecule type to be added
+  !> @remark intert type from index 1, index zero should be allocate 
+  !          seperately using other function
   !---------------------------------------------------------------------------  
-  function m_reac_num (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_reac_num
-    return 
-  end function m_reac_num
-  
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Getter for generated type index
-  !---------------------------------------------------------------------------  
-  function m_idx_gen (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_idx_gen
-    return 
-  end function m_idx_gen
+  subroutine tlist_insert (t)
+    type (mtype), target, intent (inout) :: t
+    integer     , save                   :: s = 0
+    s = s + 1
+    ! generate type indices
+    t % m_idx_gen = s
+    ! point pointer to the data
+    tlist (s) % ptr => t
+  end subroutine tlist_insert
 
   !---------------------------------------------------------------------------  
+  ! (private)
   ! DESCRIPTION
-  !> @brief Getter for molecule index offset
+  !> @brief add a new background type (by reference) to the tlist
+  !> @remark intert background type as index zero
   !---------------------------------------------------------------------------  
-  function m_idx_off (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_idx_off
-    return 
-  end function m_idx_off
-    
+  subroutine tlist_insert_background ()
+    ! setup background type and insert it into tlist
+    ! @remark probably you should not change anything here !
+    call tlist (0) % alloc()
+    call tlist (0) % ptr % set_symm (1)      ! it has to be 1
+    call tlist (0) % ptr % set_eva_num (0)   ! it can never be evaporated
+    call tlist (0) % ptr % set_idx_def (0)   ! zero is the reserved index
+    call tlist (0) % ptr % alloc_reacs (0)   ! no reaction (no movement)
+    call tlist (0) % ptr % alloc_comps (1)   ! one component only
+    tlist (0) % ptr % comps(:,1) = (/0,0,1/) ! <= for debugging
+    tlist (0) % ptr % m_idx_gen = 0          !
+    tlist (0) % ptr % m_idx_off = 0          !
+    return
+  end subroutine tlist_insert_background
+
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief To allocate memory for pointers in tlist when importing data via
@@ -137,6 +147,64 @@ contains
     end if
     return
   end subroutine m_alloc
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Rotate vector v for N times using the rotational matrix
+  !> @param v: the input vector
+  !> @param n: number of rotations
+  !---------------------------------------------------------------------------  
+  function m_rotate (this, v, n) result (r)
+    class(mtype), intent (in) :: this
+    integer     , intent (in) :: v(2), n
+    integer                   :: r(2)
+    r = rotate (this % m_rmat, v, n)
+    return
+  end function m_rotate
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for component number
+  !---------------------------------------------------------------------------  
+  function m_get_comp_num (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_comp_num
+    return 
+  end function m_get_comp_num
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for reaction number
+  !---------------------------------------------------------------------------  
+  function m_get_reac_num (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_reac_num
+    return 
+  end function m_get_reac_num
+  
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for generated type index
+  !---------------------------------------------------------------------------  
+  function m_get_idx_gen (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_idx_gen
+    return 
+  end function m_get_idx_gen
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for molecule index offset
+  !---------------------------------------------------------------------------  
+  function m_get_idx_off (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_idx_off
+    return 
+  end function m_get_idx_off
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -205,7 +273,6 @@ contains
   end subroutine m_set_idx_def
 
   !---------------------------------------------------------------------------  
-  ! (private)
   ! DESCRIPTION
   !> @brief Setter for program generated type index
   !> @param i: index
@@ -249,7 +316,7 @@ contains
   subroutine m_alloc_comps (this, n)
     class(mtype), intent (inout) :: this
     integer     , intent (in)    :: n
-    call alloc_I2 (this % comps, n, 3)
+    call alloc_I2 (this % comps, 3, n)
     this % m_comp_num = n
     this % comps      = 0
     return
@@ -264,6 +331,8 @@ contains
     class(mtype), intent (inout) :: this
     integer     , intent (in)    :: n
     integer                      :: i, status
+    ! multiple allocation check
+    if (allocated(this % reacs)) stop "ERROR: multiple definitions"
     ! assign value
     this % m_reac_num = n
     ! not a basic type, allocate manually
@@ -275,34 +344,5 @@ contains
     end do
     return
   end subroutine m_alloc_reacs
-
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Allocate tlist
-  !> @param n: number
-  !---------------------------------------------------------------------------  
-  subroutine alloc_tlist (n)
-    integer, intent (in) :: n
-    integer              :: status
-    ! not a basic type, allocate manually
-    allocate (tlist (n), STAT = status)
-    if (status /= 0) stop "ERROR: Not enough memory!"
-    return
-  end subroutine alloc_tlist
-
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief add a new type (by reference) to the tlist
-  !> @param tp: the new molecule type to be added
-  !---------------------------------------------------------------------------  
-  subroutine add_to_tlist (t)
-    type (mtype), target, intent (inout) :: t
-    integer     , save                   :: s = 0
-    s = s + 1
-    ! generate type indices
-    t % m_idx_gen = s
-    ! point pointer to the data
-    tlist (s) % ptr => t
-  end subroutine add_to_tlist
 
 end module class_mtype
