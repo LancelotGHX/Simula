@@ -88,9 +88,6 @@ subroutine compute_rate()
                          tlist(mlist(t_m) % type) % ptr % symm &
                          )
 
-                    !print *, t_t, t_p(1), t_p(2), t_d, t_m
-                    !pause
-
                     ! check if type confirms with definition              
                     if (type_not_equal(c_obj, t_t)) all_p_true = .false.
 
@@ -119,8 +116,11 @@ subroutine compute_rate()
            print *, t, m, "rate", rate, "energy", r_obj % ene, all_c_true
 
         end do EACH_REACTION
+
      end do EACH_MOLECULE
+
   end do EACH_TYPE
+
   return
 
 contains

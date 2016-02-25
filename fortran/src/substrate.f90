@@ -27,7 +27,7 @@ module substrate
   integer, save, allocatable :: m_num (:)   ! number of molecule activated
 
   public :: init_substrate
-  public :: land_one
+  public :: land_one, move_one
   public :: get_sub, set_sub
   public :: rand_subX, rand_subY
   public :: convert_from_land, convert_to_land
@@ -178,8 +178,7 @@ contains
     logical :: land_one
     logical :: empty
     integer, intent(in)  :: m, xc, yc, dc
-    integer, allocatable :: vec(:,:) 
-    integer              :: status
+    integer, allocatable :: vec(:,:)
     integer              :: i, x, y, v, t, s, c
     type(mtype)    :: mtp
     type(molecule) :: obj 
@@ -227,6 +226,53 @@ contains
 
     return
   end function land_one
+
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief to move m-th molecule from its original position to (nx,ny,nd)
+  !> @param m: molecule index
+  !> @param nx
+  !> @param ny
+  !> @param nd
+  !> @remark: this function does not perform empty test ! user has the duty to
+  !           make sure the destination is completely empty
+  !---------------------------------------------------------------------------
+  subroutine move_one (m, nx, ny, nd)
+    integer, intent(in)  :: m, nx, ny, nd
+    integer              ::    ox, oy, od
+    integer              :: comp(3), opos(2), npos(2)
+    integer              :: i, t, c, s
+    type(mtype)    :: mtp
+    type(molecule) :: obj 
+
+    ! retrieve molecule type & molecule object
+    obj = mlist(m)
+    mtp = tlist(obj % type) % ptr
+
+    ox = obj % pos(1)
+    oy = obj % pos(2)
+    od = obj % pos(3)
+    
+    mlist(m) % pos(1) = nx
+    mlist(m) % pos(2) = ny
+    mlist(m) % pos(3) = nd
+
+    ! check position is empty by the way
+    do i = 1, mtp % comp_num()
+       comp = mtp % comps(i)
+       opos = [ox,oy] + mtp % rotate(comp(1:2), od)
+       npos = [nx,ny] + mtp % rotate(comp(1:2), nd)
+       ! reset old point
+       call set_sub(opos(1), opos(2), 0)
+       ! assign new
+       t = mtp % idx_gen() ! type index generated
+       c = comp(3)         ! comp-id
+       s = obj % sta(i)    ! comp-state
+       call set_sub(npos(1), npos(2), convert_to_land (m, t, c, s))
+    end do
+
+    return
+  end subroutine move_one
 
   !--------------------------------------------------------------------------- 
   ! DESCRIPTION
