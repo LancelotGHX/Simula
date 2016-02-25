@@ -65,8 +65,8 @@ contains
   !---------------------------------------------------------------------------  
   subroutine m_set_ene (this, e)
     class(reaction), intent (inout) :: this
-    real(4)        , intent (in)    :: e 
-    this % ene = real(e, dp) ! converted short real to long real
+    real(dp)       , intent (in)    :: e 
+    this % ene = e
     return
   end subroutine m_set_ene
 

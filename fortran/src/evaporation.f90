@@ -18,9 +18,11 @@ subroutine evaporate (mtp, num)
   Integer    , intent(in) :: num
   type(mtype), intent(in) :: mtp
   integer :: i, t, k, x, y, d
+
   ! debug -------------------------------
   print *, "eva start, plan num", mtp % idx_def, "=>", num
   ! debug -------------------------------
+
   ! evaporate new molecules
   t = mtp % idx_gen() !> get molecule index
   LAND_LOOP: do i = 1, num
@@ -37,8 +39,10 @@ subroutine evaporate (mtp, num)
         if (land_one(k, x, y, d)) exit SEARCH_LOOP
      end do SEARCH_LOOP
   end do LAND_LOOP
+
   ! debug -------------------------------
   print *, "eva done, activated", mtp % idx_def, "=>", activated_num(t)
   ! debug -------------------------------
+
   return
 end subroutine

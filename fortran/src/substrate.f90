@@ -178,7 +178,7 @@ contains
     logical :: land_one
     logical :: empty
     integer, intent(in)  :: m, xc, yc, dc
-    integer, allocatable :: vec(:,:)
+    integer, allocatable :: vec(:,:) 
     integer              :: status
     integer              :: i, x, y, v, t, s, c
     type(mtype)    :: mtp
@@ -188,14 +188,14 @@ contains
     obj = mlist(m)
     mtp = tlist(obj % type) % ptr
 
-    ! calculate all positions
-    call alloc_I2 (vec, 2, mtp % comp_num())
+    ! calculate all positions {x,y,comp-id}
+    call alloc_I2 (vec, 3, mtp % comp_num())
 
     ! check position is empty by the way
     empty = .true.
     do i = 1, mtp % comp_num()
-       vec(:,i) = mtp % comps(1:2, i)
-       vec(:,i) = mtp % rotate(vec(:,i), dc)
+       vec(1:3,i) = mtp % comps(i)
+       vec(1:2,i) = mtp % rotate(vec(1:2,i), dc)
        x = vec(1,i) + xc
        y = vec(2,i) + yc
        if (get_sub(x, y) /= 0) empty = .false.
@@ -209,9 +209,9 @@ contains
        ! land each dots
        do i = 1, mtp % comp_num()
           ! part 1
-          t = mtp % idx_gen()
-          c = mtp % comps  (3,i)
-          s = obj % sta    (  i)
+          t = mtp % idx_gen() ! type index generated
+          c = vec(3, i)       ! comp-id
+          s = obj % sta(i)    ! comp-state
           ! part 2
           x = vec(1,i) + xc
           y = vec(2,i) + yc
@@ -234,6 +234,9 @@ contains
   !--------------------------------------------------------------------------- 
   subroutine print_to_screen()
     integer :: i, j, v
+    ! skip printing when substrate is too large
+    if (m_xsize > 15) return 
+    ! printing
     do j = 0, m_ysize+1
        !----------------------------------------------------------------------
        ! in case you want to print all substrate values

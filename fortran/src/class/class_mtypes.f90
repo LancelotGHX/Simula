@@ -23,22 +23,24 @@ module class_mtype
      integer, private :: m_rmat (2,2) ! rotation matrix (auto)
      integer, private :: m_idx_off    ! molecule index offset (auto)
      integer, private :: m_idx_gen    ! data index in storage (auto)
-     integer, private :: m_comp_num   ! component number
      integer, private :: m_reac_num   ! reaction number
+     integer, private :: m_comp_num   ! component number
+     integer, private, allocatable :: m_comps (:,:) ! 3xN {x, y, component_id}
      ! public fields
      integer :: symm       ! number of symmetry (rotation)
      integer :: eva_num    ! evaporation number
-     integer :: idx_def    ! user defined index for reference 
-     integer        , allocatable :: comps (:,:) ! 3xN {x, y, component_id}
+     integer :: idx_def    ! user defined index for reference
      type (reaction), allocatable :: reacs (:)   ! reaction list
    contains
      ! getters
      procedure :: idx_off  => m_get_idx_off
      procedure :: idx_gen  => m_get_idx_gen
+     procedure :: comps    => m_get_comps
      procedure :: comp_num => m_get_comp_num
      procedure :: reac_num => m_get_reac_num
      ! setters / allocators
      procedure :: set_symm     => m_set_symm
+     procedure :: set_comps    => m_set_comps
      procedure :: set_idx_def  => m_set_idx_def
      procedure :: set_idx_gen  => m_set_idx_gen
      procedure :: set_idx_off  => m_set_idx_off
@@ -56,7 +58,7 @@ module class_mtype
   type, private :: mtype_ptr
      type (mtype), pointer :: ptr
    contains
-     procedure :: alloc => m_alloc
+     procedure :: alloc => m_ptr_alloc
   end type mtype_ptr
   
   !---------------------------------------------------------------------------  
@@ -125,7 +127,7 @@ contains
     call tlist (0) % ptr % set_idx_def (0)   ! zero is the reserved index
     call tlist (0) % ptr % alloc_reacs (0)   ! no reaction (no movement)
     call tlist (0) % ptr % alloc_comps (1)   ! one component only
-    tlist (0) % ptr % comps(:,1) = (/0,0,1/) ! <= for debugging
+    tlist (0) % ptr % m_comps(:,1) = (/0,0,1/) ! comp id = 1 for debugging
     tlist (0) % ptr % m_idx_gen = 0          !
     tlist (0) % ptr % m_idx_off = 0          !
     return
@@ -136,7 +138,7 @@ contains
   !> @brief To allocate memory for pointers in tlist when importing data via
   !         an external namelist
   !---------------------------------------------------------------------------  
-  subroutine m_alloc (this)
+  subroutine m_ptr_alloc (this)
     class(mtype_ptr), intent (out) :: this
     integer                        :: status
     if (.not. associated(this  % ptr)) then
@@ -146,7 +148,7 @@ contains
        stop "ERROR: pointer in 'tlist' is associated to some data already!"
     end if
     return
-  end subroutine m_alloc
+  end subroutine m_ptr_alloc
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -161,50 +163,6 @@ contains
     r = rotate (this % m_rmat, v, n)
     return
   end function m_rotate
-
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Getter for component number
-  !---------------------------------------------------------------------------  
-  function m_get_comp_num (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_comp_num
-    return 
-  end function m_get_comp_num
-
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Getter for reaction number
-  !---------------------------------------------------------------------------  
-  function m_get_reac_num (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_reac_num
-    return 
-  end function m_get_reac_num
-  
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Getter for generated type index
-  !---------------------------------------------------------------------------  
-  function m_get_idx_gen (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_idx_gen
-    return 
-  end function m_get_idx_gen
-
-  !---------------------------------------------------------------------------  
-  ! DESCRIPTION
-  !> @brief Getter for molecule index offset
-  !---------------------------------------------------------------------------  
-  function m_get_idx_off (this) result (r)
-    class(mtype), intent (in) :: this
-    integer                   :: r
-    r = this % m_idx_off
-    return 
-  end function m_get_idx_off
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -283,6 +241,17 @@ contains
     this % m_idx_gen = i
     return
   end subroutine m_set_idx_gen
+  
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for generated type index
+  !---------------------------------------------------------------------------  
+  function m_get_idx_gen (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_idx_gen
+    return 
+  end function m_get_idx_gen
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -295,6 +264,17 @@ contains
     this % m_idx_off = i
     return
   end subroutine m_set_idx_off
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for molecule index offset
+  !---------------------------------------------------------------------------  
+  function m_get_idx_off (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_idx_off
+    return 
+  end function m_get_idx_off
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -316,11 +296,48 @@ contains
   subroutine m_alloc_comps (this, n)
     class(mtype), intent (inout) :: this
     integer     , intent (in)    :: n
-    call alloc_I2 (this % comps, 3, n)
+    call alloc_I2 (this % m_comps, 3, n)
     this % m_comp_num = n
-    this % comps      = 0
+    this % m_comps    = 0
     return
   end subroutine m_alloc_comps
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Setter for component
+  !> @param i: index
+  !> @param v: value
+  !---------------------------------------------------------------------------  
+  subroutine m_set_comps (this, i, v)
+    class(mtype), intent (inout) :: this
+    integer     , intent (in) :: i, v(3)
+    this % m_comps(:,i) = v
+    return 
+  end subroutine m_set_comps
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for component
+  !> @param i: index
+  !---------------------------------------------------------------------------  
+  function m_get_comps (this, i) result (r)
+    class(mtype), intent (in) :: this
+    integer     , intent (in) :: i
+    integer                   :: r(3)
+    r = this % m_comps(:,i)
+    return 
+  end function m_get_comps
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for component number
+  !---------------------------------------------------------------------------  
+  function m_get_comp_num (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_comp_num
+    return 
+  end function m_get_comp_num
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -344,5 +361,16 @@ contains
     end do
     return
   end subroutine m_alloc_reacs
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for reaction number
+  !---------------------------------------------------------------------------  
+  function m_get_reac_num (this) result (r)
+    class(mtype), intent (in) :: this
+    integer                   :: r
+    r = this % m_reac_num
+    return 
+  end function m_get_reac_num
 
 end module class_mtype

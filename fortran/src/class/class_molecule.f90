@@ -18,10 +18,13 @@ module class_molecule
   !---------------------------------------------------------------------------  
   !> each molecule 
   type, public :: molecule
+     ! public
      integer              :: type
      integer              :: idx
      integer              :: pos (3)
-     integer, allocatable :: sta (:) 
+     integer, allocatable :: sta (:)
+   contains
+     procedure :: sta_num => m_get_sta_num
   end type molecule
 
   !---------------------------------------------------------------------------  
@@ -33,6 +36,17 @@ module class_molecule
   public :: init_mlist
 
 contains
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
+  !> @brief Getter for state list size
+  !---------------------------------------------------------------------------  
+  function m_get_sta_num (this) result (r)
+    class(molecule), intent (in) :: this
+    integer                      :: r
+    r = size(this % sta)
+    return
+  end function m_get_sta_num
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION

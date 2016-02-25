@@ -9,8 +9,8 @@ subroutine compute_rate()
   implicit none
 
   ! how to check one condition
-  ! 1) check if one of the relative positions matches: cond->pos
-  ! 2) check if one of the relative direction matches: cond->dir
+  ! 1) check if one of the relative positions matches: cond->opt->pos
+  ! 2) check if one of the relative direction matches: cond->opt->dir
   ! 3) check if ALL components' initial states match : cond->state
   ! pass the checking and do movement and update component state
 
@@ -34,6 +34,7 @@ subroutine compute_rate()
 
   logical :: all_c_true
   logical :: one_o_true
+  logical :: all_p_true
 
   real(8) :: rate
 
@@ -45,13 +46,13 @@ subroutine compute_rate()
      m_range(1) = t_obj % abs_id(1)
      m_range(2) = t_obj % abs_id(activated_num(t))
      
-     print  *, "index range", t, m_range(1), m_range(2)
+     !print  *, "type", t, "index range", m_range(1), m_range(2)
 
      EACH_MOLECULE: do m = m_range(1), m_range(2)
         ! retrieve current molecule
         m_obj = mlist(m)
-        
-        print  *, "molecule", t, m_obj % pos(1), m_obj % pos(2), m_obj % pos(3)
+
+        !print *, "molecule", m_obj % pos(1), m_obj % pos(2),m_obj % pos(3)
 
         EACH_REACTION: do r = 1, t_obj % reac_num()
            ! retrieve current reaction
@@ -70,9 +71,10 @@ subroutine compute_rate()
               one_o_true = .false.
               EACH_OPTION: do o = 1, c_obj % opt_num()
 
-                 EACH_POSION: do p = 1, size(c_obj % opt(o) % pos, 2)
+                 all_p_true = .true.
+                 EACH_POSION: do p = 1, c_obj % opt(o) % pos_num()
                     ! condition position
-                    t_p = m_obj % pos(1:2) + c_obj % opt(o) % pos(:,p)
+                    t_p = m_obj % pos(1:2) + c_obj % opt(o) % pos(p)
 
                     ! target molecule index
                     t_m = convert_from_land(get_sub(t_p(1), t_p(2)), 1) 
@@ -86,25 +88,25 @@ subroutine compute_rate()
                          tlist(mlist(t_m) % type) % ptr % symm &
                          )
 
-
-                    ! check if molecule direction fits              
-                    one_o_true = check_dir(c_obj, o, t_d)
+                    !print *, t_t, t_p(1), t_p(2), t_d, t_m
+                    !pause
 
                     ! check if type confirms with definition              
-                    one_o_true = check_type(c_obj, t_t)
+                    if (type_not_equal(c_obj, t_t)) all_p_true = .false.
+
+                    ! check if molecule direction fits              
+                    if (all_dir_not_equal(c_obj, o, t_d)) all_p_true = .false.  
 
                     ! check all comp states must be the same as initial
-                    one_o_true = check_states(c_obj, t_m)
-                    
-                    print *, t_p(1), t_p(2), t_m, t_d, t_t, one_o_true
+                    if (all_states_not_equal(c_obj, t_m)) all_p_true = .false.
 
                  end do EACH_POSION
 
+                 if (all_p_true) one_o_true = .true.
+
               end do EACH_OPTION
 
-              if (.not.one_o_true) all_c_true = .false. 
-              
-              print *, "all_c_true", all_c_true
+              if (.not.one_o_true) all_c_true = .false.               
 
            end do EACH_COND
 
@@ -114,7 +116,7 @@ subroutine compute_rate()
               rate = 0.0
            end if
 
-           print *, "rate", rate, "energy", r_obj % ene
+           print *, t, m, "rate", rate, "energy", r_obj % ene, all_c_true
 
         end do EACH_REACTION
      end do EACH_MOLECULE
@@ -123,50 +125,46 @@ subroutine compute_rate()
 
 contains
 
-  function check_dir (c_obj, i, d) result (p)
+  function all_dir_not_equal (c_obj, i, d) result (p)
     type(condition), intent (in) :: c_obj
     integer        , intent (in) :: i, d
     logical                      :: p
-    p = .true.
-    if (all(c_obj % opt(i) % dir /= d)) then
-       p = .false.
-    end if
+    p = all(c_obj % opt(i) % dir /= d)
     return
-  end function check_dir
+  end function all_dir_not_equal
 
-  function check_type (c_obj, t) result (p)
+  function type_not_equal (c_obj, t) result (p)
     type(condition), intent (in) :: c_obj
     integer        , intent (in) :: t
     logical                      :: p
-    p = .true.
-    if (c_obj % tar /= t) then
-       p = .false.
-    end if
+    p = (c_obj % tar /= t)
     return
-  end function check_type
+  end function type_not_equal
 
-  function check_states (c_obj, m) result (p)
+  function all_states_not_equal (c_obj, m) result (p)
     type(condition), intent (in) :: c_obj
     integer        , intent (in) :: m
     logical                      :: p
     type(mtype)    :: t_obj
     type(molecule) :: m_obj
-    integer :: c, i, s, k
+    integer :: c, i, s, k, comp(3), stas(3)
     p = .true.
     m_obj = mlist(m)
     t_obj = tlist(m_obj % type) % ptr    
     EACH_COMP: do c = 1, t_obj % comp_num ()
-       i = t_obj % comps (3, c) ! component index
-       s = m_obj % sta (c)                         ! component current state
-       EACH_COND: do k = 1, size(c_obj % sta, 1)
-          if (c_obj % sta (1, k) == i) then
-             if (c_obj % sta (2, k) /= s) then
+       comp = t_obj % comps (c) ! component info
+       i = comp(3)         ! component index
+       s = m_obj % sta (c) ! component current state
+       EACH_COND: do k = 1, c_obj % sta_num()
+          stas = c_obj % sta (k)
+          if (stas(1) == i) then
+             if (stas (2) == s) then
                 p = .false.
              end if
           end if
        end do EACH_COND
     end do EACH_COMP
     return
-  end function check_states
+  end function all_states_not_equal
 
 end subroutine compute_rate
