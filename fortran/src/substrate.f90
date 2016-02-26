@@ -199,7 +199,7 @@ contains
 
        obj % pos(1) = xc ! however this works if the variable is defined
        obj % pos(2) = yc ! as a pointer
-       obj % pos(3) = dc 
+       obj % pos(3) = modulo(dc, mtp % symm) 
 
        ! land each dots
        do i = 1, mtp % comp_num()
@@ -261,7 +261,7 @@ contains
 
     obj % pos(1) = nx ! however this works if the variable is defined
     obj % pos(2) = ny ! as a pointer
-    obj % pos(3) = nd 
+    obj % pos(3) = modulo(nd, mtp % symm) 
     !print *, "move new", obj % pos
 
     ! reset old points
@@ -296,7 +296,7 @@ contains
     do j = 0, m_ysize+1
        !----------------------------------------------------------------------
        ! in case you want to print all substrate values
-       !write (*, "(100G2.5)") (convert_from_land(m_sub(i,j),3), i=1,m_xsize)
+       !!write (*, "(100G2.5)") (convert_from_land(m_sub(i,j),4), i=1,m_xsize)
        !----------------------------------------------------------------------
        ! draw left boundary if you want
        write (*, "(A1)",advance="no") "|"
@@ -305,7 +305,7 @@ contains
           if (j == 0 .or. j == m_ysize + 1) then
              write (*, "(A2)",advance="no") "=="
           else
-             v = convert_from_land(m_sub(i,j),1)
+             v = convert_from_land(m_sub(i,j),4) ! 1=> mid, 2=>tid, 3=>comp
              if (v /= 0) then
                 write (*, "(I2)",advance="no") v
              else 

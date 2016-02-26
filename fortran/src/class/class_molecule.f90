@@ -98,7 +98,11 @@ contains
        mlist(i) % type = t
        mlist(i) % idx  = i
        mlist(i) % pos  = 0
-       mlist(i) % sta  = 0
+       if (i == 0) then
+          mlist(i) % sta  = 0 ! initial state for background
+       else
+          mlist(i) % sta  = 1 ! initial state
+       end if
     end do EACH_MOLECULE
 
     return

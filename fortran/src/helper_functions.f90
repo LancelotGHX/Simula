@@ -175,8 +175,8 @@ contains
     real(dp), intent (in) :: p
     integer               :: r
     integer :: nl, nr, nm
-    nl = 0
-    nr = size(array)-1
+    nl = 1
+    nr = size(array)
     nm = (nl + nr) / 2
     !if (p < array(nl) .or. p > array(nr)) then
     !   stop "ERROR: value no found"
@@ -189,7 +189,7 @@ contains
        end if
        nm = (nl + nr) / 2
     end do
-    r = nr
+    r = nl
     return
   end function binary_search_F1
 

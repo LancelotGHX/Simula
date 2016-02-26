@@ -113,7 +113,10 @@ contains
   function select_rates () result (i)
     integer  :: i
     real(dp) :: r, p, u
+
     r = 0.0_dp
+    if (m_sums(m_reac_num()+1) == 0.0_dp) stop "ERROR: no events"
+
     do while (r == 0.0_dp)
        p = rand_uniform(0.0_dp, m_sums(m_reac_num()+1))
        !print *, p
@@ -134,44 +137,45 @@ contains
     integer, intent (in) :: i
     integer              :: t, m, r, c, o, p
     integer              :: t_p(2), t_m
-    integer              :: x,y,d
+    integer              :: x,y,d,pos(2),vec(3)
+    type(mtype)    , pointer :: t_obj
     type(molecule) , pointer :: m_obj
     type(condition), pointer :: c_obj
-    
-    ! calculate type index
-    ! SEARCH_TYPE: do t = 1, size(m_reac_stp,1)-1
-    !    if (i > m_reac_stp(t,1) .and. i <= m_reac_stp(t+1,1)) then
-    !       exit SEARCH_TYPE
-    !    end if
-    ! end do SEARCH_TYPE
-    ! ! calculate molecule index
-    ! m = real(i - m_reac_stp(t,1), dp) / real(m_reac_stp(t,2), dp)
-    ! ! calculate reaction index
-    ! r = modulo (i - m_reac_stp(t,1) - 1, m_reac_stp(t,2)) + 1
 
     t = m_data(i) % idxs(1)
     m = m_data(i) % idxs(2)
     r = m_data(i) % idxs(3)
-    print *, t, m, r
+    !print *, t, m, r
 
     m_obj => mlist(m)
+    t_obj => tlist(t) % ptr
+    vec = m_obj % pos
     ! execute molecule movement
     EACH_CONDITION: do c = 1, m_data(i) % size
        c_obj => tlist(t) % ptr % reacs(r) % conds(c)
        o = m_data(i) % tars(c)
        EACH_POSION: do p = 1, c_obj % opt(o) % pos_num()
           ! condition position
-          t_p = m_obj % pos(1:2) + c_obj % opt(o) % pos(p)          
+          !> @remark need to rotate t_p first since it is define
+          ! according to relative direction 
+          t_p = vec(1:2) + &
+               t_obj % rotate(c_obj % opt(o) % pos(p), vec(3))      
           ! target molecule index
           t_m = convert_from_land(get_sub(t_p(1), t_p(2)), 1)           
+          !print *, "==>",t_m, "==>",m, mlist(t_m) % sta
           call  c_obj % sta_final(mlist(t_m) % sta)
+          ! update substrate
+          call move_one(t_m,0,0,0)
        end do EACH_POSION
     end do EACH_CONDITION
 
-    x = tlist(t) % ptr % reacs(r) % mov(1)
-    y = tlist(t) % ptr % reacs(r) % mov(2)
+    !> @remark here also we need to rotate 'mov' according to moelcule
+    !          direction since it is define using relative position
+    pos = t_obj % rotate(tlist(t) % ptr % reacs(r) % mov(1:2), vec(3)) 
+    x = pos (1)
+    y = pos (2)
     d = tlist(t) % ptr % reacs(r) % mov(3)
-    print *, tlist(t) % ptr % reacs(r) % mov
+    !print *, tlist(t) % ptr % reacs(r) % mov
     call move_one(m,x,y,d)
 
     return
@@ -205,6 +209,8 @@ contains
 
     integer :: t_p(2), t_t, t_d, t_m ! target properties
 
+    integer :: vec(3)
+
     logical :: all_c_true
     logical :: one_o_true
     logical :: all_p_true
@@ -225,6 +231,7 @@ contains
        EACH_MOLECULE: do m = m_range(1), m_range(2)
           ! retrieve current molecule
           m_obj => mlist(m)
+          vec = m_obj % pos
 
           EACH_REACTION: do r = 1, t_obj % reac_num()
              reac_idx = (m-m_range(1)) * t_obj % reac_num() + m_reac(1,t) + r
@@ -252,7 +259,11 @@ contains
                    all_p_true = .true.
                    EACH_POSION: do p = 1, c_obj % opt(o) % pos_num()
                       ! condition position
-                      t_p = m_obj % pos(1:2) + c_obj % opt(o) % pos(p)
+                      !> @remark need to rotate t_p first since it is define
+                      ! according to relative direction 
+                      
+                      t_p = vec(1:2) + &
+                           t_obj % rotate(c_obj % opt(o) % pos(p), vec(3))
 
                       ! target molecule index
                       t_m = convert_from_land(get_sub(t_p(1), t_p(2)), 1) 
@@ -265,7 +276,16 @@ contains
                            mlist(t_m) % pos(3) - m_obj % pos(3), &
                            tlist(mlist(t_m) % type) % ptr % symm &
                            )
-
+                      
+                      !> @remark  we should never check the center
+                      !           position of background                      
+                      if (t_t /= 0) then 
+                         !> @remark check if t_p is the central position of
+                         !          molecule
+                         if (.not. all(t_p == mlist(t_m) % pos(1:2))) then
+                            all_p_true = .false.  
+                         end if
+                      end if
                       ! check if molecule direction fits              
                       if (c_obj % opt(o) % dir_not_equal(t_d)) then
                          all_p_true = .false.  
@@ -298,7 +318,8 @@ contains
 
                 ! if we don't have any option passed, then the condition must 
                 ! be failed
-                if (.not.one_o_true) all_c_true = .false.               
+                if (.not.one_o_true) all_c_true = .false.
+                !print *, t, m, r, c, all_c_true
 
              end do EACH_COND
 
@@ -312,6 +333,7 @@ contains
              end if
 
              m_rate (reac_idx) = rate
+
 
           end do EACH_REACTION
 

@@ -197,13 +197,19 @@ contains
     else 
        r = .not. all(comp == this % m_sta(2,:))
     end if
+
     return
   end function m_sta_if_not_equal
 
   subroutine m_sta_final (this, comp)
     class(condition)    , intent (in)  :: this
     integer, allocatable, intent (out) :: comp(:)
-    if (this % m_sta_num /= size(comp)) stop "Component shap inconsistent"
+    if (this % m_sta_num /= size(comp)) then
+       print *, "self sta ", this % m_sta
+       print *, "self type", this % tar
+       print *, "target ", comp
+       stop "Component shape inconsistent"
+    end if
     comp = this % m_sta(3,:)
     return
   end subroutine m_sta_final

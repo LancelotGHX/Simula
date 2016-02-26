@@ -19,20 +19,19 @@ program hello
   print *, land_one(2,7,5,0)
 
   call activate_new(1)
-  print *, land_one(3,3,8,0)
+  print *, land_one(3,4,8,0)
 
-  !call evaporate(tpyp, 9)
+  call evaporate(tpyp, 9)
   !call evaporate(lead, 9)
 
   call print_to_screen()
 
   print *, ">>> Calculate rate"
-  do i = 1, 100
+  do i = 1, 100000
      call compute_rates()
-     call print_to_screen()
-     pause
+     !call print_to_screen()
   end do
-
+  call print_to_screen()
   !call move_one(2, 0, -1, 0)
   !call print_to_screen()
   

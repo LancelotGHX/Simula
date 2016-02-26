@@ -54,8 +54,8 @@ contains
           j = j + 1
        end if
        sta(3*i-2) = i
-       sta(3*i-1) = 0
-       sta(3*i  ) = 0
+       sta(3*i-1) = 1
+       sta(3*i  ) = 1
     end do
 
     ! basic information
@@ -86,13 +86,16 @@ contains
   subroutine init ()
     call init_random_seed() !> initialize random seed
 
-    !--------------------------------------------------
+    !-------------------------------------------------------------------
+    !-------------------------------------------------------------------
     ! handled by user
     !
     !> adding types into the record
     call tlist_set_num (2)
     call tlist_insert (tpyp)
     call tlist_insert (lead)
+    !-------------------------------------------------------------------
+    !-------------------------------------------------------------------
     !
     !> define molecule type TPyP
     !
@@ -106,24 +109,61 @@ contains
     call tpyp % set_idx_def (2000) !> type id should be within [1000, 9999]
     call tpyp % set_eva_num (20)  !> evaporation number
     call tpyp % alloc_comps (5)    !> number of components
-    call tpyp % set_comps(1, [ 0, 0, 1]) !> xpos, ypos, comp-id
-    call tpyp % set_comps(2, [ 1, 0, 2]) !> xpos, ypos, comp-id
-    call tpyp % set_comps(3, [ 0, 1, 3]) !> xpos, ypos, comp-id
-    call tpyp % set_comps(4, [-1, 0, 2]) !> xpos, ypos, comp-id
-    call tpyp % set_comps(5, [ 0,-1, 3]) !> xpos, ypos, comp-id
-    call tpyp % alloc_reacs (4)
+    call tpyp % set_comps(1, [ 0, 0]) !> xpos, ypos, comp-id
+    call tpyp % set_comps(2, [ 1, 0]) !> xpos, ypos, comp-id
+    call tpyp % set_comps(3, [ 0, 1]) !> xpos, ypos, comp-id
+    call tpyp % set_comps(4, [-1, 0]) !> xpos, ypos, comp-id
+    call tpyp % set_comps(5, [ 0,-1]) !> xpos, ypos, comp-id
+    call tpyp % alloc_reacs (8)
     call def_free_move(tpyp, 1, [ 1, 0,0], 0.5_dp)
     call def_free_move(tpyp, 2, [ 0, 1,0], 0.5_dp)
     call def_free_move(tpyp, 3, [-1, 0,0], 0.5_dp)
     call def_free_move(tpyp, 4, [ 0,-1,0], 0.5_dp)
+    call def_free_move(tpyp, 5, [ 0, 0,1], 0.5_dp)
+    call def_free_move(tpyp, 6, [ 0, 0,2], 0.5_dp)
+    call def_free_move(tpyp, 7, [ 0, 0,3], 0.5_dp)
+    !-----------------------------
+    ! bond 1
+    call tpyp % reacs (8) % set_ene (-0.5_dp)
+    call tpyp % reacs (8) % set_mov ([1,0,0])
+    call tpyp % reacs (8) % alloc_conds (3)
+    ! self molecule type
+    call tpyp % reacs (8) % conds (1) % set_tar (2000)
+    call tpyp % reacs (8) % conds (1) % set_sta &
+         ([1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]) 
+    call tpyp % reacs (8) % conds (1) % alloc_opt (1)
+    call tpyp % reacs (8) % conds (1) % opt(1) % set ([0,0],0)
+    ! target molecule type
+    call tpyp % reacs (8) % conds (2) % set_tar (2000)
+    call tpyp % reacs (8) % conds (2) % set_sta &
+         ([1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]) 
+    call tpyp % reacs (8) % conds (2) % alloc_opt (1)
+    call tpyp % reacs (8) % conds (2) % opt(1) % set ([4,0],0)
+    ! condition for background checking (empty checking)
+    call tpyp % reacs (8) % conds (3) % set_tar (0)       ! background
+    call tpyp % reacs (8) % conds (3) % set_sta ([1,0,0]) ! background
+    call tpyp % reacs (8) % conds (3) % alloc_opt (4)
+    call tpyp % reacs (8) % conds (3) % opt(1) % set &
+         ([2,0, 1,1, 1,-1], 0)
+    call tpyp % reacs (8) % conds (3) % opt(2) % set &
+         ([2,0, 1,1, 1,-1], 1)
+    call tpyp % reacs (8) % conds (3) % opt(3) % set &
+         ([2,0, 1,1, 1,-1], 2)
+    call tpyp % reacs (8) % conds (3) % opt(4) % set &
+         ([2,0, 1,1, 1,-1], 3)
+    !-----------------------------
+    ! bond 2
+
+    !-------------------------------------------------------------------
+    !-------------------------------------------------------------------
     !
     !> define type Lead
     !
-    call lead % set_symm    (4)    
+    call lead % set_symm    (1)    
     call lead % set_idx_def (2000) 
     call lead % set_eva_num (20)   
     call lead % alloc_comps (1)    
-    call lead % set_comps (1, [0, 0, 4]) 
+    call lead % set_comps (1, [0, 0]) 
     call lead % alloc_reacs (4)
     call def_free_move(lead, 1, [ 1, 0,0], 0.5_dp)
     call def_free_move(lead, 2, [ 0, 1,0], 0.5_dp)
