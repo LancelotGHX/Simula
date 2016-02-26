@@ -25,12 +25,12 @@ module class_mtype
      integer, private :: m_idx_gen    ! data index in storage (auto)
      integer, private :: m_reac_num   ! reaction number
      integer, private :: m_comp_num   ! component number
-     integer, private, allocatable :: m_comps (:,:) ! 3xN {x, y, component_id}
+     integer, private, allocatable :: m_comps (:,:) ! 2xN {x, y}
      ! public fields
-     integer :: symm       ! number of symmetry (rotation)
-     integer :: eva_num    ! evaporation number
-     integer :: idx_def    ! user defined index for reference
-     type (reaction), allocatable :: reacs (:)   ! reaction list
+     integer :: symm    ! number of symmetry (rotation)
+     integer :: eva_num ! evaporation number
+     integer :: idx_def ! user defined index for reference
+     type (reaction), pointer :: reacs (:) ! reaction list
    contains
      ! getters
      procedure :: idx_off  => m_get_idx_off
@@ -63,11 +63,11 @@ module class_mtype
   
   !---------------------------------------------------------------------------  
   !> global type list
-  type (mtype_ptr), public, allocatable, save :: tlist (:)
+  type (mtype_ptr), public, allocatable, target :: tlist (:)
 
   !---------------------------------------------------------------------------  
   !> global functions
-  public  :: tlist_number, tlist_insert
+  public  :: tlist_num, tlist_set_num, tlist_insert
 
   !---------------------------------------------------------------------------  
   !> private functions (just a reminder)
@@ -77,12 +77,21 @@ contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
+  !> @brief Getter for tlist size
+  !---------------------------------------------------------------------------
+  function tlist_num () result (r)
+    integer :: r
+    r = size(tlist) - 1
+    return
+  end function tlist_num
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
   !> @brief Allocate tlist
   !> @param n: number
   !> @remark allocate tlist from 0 to N, where #0 is prepared for the 
   !          pre-defiend background type
   !---------------------------------------------------------------------------  
-  subroutine tlist_number (n)
+  subroutine tlist_set_num (n)
     integer, intent (in) :: n
     integer              :: status
     ! check multiple allocation
@@ -93,7 +102,7 @@ contains
     ! insert background
     call tlist_insert_background()
     return
-  end subroutine tlist_number
+  end subroutine tlist_set_num
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -127,7 +136,7 @@ contains
     call tlist (0) % ptr % set_idx_def (0)   ! zero is the reserved index
     call tlist (0) % ptr % alloc_reacs (0)   ! no reaction (no movement)
     call tlist (0) % ptr % alloc_comps (1)   ! one component only
-    tlist (0) % ptr % m_comps(:,1) = (/0,0,1/) ! comp id = 1 for debugging
+    tlist (0) % ptr % m_comps(:,1) = (/0,0/) ! the only component is at origin
     tlist (0) % ptr % m_idx_gen = 0          !
     tlist (0) % ptr % m_idx_off = 0          !
     return
@@ -296,7 +305,7 @@ contains
   subroutine m_alloc_comps (this, n)
     class(mtype), intent (inout) :: this
     integer     , intent (in)    :: n
-    call alloc_I2 (this % m_comps, 3, n)
+    call alloc_I2 (this % m_comps, 2, n)
     this % m_comp_num = n
     this % m_comps    = 0
     return
@@ -310,7 +319,7 @@ contains
   !---------------------------------------------------------------------------  
   subroutine m_set_comps (this, i, v)
     class(mtype), intent (inout) :: this
-    integer     , intent (in) :: i, v(3)
+    integer     , intent (in) :: i, v(2)
     this % m_comps(:,i) = v
     return 
   end subroutine m_set_comps
@@ -323,7 +332,7 @@ contains
   function m_get_comps (this, i) result (r)
     class(mtype), intent (in) :: this
     integer     , intent (in) :: i
-    integer                   :: r(3)
+    integer                   :: r(2)
     r = this % m_comps(:,i)
     return 
   end function m_get_comps
@@ -349,7 +358,7 @@ contains
     integer     , intent (in)    :: n
     integer                      :: i, status
     ! multiple allocation check
-    if (allocated(this % reacs)) stop "ERROR: multiple definitions"
+    if (associated(this % reacs)) stop "ERROR: multiple definitions"
     ! assign value
     this % m_reac_num = n
     ! not a basic type, allocate manually

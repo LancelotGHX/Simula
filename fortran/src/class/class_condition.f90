@@ -1,22 +1,28 @@
 !-----------------------------------------------------------------------------
 ! 
 ! DESCRIPTION
-!> @brief This is a class for dealing with reaction condition checking. in
-!         our definition, a condition is defined by a list of position pairs,
-!         which follows narutal definition: { (x_i, y_i)_i }.
+!> @brief This is a class for dealing with reaction condition checking
 !
 ! FIELDS
 !> @var tar: target type index (generated index)
-!> @var sta: it defines the required initial states for listed components and 
-!            their corresponding final states if this reaction is executed. it
-!            is constructed in the form of {comp, state_i, state_j}
-!> @var opt: option list. The condition is passed once one of the options is 
-!            fulfilled
+!
+!> @var sta: it defines the required initial states and final states for
+!            executing the reaction. it follows the defining order of 
+!            molecule components
+!
+!> @var opt: option list. it defines all the possible conditions in detail.
+!            the condition is determined to be ture if at least one of the 
+!            options is observed to be true
+!
+!> @var opt -> pos: relative position list for targets with respect to current
+!                   object. It requires all the points should be filled with
+!                   identical objects. If you want to have different possible
+!                   directions, add more options please
+!
 !> @var opt -> dir: position relative direction list for target with respect
-!                   to current object
-!> @var opt -> pos: position relative position list for target with respect to
-!                   current object
-
+!                   to current object. It lists all the possible directions
+!                   that the target can choose in order to execute the reaction
+!
 !-----------------------------------------------------------------------------
 module class_condition
 
@@ -31,18 +37,19 @@ module class_condition
   !> option information for condition
   type, private :: m_cond_info
      ! private
-     integer, private              :: m_dir_num
      integer, private              :: m_pos_num
      integer, private, allocatable :: m_pos (:,:) ! pos (2,K) {xpos, ypos}
      ! public
-     integer         , allocatable :: dir   (:  ) ! dir (1,M) {d1, d2,...}
+     integer, public               :: dir
    contains
-     procedure :: pos     => m_info_get_pos
-     procedure :: pos_num => m_info_get_pos_num
-     procedure :: dir_num => m_info_get_dir_num
-     procedure :: set     => m_info_set
-     procedure :: set_pos => m_info_set_pos
-     procedure :: set_dir => m_info_set_dir
+     procedure :: dir_not_equal => m_info_dir_if_not_equal   
+     ! getters
+     procedure :: pos_num       => m_info_get_pos_num     
+     procedure :: pos           => m_info_get_pos
+     ! setters
+     procedure :: set           => m_info_set
+     procedure :: set_pos       => m_info_set_pos
+     procedure :: set_dir       => m_info_set_dir
   end type m_cond_info
 
   !---------------------------------------------------------------------------  
@@ -56,12 +63,19 @@ module class_condition
      integer                        :: tar       ! target type
      type(m_cond_info), allocatable :: opt (:)
    contains
-     procedure :: sta_num   => m_get_sta_num
-     procedure :: opt_num   => m_get_opt_num
-     procedure :: sta       => m_get_sta
-     procedure :: set_tar   => m_set_tar
-     procedure :: set_sta   => m_set_sta
-     procedure :: alloc_opt => m_alloc_opt
+     procedure :: sta_not_equal => m_sta_if_not_equal
+     procedure :: tar_not_equal => m_tar_if_not_equal
+     ! size getter
+     procedure :: sta_num       => m_get_sta_num
+     procedure :: opt_num       => m_get_opt_num
+     ! getter
+     procedure :: sta           => m_get_sta
+     procedure :: sta_final     => m_sta_final       
+     ! setter
+     procedure :: set_tar       => m_set_tar
+     procedure :: set_sta       => m_set_sta
+     ! allocator
+     procedure :: alloc_opt     => m_alloc_opt
   end type condition
 
 contains
@@ -107,6 +121,20 @@ contains
     this % tar = t
     return
   end subroutine m_set_tar
+
+  !---------------------------------------------------------------------------
+  ! DESCRIPTION
+  !> @brief check if the condition's type is equal to t
+  !> @param c_obj: the condition object need to be tested
+  !> @param t    : type
+  !---------------------------------------------------------------------------
+  function m_tar_if_not_equal (this, t) result (r)
+    class(condition), intent (in) :: this
+    integer         , intent (in) :: t
+    logical                       :: r
+    r = (this % tar /= t)
+    return
+  end function m_tar_if_not_equal
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -158,6 +186,30 @@ contains
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
+  !> @brief check if component initial states fit the requirement
+  !---------------------------------------------------------------------------  
+  function m_sta_if_not_equal (this, comp) result (r)
+    class(condition)    , intent (in) :: this
+    integer, allocatable, intent (in) :: comp(:)
+    logical                           :: r
+    if (this % m_sta_num /= size(comp)) then
+       r = .true.
+    else 
+       r = .not. all(comp == this % m_sta(2,:))
+    end if
+    return
+  end function m_sta_if_not_equal
+
+  subroutine m_sta_final (this, comp)
+    class(condition)    , intent (in)  :: this
+    integer, allocatable, intent (out) :: comp(:)
+    if (this % m_sta_num /= size(comp)) stop "Component shap inconsistent"
+    comp = this % m_sta(3,:)
+    return
+  end subroutine m_sta_final
+
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION
   !> @brief Setter for condition relative fetching positions
   !> @param p: values for position array in 1D form of {x1,y1,x2,y2...}
   !---------------------------------------------------------------------------  
@@ -205,42 +257,38 @@ contains
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief Setter for condition relative direction array 
-  !> @param d: values for direction array in 1D form of {d1, d2, d3, ...}
+  !> @param d: value for direction
   !---------------------------------------------------------------------------  
   subroutine m_info_set_dir (this, d)
     class(m_cond_info), intent (inout) :: this
-    integer           , intent (in)    :: d(:)
-    integer                            :: n
-    ! allocate array
-    n = size (d)
-    call alloc_I1 (this % dir, n) 
-    ! assign array
-    this % dir       = d
-    this % m_dir_num = n
+    integer           , intent (in)    :: d
+    this % dir = d
     return
   end subroutine m_info_set_dir
 
-  !---------------------------------------------------------------------------  
+  !---------------------------------------------------------------------------
   ! DESCRIPTION
-  !> @brief Getter for condition relative direction size
-  !---------------------------------------------------------------------------  
-  function m_info_get_dir_num (this) result (r)
+  !> @brief check if 'dir' array all do not equal to the value d
+  !> @param d: direction value to be tested
+  !---------------------------------------------------------------------------
+  function m_info_dir_if_not_equal (this, d) result (r)
     class(m_cond_info), intent (in) :: this
-    integer                            :: r
-    r = this % m_dir_num
+    integer           , intent (in) :: d
+    logical                         :: r
+    r = this % dir /= d
     return
-  end function m_info_get_dir_num
+  end function m_info_dir_if_not_equal
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief General setter for position and direction
   !> @param p: values for position array in 1D form of {x1,y1,x2,y2...}
-  !> @param d: values for direction array in 1D form of {d1, d2, d3, ...}
+  !> @param d: values for direction
   !---------------------------------------------------------------------------  
   subroutine m_info_set (this, p, d)
     class(m_cond_info), intent (inout) :: this
     integer           , intent (in)    :: p(:)
-    integer           , intent (in)    :: d(:)
+    integer           , intent (in)    :: d
     call this % set_pos(p)
     call this % set_dir(d)
     return

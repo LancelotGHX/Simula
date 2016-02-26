@@ -15,12 +15,13 @@ subroutine evaporate (mtp, num)
   implicit none
 
   !---------------------------------------
-  Integer    , intent(in) :: num
   type(mtype), intent(in) :: mtp
+  integer    , intent(in) :: num
   integer :: i, t, k, x, y, d
 
   ! debug -------------------------------
-  print *, "eva start, plan num", mtp % idx_def, "=>", num
+  write (*,'(" plan to evaporate type  ",I6,"   for ",I6)') &
+       mtp % idx_def, num
   ! debug -------------------------------
 
   ! evaporate new molecules
@@ -41,7 +42,8 @@ subroutine evaporate (mtp, num)
   end do LAND_LOOP
 
   ! debug -------------------------------
-  print *, "eva done, activated", mtp % idx_def, "=>", activated_num(t)
+  write (*,'(" done evaporation of type",I6,"   for ",I6)') &
+       mtp % idx_def,activated_num(t)
   ! debug -------------------------------
 
   return

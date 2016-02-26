@@ -11,6 +11,11 @@ module helper_functions
   ! define double precision here
   integer, parameter :: dp = kind(0.0D0)
 
+  ! function overload
+  interface binary_search
+     module procedure binary_search_F1, binary_search_I1
+  end interface binary_search
+
 contains
   
   !---------------------------------------------------------------------------  
@@ -154,5 +159,61 @@ contains
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
   end subroutine alloc_I2
+
+  subroutine alloc_F1_range (array, n1, n2)
+    real(8), allocatable, intent(out) :: array(:)
+    integer, intent(in)  :: n1, n2
+    integer :: status
+    if (allocated(array)) stop "ERROR: multiple definitions"
+    allocate(array(n1:n2), STAT = status)
+    if (status /= 0) stop "ERROR: Not enough memory!"
+    return
+  end subroutine alloc_F1_range
+
+  function binary_search_F1(array, p) result (r)
+    real(dp), intent (in) :: array (:)
+    real(dp), intent (in) :: p
+    integer               :: r
+    integer :: nl, nr, nm
+    nl = 0
+    nr = size(array)-1
+    nm = (nl + nr) / 2
+    !if (p < array(nl) .or. p > array(nr)) then
+    !   stop "ERROR: value no found"
+    !end if
+    do while (nr - nl > 1) 
+       if (p <= array(nm)) then
+          nr = nm
+       else
+          nl = nm
+       end if
+       nm = (nl + nr) / 2
+    end do
+    r = nr
+    return
+  end function binary_search_F1
+
+  function binary_search_I1(array, p) result (r)
+    integer, intent (in) :: array (:)
+    integer, intent (in) :: p
+    integer              :: r
+    integer :: nl, nr, nm
+    nl = 1
+    nr = size(array)
+    nm = (nl + nr) / 2
+    !if (p < array(nl) .or. p > array(nr)) then
+    !   stop "ERROR: value no found"
+    !end if
+    do while (nr - nl > 1) 
+       if (p <= array(nm)) then
+          nr = nm
+       else
+          nl = nm
+       end if
+       nm = (nl + nr) / 2
+    end do
+    r = nl
+    return
+  end function binary_search_I1
 
 end module helper_functions

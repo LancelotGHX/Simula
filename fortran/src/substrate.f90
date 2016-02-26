@@ -1,38 +1,28 @@
 !---------------------------------------------------------------------------  
 !
 ! DESCRIPTION: 
-!> @brief Define simulation substrate
-!
-!> @type substrate
+!> @brief Define actions related to substrate
 !
 !> @function init_substrate
 !> @function set_sub
 !> @function get_sub
+!> ...
 !
 !--------------------------------------------------------------------------- 
 module substrate
 
   use helper_functions, only: alloc_I1, alloc_I2, rand_int
-  use class_mtype     , only: mtype, tlist
-  use class_molecule  , only: molecule, mlist
+  use class_mtype     , only: tlist, mtype, tlist_num
+  use class_molecule  , only: mlist, molecule
   implicit none
-  private
 
   !--------------------------------------------------------------------------- 
   ! DESCRIPTION
   !> @brief substrate static variable
-  integer, save :: m_xsize
-  integer, save :: m_ysize
-  integer, save, allocatable :: m_sub (:,:) ! substrate data
-  integer, save, allocatable :: m_num (:)   ! number of molecule activated
-
-  public :: init_substrate
-  public :: land_one, move_one
-  public :: get_sub, set_sub
-  public :: rand_subX, rand_subY
-  public :: convert_from_land, convert_to_land
-  public :: activated_num, activate_new
-  public :: print_to_screen
+  integer, private :: m_xsize
+  integer, private :: m_ysize
+  integer, private, allocatable :: m_sub (:,:) ! substrate data
+  integer, private, allocatable :: m_num (:)   ! number of molecule activated
 
 contains
 
@@ -44,7 +34,7 @@ contains
   function activated_num (i) result (r)
     integer, intent (in) :: i
     integer              :: r
-    if (i > size(tlist)-1) stop "ERROR: index out of bound (module-substrate)"
+    if (i > tlist_num()) stop "ERROR: index out of bound (module-substrate)"
     r = m_num(i)
     return
   end function activated_num
@@ -56,7 +46,7 @@ contains
   !--------------------------------------------------------------------------- 
   subroutine activate_new (i)
     integer, intent (in) :: i
-    if (i > size(tlist)-1) stop "ERROR: index out of bound (module-substrate)"
+    if (i > tlist_num()) stop "ERROR: index out of bound (module-substrate)"
     m_num (i) = m_num (i) + 1
     return
   end subroutine activate_new
@@ -72,7 +62,7 @@ contains
     m_xsize = xlen
     m_ysize = ylen
     call alloc_I2(m_sub, xlen, ylen)
-    call alloc_I1(m_num, size(tlist)-1)
+    call alloc_I1(m_num, tlist_num())
     m_sub = 0
     m_num = 0
     return
@@ -180,21 +170,21 @@ contains
     integer, intent(in)  :: m, xc, yc, dc
     integer, allocatable :: vec(:,:)
     integer              :: i, x, y, v, t, s, c
-    type(mtype)    :: mtp
-    type(molecule) :: obj 
+    type(mtype)   , pointer :: mtp
+    type(molecule), pointer :: obj 
 
     ! retrieve molecule type & molecule object
-    obj = mlist(m)
-    mtp = tlist(obj % type) % ptr
+    obj => mlist(m)
+    mtp => tlist(obj % type) % ptr
 
     ! calculate all positions {x,y,comp-id}
-    call alloc_I2 (vec, 3, mtp % comp_num())
+    call alloc_I2 (vec, 2, mtp % comp_num())
 
     ! check position is empty by the way
     empty = .true.
     do i = 1, mtp % comp_num()
-       vec(1:3,i) = mtp % comps(i)
-       vec(1:2,i) = mtp % rotate(vec(1:2,i), dc)
+       vec(:,i) = mtp % comps(i)
+       vec(:,i) = mtp % rotate(vec(:,i), dc)
        x = vec(1,i) + xc
        y = vec(2,i) + yc
        if (get_sub(x, y) /= 0) empty = .false.
@@ -202,14 +192,20 @@ contains
 
     ! land molecule if the site is empty, do nothing otherwise
     if (empty) then
-       mlist(m) % pos(1) = xc
-       mlist(m) % pos(2) = yc
-       mlist(m) % pos(3) = dc
+
+       !mlist(m) % pos(1) = xc ! here I am directly accessing the data in order
+       !mlist(m) % pos(2) = yc ! to make sure the changes are saved. Do changes
+       !mlist(m) % pos(3) = dc ! on local variable does not gaurantee that
+
+       obj % pos(1) = xc ! however this works if the variable is defined
+       obj % pos(2) = yc ! as a pointer
+       obj % pos(3) = dc 
+
        ! land each dots
        do i = 1, mtp % comp_num()
           ! part 1
           t = mtp % idx_gen() ! type index generated
-          c = vec(3, i)       ! comp-id
+          c = i               ! comp-id
           s = obj % sta(i)    ! comp-state
           ! part 2
           x = vec(1,i) + xc
@@ -231,44 +227,58 @@ contains
   ! DESCRIPTION
   !> @brief to move m-th molecule from its original position to (nx,ny,nd)
   !> @param m: molecule index
-  !> @param nx
-  !> @param ny
-  !> @param nd
+  !> @param rx
+  !> @param ry
+  !> @param rd
   !> @remark: this function does not perform empty test ! user has the duty to
   !           make sure the destination is completely empty
   !---------------------------------------------------------------------------
-  subroutine move_one (m, nx, ny, nd)
-    integer, intent(in)  :: m, nx, ny, nd
-    integer              ::    ox, oy, od
-    integer              :: comp(3), opos(2), npos(2)
+  subroutine move_one (m, rx, ry, rd)
+    integer, intent(in)  :: m, rx, ry, rd ! relative position
+    integer              :: nx, ny, nd
+    integer              :: ox, oy, od
+    integer              :: comp(2), opos(2), npos(2)
     integer              :: i, t, c, s
-    type(mtype)    :: mtp
-    type(molecule) :: obj 
+    type(mtype)   , pointer :: mtp
+    type(molecule), pointer :: obj 
 
     ! retrieve molecule type & molecule object
-    obj = mlist(m)
-    mtp = tlist(obj % type) % ptr
+    obj => mlist(m)                ! pointing pointer to oject
+    mtp => tlist(obj % type) % ptr ! this is pointer assignment !
 
     ox = obj % pos(1)
     oy = obj % pos(2)
     od = obj % pos(3)
+    !print *, "move old", obj % pos
     
-    mlist(m) % pos(1) = nx
-    mlist(m) % pos(2) = ny
-    mlist(m) % pos(3) = nd
+    nx = rx + ox
+    ny = ry + oy
+    nd = rd + od
 
-    ! check position is empty by the way
+    !mlist(m) % pos(1) = nx ! here I am directly accessing the data in order
+    !mlist(m) % pos(2) = ny ! to make sure the changes are saved. Do changes
+    !mlist(m) % pos(3) = nd ! on local variable does not gaurantee that
+
+    obj % pos(1) = nx ! however this works if the variable is defined
+    obj % pos(2) = ny ! as a pointer
+    obj % pos(3) = nd 
+    !print *, "move new", obj % pos
+
+    ! reset old points
     do i = 1, mtp % comp_num()
        comp = mtp % comps(i)
-       opos = [ox,oy] + mtp % rotate(comp(1:2), od)
-       npos = [nx,ny] + mtp % rotate(comp(1:2), nd)
-       ! reset old point
+       opos = [ox,oy] + mtp % rotate(comp, od)       
        call set_sub(opos(1), opos(2), 0)
-       ! assign new
+    end do
+    ! assign new points
+    do i = 1, mtp % comp_num()
+       comp = mtp % comps(i)
+       npos = [nx,ny] + mtp % rotate(comp, nd)
        t = mtp % idx_gen() ! type index generated
-       c = comp(3)         ! comp-id
+       c = i               ! comp-id
        s = obj % sta(i)    ! comp-state
        call set_sub(npos(1), npos(2), convert_to_land (m, t, c, s))
+       !print *, m, t, c, convert_to_land (m, t, c, s), npos
     end do
 
     return
@@ -281,7 +291,7 @@ contains
   subroutine print_to_screen()
     integer :: i, j, v
     ! skip printing when substrate is too large
-    if (m_xsize > 15) return 
+    if (m_xsize > 25) return 
     ! printing
     do j = 0, m_ysize+1
        !----------------------------------------------------------------------

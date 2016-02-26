@@ -29,13 +29,21 @@ module class_molecule
 
   !---------------------------------------------------------------------------  
   !> Global variables 
-  type (molecule), public,  allocatable :: mlist (:) ! molecule list
+  type (molecule), public, allocatable, target :: mlist (:) ! molecule list
 
   !---------------------------------------------------------------------------  
   !> global functions
-  public :: init_mlist
+  public :: init_mlist, mlist_num
 
 contains
+  ! DESCRIPTION
+  !> @brief Getter for tlist size
+  !---------------------------------------------------------------------------
+  function mlist_num () result (r)
+    integer :: r
+    r = size(mlist)
+    return
+  end function mlist_num
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -64,7 +72,8 @@ contains
        n = n + tlist(t) % ptr % eva_num
     end do EACH_TYPE
 
-    print *, "total number of molecules", n
+    ! Printing total number of molecules
+    write (*,'(" No. of molecules", I6)') n
 
     ! not a basic type, allocate manually
     ! @remark id = 0 is researved for background type

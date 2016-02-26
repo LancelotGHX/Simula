@@ -33,7 +33,7 @@ module class_reaction
      real(dp) :: ene     ! reaction energy
      integer  :: idx     ! reaction id for further reference
      integer  :: mov (3) ! action specification {x, y, d}
-     type (condition), allocatable :: conds(:) ! no allocation means all empty
+     type (condition), pointer :: conds(:) 
    contains
      procedure :: cond_num    => m_get_cond_num
      procedure :: set_idx     => m_set_idx
@@ -92,7 +92,7 @@ contains
     integer        , intent (in)    :: n
     integer                         :: status
     ! allocation check
-    if (allocated(this % conds)) stop "ERROR: multiple definitions"
+    if (associated(this % conds)) stop "ERROR: multiple definitions"
     ! assign number value
     this % m_cond_num = n
     ! not a basic type, allocate manually
