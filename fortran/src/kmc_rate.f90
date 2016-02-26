@@ -283,22 +283,26 @@ contains
                          !> @remark check if t_p is the central position of
                          !          molecule
                          if (.not. all(t_p == mlist(t_m) % pos(1:2))) then
-                            all_p_true = .false.  
+                            all_p_true = .false.
+                            exit EACH_POSION
                          end if
                       end if
                       ! check if molecule direction fits              
                       if (c_obj % opt(o) % dir_not_equal(t_d)) then
-                         all_p_true = .false.  
+                         all_p_true = .false.
+                         exit EACH_POSION
                       end if
 
                       ! check if type confirms with definition              
                       if (c_obj % tar_not_equal(t_t)) then 
                          all_p_true = .false.
+                         exit EACH_POSION
                       end if
 
                       ! check all comp states must be the same as initial
                       if (c_obj % sta_not_equal(mlist(t_m) % sta)) then
                          all_p_true = .false.
+                         exit EACH_POSION
                       end if
 
                    end do EACH_POSION
@@ -312,6 +316,7 @@ contains
                    if (all_p_true) then
                       one_o_true = .true.
                       m_data (reac_idx) % tars (c) = o
+                      exit EACH_OPTION
                    end if
 
                 end do EACH_OPTION

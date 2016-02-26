@@ -291,7 +291,7 @@ contains
   subroutine print_to_screen()
     integer :: i, j, v
     ! skip printing when substrate is too large
-    if (m_xsize > 25) return 
+    if (m_xsize > 45) return 
     ! printing
     do j = 0, m_ysize+1
        !----------------------------------------------------------------------
@@ -305,7 +305,8 @@ contains
           if (j == 0 .or. j == m_ysize + 1) then
              write (*, "(A2)",advance="no") "=="
           else
-             v = convert_from_land(m_sub(i,j),4) ! 1=> mid, 2=>tid, 3=>comp
+             !< @selection 1=> mid, 2=>tid, 3=>comp 4=> state
+             v = convert_from_land(m_sub(i,j),4) 
              if (v /= 0) then
                 write (*, "(I2)",advance="no") v
              else 
