@@ -90,10 +90,13 @@ contains
     ! loop over all reactions to get number of conditions
     do i = 1, m_reac_num()
        t = binary_search(m_reac(1,:), i)     ! type index
-       r = modulo ( i-1, m_reac(2,t+1) ) + 1 ! reaction index
-       m_data (i) % idxs = 0
+       r = modulo ( i-1-m_reac(1,t), m_reac(2,t+1) ) + 1 ! reaction index
+       m_data (i) % idxs = [t,0,r]
        m_data (i) % size = tlist(t) % ptr % reacs(r) % cond_num()
        call alloc_I1 (m_data (i) % tars, m_data (i) % size)
+       !if (i > 1600 .and. i < 1700) then
+       !   print *, "test", i,  m_data (i) % size, t, r
+       !end if
        m_data (i) % tars = 0
     end do
 
@@ -138,9 +141,9 @@ contains
     integer              :: t, m, r, c, o, p
     integer              :: t_p(2), t_m
     integer              :: x,y,d,pos(2),vec(3)
-    type(mtype)    , pointer :: t_obj
-    type(molecule) , pointer :: m_obj
-    type(condition), pointer :: c_obj
+    type(mtype)    , pointer :: t_obj, debug_t_obj
+    type(molecule) , pointer :: m_obj, debug_m_obj
+    type(condition), pointer :: c_obj, debug_c_obj
 
     t = m_data(i) % idxs(1)
     m = m_data(i) % idxs(2)
@@ -163,6 +166,8 @@ contains
           ! target molecule index
           t_m = convert_from_land(get_sub(t_p(1), t_p(2)), 1)           
           !print *, "==>",t_m, "==>",m, mlist(t_m) % sta
+          debug_m_obj => mlist(t_m)
+          !print *, mlist(t_m) % sta
           call  c_obj % sta_final(mlist(t_m) % sta)
           ! update substrate
           call move_one(t_m,0,0,0)
@@ -248,7 +253,7 @@ contains
 
              ! rate default value
              rate = 0.0
-
+             
              EACH_COND: do c = 1, r_obj % cond_num()
                 ! retrieve current condition
                 c_obj => r_obj % conds(c)
@@ -315,7 +320,9 @@ contains
                    !          one option is valid each time
                    if (all_p_true) then
                       one_o_true = .true.
+                      !print *, "--",r_obj % cond_num(),m_data (reac_idx) % idxs
                       m_data (reac_idx) % tars (c) = o
+                      
                       exit EACH_OPTION
                    end if
 

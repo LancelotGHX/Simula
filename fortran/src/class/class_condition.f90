@@ -202,8 +202,8 @@ contains
   end function m_sta_if_not_equal
 
   subroutine m_sta_final (this, comp)
-    class(condition)    , intent (in)  :: this
-    integer, allocatable, intent (out) :: comp(:)
+    class(condition)      , intent (in)  :: this
+    integer, allocatable                :: comp(:)
     if (this % m_sta_num /= size(comp)) then
        print *, "self sta ", this % m_sta
        print *, "self type", this % tar

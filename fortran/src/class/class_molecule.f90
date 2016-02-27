@@ -19,9 +19,9 @@ module class_molecule
   !> each molecule 
   type, public :: molecule
      ! public
-     integer              :: type
-     integer              :: idx
-     integer              :: pos (3)
+     integer               :: type
+     integer               :: idx
+     integer               :: pos (3)
      integer, allocatable :: sta (:)
    contains
      procedure :: sta_num => m_get_sta_num
@@ -65,6 +65,7 @@ contains
     integer :: s         ! index step sum 
     integer :: t         ! molecule type
     integer :: i, status
+    type(molecule),pointer :: debug_m_obj
 
     ! calculate total number of molecules
     n = 0
@@ -93,6 +94,7 @@ contains
           s = s + tlist(t) % ptr % eva_num       ! set next index step
        end if
        ! allocate state number
+       debug_m_obj => mlist(i)
        call alloc_I1 ( mlist(i) % sta, tlist(t) % ptr % comp_num() )
        ! set molecule properties
        mlist(i) % type = t

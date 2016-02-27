@@ -378,13 +378,13 @@ c:\program files\nvidia gpu computing toolkit\cuda\v7.5\include\host_defines.h
 c:\program files\nvidia gpu computing toolkit\cuda\v7.5\include\vector_functions.h
 c:\program files\nvidia gpu computing toolkit\cuda\v7.5\include\device_launch_parameters.h
 c:\program files\nvidia gpu computing toolkit\cuda\v7.5\include\vector_types.h
-c:\users\qi\documents\github\simula\include\substrate.h
-c:\users\qi\documents\github\simula\include\molecule.h
-c:\users\qi\documents\github\simula\include\molecule/molecule_define.h
-c:\users\qi\documents\github\simula\include\molecule\molecule_type_define.h
-c:\users\qi\documents\github\simula\include\global.h
-c:\users\qi\documents\github\simula\include\global/global_function.h
-c:\users\qi\documents\github\simula\include\global/global_type.h
+c:\users\qi\documents\github\simula\cpp\include\substrate.h
+c:\users\qi\documents\github\simula\cpp\include\molecule.h
+c:\users\qi\documents\github\simula\cpp\include\molecule/molecule_define.h
+c:\users\qi\documents\github\simula\cpp\include\molecule\molecule_type_define.h
+c:\users\qi\documents\github\simula\cpp\include\global.h
+c:\users\qi\documents\github\simula\cpp\include\global/global_function.h
+c:\users\qi\documents\github\simula\cpp\include\global/global_type.h
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\cstddef
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\typeinfo
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xstddef
