@@ -24,7 +24,7 @@ program hello
   call evaporate(tpyp, 50)
   call evaporate(lead, 50)
 
-  !call print_to_screen()
+  call print_to_screen()
 
   print *, ">>> Calculate rate"
   do i = 1, 10000
@@ -34,7 +34,7 @@ program hello
   !call print_to_screen()
 
   !call move_one(2, 0, -1, 0)
-  !call print_to_screen()
+  call print_to_screen()
   
   stop
 end program hello
