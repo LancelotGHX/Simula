@@ -16,8 +16,8 @@ module user_define
   ! DESCRIPTION
   !> define molecule type here
   !---------------------------------------------------------------------------  
-  type (mtype), save :: tpyp
-  type (mtype), save :: lead
+  type (mtype), save, target :: tpyp
+  type (mtype), save, target :: lead
 
 contains
 
@@ -79,6 +79,77 @@ contains
     return
   end subroutine def_free_move
 
+  subroutine def_tpyp_tpyp (mtp, r, energy, mov_pos, tar_dir, num)
+    type(mtype) :: mtp
+    real(dp) :: energy
+    integer  :: mov_pos(2), tar_dir, r, num
+
+    integer  :: mov(3)
+    integer  :: ctr_sta(15)
+    integer  :: tar_sta(15)
+    integer  :: emp_pos(6)
+
+    mov(1:2) = mov_pos
+    mov(3)   = tar_dir
+    if (all(mov == [ 1,0,0])) then
+       if (num == 1) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]
+       else if (num == 2) then
+          tar_sta = [1,1,1, 2,2,2, 3,1,1, 4,1,2, 5,1,1]
+       end if
+       ctr_sta = [1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]
+       emp_pos = [2,0, 1,1, 1,-1]
+    else if (all(mov == [ 1,0,2])) then
+       if (num == 1) then
+          tar_sta = [1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]
+       else if (num == 2) then
+          tar_sta = [1,1,1, 2,1,2, 3,1,1, 4,2,2, 5,1,1]
+       end if
+       ctr_sta = [1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]
+       emp_pos = [2,0, 1,1, 1,-1]
+    else if (all(mov == [-1,0,0])) then
+       if (num == 1) then
+          tar_sta = [1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]
+       else if (num == 2) then
+          tar_sta = [1,1,1, 2,1,2, 3,1,1, 4,2,2, 5,1,1]
+       end if
+       ctr_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]
+       emp_pos = [-2,0, -1,1, -1,-1]
+    else if (all(mov == [-1,0,2])) then
+       if (num == 1) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]
+       else if (num == 2) then
+          tar_sta = [1,1,1, 2,2,2, 3,1,1, 4,1,2, 5,1,1]
+       end if
+       ctr_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]
+       emp_pos = [-2,0, -1,1, -1,-1]
+    end if
+
+    call mtp % reacs (r) % set_ene (energy)
+    call mtp % reacs (r) % set_mov ([mov_pos(1), mov_pos(2),0])
+    call mtp % reacs (r) % alloc_conds (3)
+    ! self molecule type
+    call mtp % reacs (r) % conds (1) % set_tar (2000)
+    call mtp % reacs (r) % conds (1) % set_sta (ctr_sta) 
+    call mtp % reacs (r) % conds (1) % alloc_opt (1)
+    call mtp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
+    ! target molecule type
+    call mtp % reacs (r) % conds (2) % set_tar (2000)
+    call mtp % reacs (r) % conds (2) % set_sta (tar_sta) 
+    call mtp % reacs (r) % conds (2) % alloc_opt (1)
+    call mtp % reacs (r) % conds (2) % opt(1) % set (4 * mov_pos, tar_dir)
+    ! condition for background checking (empty checking)
+    call mtp % reacs (r) % conds (3) % set_tar (0)       ! background
+    call mtp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
+    call mtp % reacs (r) % conds (3) % alloc_opt (4)
+    call mtp % reacs (r) % conds (3) % opt(1) % set (emp_pos, 0)
+    call mtp % reacs (r) % conds (3) % opt(2) % set (emp_pos, 1)
+    call mtp % reacs (r) % conds (3) % opt(3) % set (emp_pos, 2)
+    call mtp % reacs (r) % conds (3) % opt(4) % set (emp_pos, 3)
+    return
+  end subroutine def_tpyp_tpyp
+
+
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> initialization
@@ -115,7 +186,7 @@ contains
     call tpyp % set_comps(3, [ 0, 1]) !> xpos, ypos, comp-id
     call tpyp % set_comps(4, [-1, 0]) !> xpos, ypos, comp-id
     call tpyp % set_comps(5, [ 0,-1]) !> xpos, ypos, comp-id
-    call tpyp % alloc_reacs (12)
+    call tpyp % alloc_reacs (16)
     call def_free_move(tpyp, 1, [ 1, 0,0], 0.5_dp)
     call def_free_move(tpyp, 2, [ 0, 1,0], 0.5_dp)
     call def_free_move(tpyp, 3, [-1, 0,0], 0.5_dp)
@@ -123,159 +194,17 @@ contains
     call def_free_move(tpyp, 5, [ 0, 0,1], 0.5_dp)
     call def_free_move(tpyp, 6, [ 0, 0,2], 0.5_dp)
     call def_free_move(tpyp, 7, [ 0, 0,3], 0.5_dp)
-    !-----------------------------
-    ! bond 8 single bond tpyp + tpyp
-    r = 8
-    call tpyp % reacs (r) % set_ene (-0.5_dp)
-    call tpyp % reacs (r) % set_mov ([1,0,0])
-    call tpyp % reacs (r) % alloc_conds (3)
-    ! self molecule type
-    call tpyp % reacs (r) % conds (1) % set_tar (2000)
-    call tpyp % reacs (r) % conds (1) % set_sta &
-         ([1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]) 
-    call tpyp % reacs (r) % conds (1) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
-    ! target molecule type
-    call tpyp % reacs (r) % conds (2) % set_tar (2000)
-    call tpyp % reacs (r) % conds (2) % set_sta &
-         ([1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]) 
-    call tpyp % reacs (r) % conds (2) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (2) % opt(1) % set ([4,0],0)
-    ! condition for background checking (empty checking)
-    call tpyp % reacs (r) % conds (3) % set_tar (0)       ! background
-    call tpyp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
-    call tpyp % reacs (r) % conds (3) % alloc_opt (4)
-    call tpyp % reacs (r) % conds (3) % opt(1) % set &
-         ([2,0, 1,1, 1,-1], 0)
-    call tpyp % reacs (r) % conds (3) % opt(2) % set &
-         ([2,0, 1,1, 1,-1], 1)
-    call tpyp % reacs (r) % conds (3) % opt(3) % set &
-         ([2,0, 1,1, 1,-1], 2)
-    call tpyp % reacs (r) % conds (3) % opt(4) % set &
-         ([2,0, 1,1, 1,-1], 3)
-    !-----------------------------
-    ! bond 9 double bond tpyp + tpyp + tpyp
-    r = 9
-    call tpyp % reacs (r) % set_ene (-0.5_dp)
-    call tpyp % reacs (r) % set_mov ([1,0,0])
-    call tpyp % reacs (r) % alloc_conds (3)
-    ! self molecule type
-    call tpyp % reacs (r) % conds (1) % set_tar (2000)
-    call tpyp % reacs (r) % conds (1) % set_sta &
-         ([1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]) 
-    call tpyp % reacs (r) % conds (1) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
-    ! target molecule type
-    call tpyp % reacs (r) % conds (2) % set_tar (2000)
-    call tpyp % reacs (r) % conds (2) % set_sta &
-         ([1,1,1, 2,2,2, 3,1,1, 4,1,2, 5,1,1]) 
-    call tpyp % reacs (r) % conds (2) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (2) % opt(1) % set ([4,0],0)
-    ! condition for background checking (empty checking)
-    call tpyp % reacs (r) % conds (3) % set_tar (0)       ! background
-    call tpyp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
-    call tpyp % reacs (r) % conds (3) % alloc_opt (4)
-    call tpyp % reacs (r) % conds (3) % opt(1) % set &
-         ([2,0, 1,1, 1,-1], 0)
-    call tpyp % reacs (r) % conds (3) % opt(2) % set &
-         ([2,0, 1,1, 1,-1], 1)
-    call tpyp % reacs (r) % conds (3) % opt(3) % set &
-         ([2,0, 1,1, 1,-1], 2)
-    call tpyp % reacs (r) % conds (3) % opt(4) % set &
-         ([2,0, 1,1, 1,-1], 3)
-    !-----------------------------
-    ! bond 10 repeats on opposite direction
-    r = 10
-    call tpyp % reacs (r) % set_ene (-0.5_dp)
-    call tpyp % reacs (r) % set_mov ([-1,0,0])
-    call tpyp % reacs (r) % alloc_conds (3)
-    ! self molecule type
-    call tpyp % reacs (r) % conds (1) % set_tar (2000)
-    call tpyp % reacs (r) % conds (1) % set_sta &
-         ([1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]) 
-    call tpyp % reacs (r) % conds (1) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
-    ! target molecule type
-    call tpyp % reacs (r) % conds (2) % set_tar (2000)
-    call tpyp % reacs (r) % conds (2) % set_sta &
-         ([1,1,1, 2,1,2, 3,1,1, 4,1,1, 5,1,1]) 
-    call tpyp % reacs (r) % conds (2) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (2) % opt(1) % set ([-4,0],0)
-    ! condition for background checking (empty checking)
-    call tpyp % reacs (r) % conds (3) % set_tar (0)       ! background
-    call tpyp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
-    call tpyp % reacs (r) % conds (3) % alloc_opt (4)
-    call tpyp % reacs (r) % conds (3) % opt(1) % set &
-         ([-2,0, -1,1, -1,-1], 0)
-    call tpyp % reacs (r) % conds (3) % opt(2) % set &
-         ([-2,0, -1,1, -1,-1], 1)
-    call tpyp % reacs (r) % conds (3) % opt(3) % set &
-         ([-2,0, -1,1, -1,-1], 2)
-    call tpyp % reacs (r) % conds (3) % opt(4) % set &
-         ([-2,0, -1,1, -1,-1], 3)
-    !-----------------------------
-    ! bond 11 double bond tpyp + tpyp + tpyp
-    r = 11
-    call tpyp % reacs (r) % set_ene (-0.5_dp)
-    call tpyp % reacs (r) % set_mov ([-1,0,0])
-    call tpyp % reacs (r) % alloc_conds (3)
-    ! self molecule type
-    call tpyp % reacs (r) % conds (1) % set_tar (2000)
-    call tpyp % reacs (r) % conds (1) % set_sta &
-         ([1,1,1, 2,1,1, 3,1,1, 4,1,2, 5,1,1]) 
-    call tpyp % reacs (r) % conds (1) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
-    ! target molecule type
-    call tpyp % reacs (r) % conds (2) % set_tar (2000)
-    call tpyp % reacs (r) % conds (2) % set_sta &
-         ([1,1,1, 2,1,2, 3,1,1, 4,2,2, 5,1,1]) 
-    call tpyp % reacs (r) % conds (2) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (2) % opt(1) % set ([-4,0],0)
-    ! condition for background checking (empty checking)
-    call tpyp % reacs (r) % conds (3) % set_tar (0)       ! background
-    call tpyp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
-    call tpyp % reacs (r) % conds (3) % alloc_opt (4)
-    call tpyp % reacs (r) % conds (3) % opt(1) % set &
-         ([-2,0, -1,1, -1,-1], 0)
-    call tpyp % reacs (r) % conds (3) % opt(2) % set &
-         ([-2,0, -1,1, -1,-1], 1)
-    call tpyp % reacs (r) % conds (3) % opt(3) % set &
-         ([-2,0, -1,1, -1,-1], 2)
-    call tpyp % reacs (r) % conds (3) % opt(4) % set &
-         ([-2,0, -1,1, -1,-1], 3)
-    !-----------------------------
+    call def_tpyp_tpyp(tpyp, 8, -0.5_dp, [ 1,0], 0, 1)
+    call def_tpyp_tpyp(tpyp, 9, -0.5_dp, [ 1,0], 0, 2)
+    call def_tpyp_tpyp(tpyp,10, -0.5_dp, [-1,0], 0, 1)
+    call def_tpyp_tpyp(tpyp,11, -0.5_dp, [-1,0], 0, 2)
+    call def_tpyp_tpyp(tpyp,12, -0.5_dp, [ 1,0], 2, 1)
+    call def_tpyp_tpyp(tpyp,13, -0.5_dp, [ 1,0], 2, 2)
+    call def_tpyp_tpyp(tpyp,14, -0.5_dp, [-1,0], 2, 1)
+    call def_tpyp_tpyp(tpyp,15, -0.5_dp, [-1,0], 2, 2)
     ! bond 12 single bond tpyp + lead
-    r = 12
-    call tpyp % reacs (r) % set_ene (-0.5_dp)
-    call tpyp % reacs (r) % set_mov ([0,1,0])
-    call tpyp % reacs (r) % alloc_conds (3)
-    ! self molecule type
-    call tpyp % reacs (r) % conds (1) % set_tar (2000)
-    call tpyp % reacs (r) % conds (1) % set_sta &
-         ([1,1,1, 2,1,1, 3,1,3, 4,1,1, 5,1,1]) 
-    call tpyp % reacs (r) % conds (1) % alloc_opt (1)
-    call tpyp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
-    ! target molecule type
-    call tpyp % reacs (r) % conds (2) % set_tar (4000) ! LEAD 
-    call tpyp % reacs (r) % conds (2) % set_sta ([1,1,3])
-    call tpyp % reacs (r) % conds (2) % alloc_opt (4)
-    call tpyp % reacs (r) % conds (2) % opt(1) % set ([0,3],0)
-    call tpyp % reacs (r) % conds (2) % opt(2) % set ([0,3],1)
-    call tpyp % reacs (r) % conds (2) % opt(3) % set ([0,3],2)
-    call tpyp % reacs (r) % conds (2) % opt(4) % set ([0,3],3)
-    ! condition for background checking (empty checking)
-    call tpyp % reacs (r) % conds (3) % set_tar (0)       ! background
-    call tpyp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
-    call tpyp % reacs (r) % conds (3) % alloc_opt (4)
-    call tpyp % reacs (r) % conds (3) % opt(1) % set &
-         ([1,1, 0,2, -1,1], 0)
-    call tpyp % reacs (r) % conds (3) % opt(2) % set &
-         ([1,1, 0,2, -1,1], 1)
-    call tpyp % reacs (r) % conds (3) % opt(3) % set &
-         ([1,1, 0,2, -1,1], 2)
-    call tpyp % reacs (r) % conds (3) % opt(4) % set &
-         ([1,1, 0,2, -1,1], 3)
-
+    r = 16
+    call def_tpyp_lead(tpyp,16, -0.5_dp, [0, 1])
     !-------------------------------------------------------------------
     !-------------------------------------------------------------------
     !
@@ -286,40 +215,20 @@ contains
     call lead % set_eva_num (100)   
     call lead % alloc_comps (1)    
     call lead % set_comps (1, [0, 0]) 
-    call lead % alloc_reacs (5)
-    call def_free_move(lead, 1, [ 1, 0,0], 0.5_dp)
-    call def_free_move(lead, 2, [ 0, 1,0], 0.5_dp)
-    call def_free_move(lead, 3, [-1, 0,0], 0.5_dp)
-    call def_free_move(lead, 4, [ 0,-1,0], 0.5_dp)
-    !-----------------------------
-    ! bond 5 single bond lead + tpyp
-    r = 5
-    call lead % reacs (r) % set_ene (-0.5_dp)
-    call lead % reacs (r) % set_mov ([0,1,0])
-    call lead % reacs (r) % alloc_conds (3)
-    ! self molecule type
-    call lead % reacs (r) % conds (1) % set_tar (4000)
-    call lead % reacs (r) % conds (1) % set_sta ([1,1,3])
-    call lead % reacs (r) % conds (1) % alloc_opt (1)
-    call lead % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
-    ! target molecule type
-    call lead % reacs (r) % conds (2) % set_tar (2000)
-    call lead % reacs (r) % conds (2) % set_sta ([1,1,1, 2,1,1, 3,1,1, 4,1,1, 5,1,3]) 
-    call lead % reacs (r) % conds (2) % alloc_opt (1)
-    call lead % reacs (r) % conds (2) % opt(1) % set ([0,3],0)
-    ! condition for background checking (empty checking)
-    call lead % reacs (r) % conds (3) % set_tar (0)       ! background
-    call lead % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
-    call lead % reacs (r) % conds (3) % alloc_opt (4)
-    call lead % reacs (r) % conds (3) % opt(1) % set &
-         ([0,1], 0)
-    call lead % reacs (r) % conds (3) % opt(2) % set &
-         ([0,1], 1)
-    call lead % reacs (r) % conds (3) % opt(3) % set &
-         ([0,1], 2)
-    call lead % reacs (r) % conds (3) % opt(4) % set &
-         ([0,1], 3)
-    
+    call lead % alloc_reacs (12)
+    call def_free_move(lead,  1, [ 1, 0,0], 0.5_dp)
+    call def_free_move(lead,  2, [ 0, 1,0], 0.5_dp)
+    call def_free_move(lead,  3, [-1, 0,0], 0.5_dp)
+    call def_free_move(lead,  4, [ 0,-1,0], 0.5_dp)
+    call def_lead_tpyp( 5, -0.5_dp, [ 0, 1], 0)
+    call def_lead_tpyp( 6, -0.5_dp, [ 1, 0], 0)
+    call def_lead_tpyp( 7, -0.5_dp, [ 0,-1], 0)
+    call def_lead_tpyp( 8, -0.5_dp, [-1, 0], 0)
+    call def_lead_tpyp( 9, -0.5_dp, [ 0, 1], 1)
+    call def_lead_tpyp(10, -0.5_dp, [ 1, 0], 1)
+    call def_lead_tpyp(11, -0.5_dp, [ 0,-1], 1)
+    call def_lead_tpyp(12, -0.5_dp, [-1, 0], 1)
+  
     ! ends here
     !--------------------------------------------------
 
@@ -329,5 +238,114 @@ contains
     call init_mlist()
     return
   end subroutine init
+
+  subroutine def_tpyp_lead  (mtp, r, energy, mov)
+    type(mtype) :: mtp
+    real(dp) :: energy
+    integer  :: r, mov(2)
+
+    integer :: ctr_sta(15), emp_pos(6)
+
+    if (all(mov == [0,1])) then
+       ctr_sta = [1,1,1, 2,1,1, 3,1,3, 4,1,1, 5,1,1]
+       emp_pos = [1, 1, 0, 2, -1, 1]
+    else if (all(mov == [0,-1])) then
+       ctr_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,1, 5,1,3]
+       emp_pos = [1,-1, 0,-2, -1,-1]
+    end if
+
+    call mtp % reacs (r) % set_ene (energy)
+    call mtp % reacs (r) % set_mov ([mov(1), mov(2),0])
+    call mtp % reacs (r) % alloc_conds (3)
+    ! self molecule type
+    call mtp % reacs (r) % conds (1) % set_tar (2000)
+    call mtp % reacs (r) % conds (1) % set_sta (ctr_sta) 
+    call mtp % reacs (r) % conds (1) % alloc_opt (1)
+    call mtp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
+    ! target molecule type
+    call mtp % reacs (r) % conds (2) % set_tar (4000) ! LEAD 
+    call mtp % reacs (r) % conds (2) % set_sta ([1,1,3])
+    call mtp % reacs (r) % conds (2) % alloc_opt (4)
+    call mtp % reacs (r) % conds (2) % opt(1) % set (3 * mov,0)
+    call mtp % reacs (r) % conds (2) % opt(2) % set (3 * mov,1)
+    call mtp % reacs (r) % conds (2) % opt(3) % set (3 * mov,2)
+    call mtp % reacs (r) % conds (2) % opt(4) % set (3 * mov,3)
+    ! condition for background checking (empty checking)
+    call mtp % reacs (r) % conds (3) % set_tar (0)       ! background
+    call mtp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
+    call mtp % reacs (r) % conds (3) % alloc_opt (4)
+    call mtp % reacs (r) % conds (3) % opt(1) % set (emp_pos, 0)
+    call mtp % reacs (r) % conds (3) % opt(2) % set (emp_pos, 1)
+    call mtp % reacs (r) % conds (3) % opt(3) % set (emp_pos, 2)
+    call mtp % reacs (r) % conds (3) % opt(4) % set (emp_pos, 3)
+    return
+  end subroutine def_tpyp_lead
+
+  subroutine def_lead_tpyp ( r, energy, mov, dir)
+    type(mtype), pointer :: mtp
+    real(dp) :: energy
+    integer  :: r, mov(2), dir
+    integer :: tar_sta(15), tar_dir
+
+    mtp => lead
+
+    if (all(mov == [1,0])) then
+       if (dir == 0) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,3, 4,1,1, 5,1,1]
+          tar_dir = 1
+       else if (dir == 1) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,1, 5,1,3]
+          tar_dir = 3
+       end if
+    else if (all(mov == [0,1])) then
+       if (dir == 0) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,1, 5,1,3]
+          tar_dir = 0
+       else if (dir == 1) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,3, 4,1,1, 5,1,1]
+          tar_dir = 2
+       end if
+    else if (all(mov == [-1,0])) then
+       if (dir == 0) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,1, 5,1,3]
+          tar_dir = 1
+       else if (dir == 1) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,3, 4,1,1, 5,1,1]
+          tar_dir = 3
+       end if
+    else if (all(mov == [0,-1])) then
+       if (dir == 0) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,3, 4,1,1, 5,1,1]
+          tar_dir = 0
+       else if (dir == 1) then
+          tar_sta = [1,1,1, 2,1,1, 3,1,1, 4,1,1, 5,1,3]
+          tar_dir = 2
+       end if
+    end if
+
+    call mtp % reacs (r) % set_ene (energy)
+    call mtp % reacs (r) % set_mov ([mov(1), mov(2),0])
+    call mtp % reacs (r) % alloc_conds (3)
+    ! self molecule type
+    call mtp % reacs (r) % conds (1) % set_tar (4000)
+    call mtp % reacs (r) % conds (1) % set_sta ([1,1,3])
+    call mtp % reacs (r) % conds (1) % alloc_opt (1)
+    call mtp % reacs (r) % conds (1) % opt(1) % set ([0,0],0)
+    ! target molecule type
+    call mtp % reacs (r) % conds (2) % set_tar (2000)
+    call mtp % reacs (r) % conds (2) % set_sta (tar_sta) 
+    call mtp % reacs (r) % conds (2) % alloc_opt (1)
+    call mtp % reacs (r) % conds (2) % opt(1) % set (3 * mov,tar_dir)
+    ! condition for background checking (empty checking)
+    call mtp % reacs (r) % conds (3) % set_tar (0)       ! background
+    call mtp % reacs (r) % conds (3) % set_sta ([1,0,0]) ! background
+    call mtp % reacs (r) % conds (3) % alloc_opt (4)
+    call mtp % reacs (r) % conds (3) % opt(1) % set (mov, 0)
+    call mtp % reacs (r) % conds (3) % opt(2) % set (mov, 1)
+    call mtp % reacs (r) % conds (3) % opt(3) % set (mov, 2)
+    call mtp % reacs (r) % conds (3) % opt(4) % set (mov, 3)
+
+    return
+  end subroutine def_lead_tpyp
 
 end module user_define
