@@ -1,5 +1,6 @@
 program hello
 
+  use FoX_dom
   use user_define
   use substrate
   use kmc_rates

@@ -94,7 +94,6 @@ INCLUDE(./cmake/CheckAbortIntrinsic.cmake)
 
 SET(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${FPPFLAGS}")
 
-
 ADD_SUBDIRECTORY(fsys)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(common)
@@ -104,4 +103,3 @@ ADD_SUBDIRECTORY(wkml)
 ADD_SUBDIRECTORY(sax)
 ADD_SUBDIRECTORY(dom)
 ADD_SUBDIRECTORY(examples)
-
