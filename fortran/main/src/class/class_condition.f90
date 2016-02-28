@@ -28,7 +28,7 @@ module class_condition
 
   !---------------------------------------------------------------------------  
   !> used modules
-  use helper_functions, only: alloc_I1, alloc_I2
+  use func_helper, only: alloc_I1, alloc_I2
   implicit none
   private
 

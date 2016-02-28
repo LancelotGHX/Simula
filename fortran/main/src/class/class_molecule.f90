@@ -10,8 +10,8 @@ module class_molecule
 
   !---------------------------------------------------------------------------  
   !> used module
-  use helper_functions, only: alloc_I1
-  use class_mtype     , only: mtype, tlist
+  use func_helper, only: alloc_I1
+  use class_mtype, only: mtype, tlist
   implicit none
   private
   

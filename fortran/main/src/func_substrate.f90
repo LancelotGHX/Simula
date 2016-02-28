@@ -9,11 +9,11 @@
 !> ...
 !
 !--------------------------------------------------------------------------- 
-module substrate
+module func_substrate
 
-  use helper_functions, only: alloc_I1, alloc_I2, rand_int
-  use class_mtype     , only: tlist, mtype, tlist_num
-  use class_molecule  , only: mlist, molecule
+  use func_helper   , only: alloc_I1, alloc_I2, rand_int
+  use class_mtype   , only: tlist, mtype, tlist_num
+  use class_molecule, only: mlist, molecule
   implicit none
 
   !--------------------------------------------------------------------------- 
@@ -364,4 +364,4 @@ contains
     return
   end subroutine evaporate
 
-end module substrate
+end module func_substrate

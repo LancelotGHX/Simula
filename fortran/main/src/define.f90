@@ -3,13 +3,13 @@
 !> this is a module should be handle by user for defining all constant
 !  variables, molecule structures and chemical reactions
 !---------------------------------------------------------------------------  
-module user_define
+module define
   
-  use helper_functions
   use class_mtype
   use class_molecule
-  use substrate
-  use rate_kmc
+  use func_helper
+  use func_substrate
+  use func_rate_kmc
   implicit none
 
   !---------------------------------------------------------------------------  
@@ -348,4 +348,4 @@ contains
     return
   end subroutine def_lead_tpyp
 
-end module user_define
+end module define

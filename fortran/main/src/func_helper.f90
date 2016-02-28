@@ -4,7 +4,7 @@
 !> Define all the helper functions independent to the simulation project
 !
 !---------------------------------------------------------------------------  
-module helper_functions
+module func_helper
 
   implicit none
 
@@ -216,4 +216,4 @@ contains
     return
   end function binary_search_I1
 
-end module helper_functions
+end module func_helper

@@ -4,17 +4,17 @@
 !> @ module to handle KMC rate calculations and event selection
 !
 !-----------------------------------------------------------------------------
-module rate_kmc
+module func_rate_kmc
 
   !---------------------------------------------------------------------------
   ! used modules
-  use helper_functions, only: &
+  use func_helper    , only: &
        dp, alloc_I1, alloc_I2, alloc_F1, rand_uniform, binary_search
-  use class_condition , only: condition
-  use class_reaction  , only: reaction 
-  use class_mtype     , only: tlist, mtype, tlist_num
-  use class_molecule  , only: mlist, molecule, mlist_num
-  use substrate       , only: &
+  use class_condition, only: condition
+  use class_reaction , only: reaction 
+  use class_mtype    , only: tlist, mtype, tlist_num
+  use class_molecule , only: mlist, molecule, mlist_num
+  use func_substrate , only: &
        get_sub, activated_num, convert_from_land, move_one
   implicit none
   private
@@ -366,4 +366,4 @@ contains
     return
   end subroutine compute_rates
 
-end module rate_kmc
+end module func_rate_kmc

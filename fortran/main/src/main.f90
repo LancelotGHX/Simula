@@ -1,9 +1,9 @@
 program main
 
   use FoX_dom
-  use substrate
-  use rate_kmc
-  use user_define
+  use func_substrate
+  use func_rate_kmc
+  use define
   implicit none
   logical :: tmp
   integer :: i

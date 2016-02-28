@@ -19,7 +19,7 @@ module class_reaction
 
   !---------------------------------------------------------------------------
   ! used modules
-  use helper_functions, only: dp
+  use func_helper     , only: dp
   use class_condition , only: condition
   implicit none
   private

@@ -11,8 +11,8 @@ module class_mtype
 
   !---------------------------------------------------------------------------  
   !> used modules
-  use helper_functions, only: alloc_I1, alloc_I2, rotate
-  use class_reaction  , only: reaction
+  use func_helper   , only: alloc_I1, alloc_I2, rotate
+  use class_reaction, only: reaction
   implicit none
   private
   
