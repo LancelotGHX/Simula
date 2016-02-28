@@ -1,6 +1,6 @@
 # CMake project file
 cmake_minimum_required (VERSION 2.6)
-project (testing)
+project (test)
 enable_language (Fortran)
 
 # make sure that the default is a RELEASE
@@ -27,7 +27,7 @@ if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   # ifort (untested)
   set (CMAKE_Fortran_FLAGS_RELEASE "-f77rtl -O3")
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-f77rtl -O0 -g")
+  set (CMAKE_Fortran_FLAGS_DEBUG   "-f77rtl -Od")
 elseif (Fortran_COMPILER_NAME MATCHES "g77")
   # g77
   set (CMAKE_Fortran_FLAGS_RELEASE "-funroll-all-loops -fno-f2c -O3 -m32")

@@ -5,8 +5,12 @@ program main
   use func_rate_kmc
   use define
   implicit none
+
   logical :: tmp
   integer :: i
+
+  call set_root_dir("/home/qiwu/work/dev/simula/fortran/output")
+  call set_proj_dir("test-qiwu")
 
   print *, ">>> Simula"
   print *, ">>> Initialization"
@@ -25,17 +29,22 @@ program main
   call evaporate(tpyp, 50)
   call evaporate(lead, 50)
 
-  call print_to_screen()
+  call print_to(6, 4)
 
   print *, ">>> Calculate rate"
   do i = 1, 10000
      call compute_rates()
-     !call print_to_screen()
+     !call print_to(6, 4)
+     if (modulo(i, 1000)==0) then
+        !call start_file(90)
+        !call print_to(90,4)
+        !call close_file(90)
+     end if
   end do
-  !call print_to_screen()
+  !call print_to(6, 4)
 
   !call move_one(2, 0, -1, 0)
-  call print_to_screen()
+  call print_to(6, 4)
   
   stop
 end program main

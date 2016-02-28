@@ -24,7 +24,70 @@ module func_substrate
   integer, private, allocatable :: m_sub (:,:) ! substrate data
   integer, private, allocatable :: m_num (:)   ! number of molecule activated
 
+  character(len=50), save :: m_root_dir = "."
+  character(len=10), save :: m_curr_dir = "."
+
 contains
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION: 
+  !> @brief Subroutine to set base folder
+  !> @param name: base folder name
+  !> @return none
+  !--------------------------------------------------------------------------- 
+  subroutine set_root_dir(name)
+    character*(*) :: name
+    m_root_dir = trim(adjustl(name))
+    write (*, '(" Setting output root directory: ", A50)') m_root_dir
+    return
+  end subroutine set_root_dir
+
+  subroutine set_proj_dir(name)
+    character*(*) :: name
+    m_curr_dir = trim(adjustl(name))
+    write (*, '(" Setting project output directory: ", A50)') m_curr_dir
+    call system('mkdir '//               &
+         trim(adjustl(m_root_dir))//'/'//&
+         trim(adjustl(m_curr_dir)))
+    return
+  end subroutine set_proj_dir
+  !---------------------------------------------------------------------------  
+  ! DESCRIPTION: 
+  !> @brief Subroutine to print substrate
+  !> @param sub: substrate
+  !> @return none
+  !--------------------------------------------------------------------------- 
+  subroutine start_file(u)
+    integer  , intent(in)   :: u
+    integer  , save         :: file_idx  = 0
+    integer  , dimension(8) :: dates
+    integer                 :: i
+    character (len=4 )      :: fpart(8)
+    character (len=99)      :: fname    ! file name
+    ! write information
+    call date_and_time(VALUES=dates)
+    !print *, dates
+    do i = 1, 8
+       write (fpart(i), '(I4)') dates(i)
+    end do
+    write(fname,'(I4,"-")') file_idx
+    do i = 1, 8
+       fname = trim(adjustl(fname))//trim(adjustl(fpart(i)))
+    end do
+    fname = &
+         trim(adjustl(m_root_dir))//'/'// &
+         trim(adjustl(m_curr_dir))//'/'// &
+         trim(adjustl(fname))//'.txt'
+    write (*, '(" Saving data into ",A99)') fname
+    open(u, file=trim(adjustl(fname)))
+    file_idx  = file_idx + 1
+    return
+  end subroutine start_file
+
+  subroutine close_file (u)
+    integer, intent(in) :: u
+    close(u, status='KEEP')
+    return
+  end subroutine close_file
 
   !--------------------------------------------------------------------------- 
   ! DESCRIPTION
@@ -288,40 +351,58 @@ contains
   ! DESCRIPTION
   !> @brief print subsrate to screen for debuging
   !--------------------------------------------------------------------------- 
-  subroutine print_to_screen()
+  subroutine print_to(u, k)
+    integer, intent(in) :: u, k
     integer :: i, j, v
-    ! skip printing when substrate is too large
-    if (m_xsize > 45) return 
-    ! printing
-    do j = 0, m_ysize+1
-       !----------------------------------------------------------------------
-       ! in case you want to print all substrate values
-       !!write (*, "(100G2.5)") (convert_from_land(m_sub(i,j),4), i=1,m_xsize)
-       !----------------------------------------------------------------------
-       ! draw left boundary if you want
-       write (*, "(A1)",advance="no") "|"
-       do i = 1, m_xsize
-          ! draw upper and lower boundary 
-          if (j == 0 .or. j == m_ysize + 1) then
-             write (*, "(A2)",advance="no") "=="
-          else
-             !< @selection 1=> mid, 2=>tid, 3=>comp 4=> state
-             v = convert_from_land(m_sub(i,j),4) 
-             if (v /= 0) then
-                write (*, "(I2)",advance="no") v
-             else 
-                write (*, "(A2)",advance="no") "  "
-             end if
-          end if
+    !> @remark values for k: 1 -> mid, 2 ->tid, 3 ->comp 4 -> state
+    if (u /= 6) then
+       ! printing to files
+       do j = 1, m_ysize
+          ! in case you want to print all substrate values
+          write (u, "(100G2.5)") &
+               (convert_from_land(m_sub(i,j), k), i=1,m_xsize)
        end do
-       ! draw right boundary if you want
-       write (*, "(A1)",advance="no") "|"
-       ! change a new line
-       write (*,*) ""
-       !----------------------------------------------------------------------
-    end do
+    else
+       ! printing to screen
+       ! do j = 1, m_ysize
+       !    ! in case you want to print all substrate values
+       !    do i = 1, m_xsize
+       !       v = convert_from_land(m_sub(i,j),k)
+       !       if (v < 0) then
+       !          print *, m_sub(i,j)
+       !          stop
+       !       end if
+       !       write (u, "(I2)",advance="no") v
+       !    end do
+       !    write (u,*) ""
+       ! end do
+       do j = 0, m_ysize+1
+          ! skip printing when substrate is too large
+          if (m_xsize > 45) return 
+          ! draw left boundary
+          write (u, "(A1)",advance="no") "|"
+          do i = 1, m_xsize
+             if (j == 0 .or. j == m_ysize + 1) then
+                ! draw upper and lower boundary 
+                write (u, "(A2)",advance="no") "=="
+             else
+                ! print values
+                v = convert_from_land(m_sub(i,j),k) 
+                if (v /= 0) then
+                   write (u, "(I2)",advance="no") v
+                else 
+                   write (u, "(A2)",advance="no") "  "
+                end if
+             end if
+          end do
+          ! draw right boundary
+          write (u, "(A1)",advance="no") "|"
+          ! change a new line
+          write (u,*) ""
+       end do
+    end if
     return
-  end subroutine print_to_screen
+  end subroutine print_to
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION: 
