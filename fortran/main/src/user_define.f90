@@ -9,7 +9,7 @@ module user_define
   use class_mtype
   use class_molecule
   use substrate
-  use kmc_rates
+  use rate_kmc
   implicit none
 
   !---------------------------------------------------------------------------  

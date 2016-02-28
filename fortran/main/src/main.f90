@@ -1,9 +1,9 @@
-program hello
+program main
 
   use FoX_dom
-  use user_define
   use substrate
-  use kmc_rates
+  use rate_kmc
+  use user_define
   implicit none
   logical :: tmp
   integer :: i
@@ -38,4 +38,4 @@ program hello
   call print_to_screen()
   
   stop
-end program hello
+end program main

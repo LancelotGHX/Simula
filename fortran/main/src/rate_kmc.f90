@@ -4,7 +4,7 @@
 !> @ module to handle KMC rate calculations and event selection
 !
 !-----------------------------------------------------------------------------
-module kmc_rates
+module rate_kmc
 
   !---------------------------------------------------------------------------
   ! used modules
@@ -366,4 +366,4 @@ contains
     return
   end subroutine compute_rates
 
-end module kmc_rates
+end module rate_kmc
