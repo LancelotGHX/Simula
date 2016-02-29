@@ -17,29 +17,25 @@
 !-----------------------------------------------------------------------------
 module class_reaction
 
-  !---------------------------------------------------------------------------
   ! used modules
   use func_helper     , only: dp
   use class_condition , only: condition
   implicit none
   private
 
-  !---------------------------------------------------------------------------  
-  !> descriotion for one reaction
+  ! descriotion for one reaction
   type, public :: reaction
-     ! private
-     integer, private :: m_cond_num
-     ! public
-     real(dp) :: ene     ! reaction energy
-     integer  :: idx     ! reaction id for further reference
-     integer  :: mov (3) ! action specification {x, y, d}
-     type (condition), pointer :: conds(:) 
+     real(dp), public  :: energy   ! reaction energy
+     integer , public  :: rid      ! reaction id for further reference
+     integer , public  :: move (3) ! action specification [x, y, d]
+     type (condition), public, pointer :: cond (:) 
+     integer         , private         :: m_cond_num
    contains
-     procedure :: cond_num    => m_get_cond_num
-     procedure :: set_idx     => m_set_idx
-     procedure :: set_ene     => m_set_ene
-     procedure :: set_mov     => m_set_mov
-     procedure :: alloc_conds => m_alloc_conds
+     procedure :: set_energy => m_set_energy
+     procedure :: set_rid    => m_set_rid
+     procedure :: set_move   => m_set_move
+     procedure :: alloc_cond => m_alloc_cond
+     procedure :: cond_num   => m_get_cond_num
   end type reaction
 
 contains
@@ -49,12 +45,12 @@ contains
   !> @brief Setter for reaction index
   !> @param i : reaction index (automatically generated)
   !---------------------------------------------------------------------------  
-  subroutine m_set_idx (this, i)
+  subroutine m_set_rid (this, i)
     class(reaction), intent (inout) :: this
     integer        , intent (in)    :: i
-    this % idx  = i
+    this % rid  = i
     return
-  end subroutine m_set_idx
+  end subroutine m_set_rid
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
@@ -63,43 +59,43 @@ contains
   !             since the default fortran real precision is short precision, a
   !             type conversion from reak(4) to real(dp) is performed here
   !---------------------------------------------------------------------------  
-  subroutine m_set_ene (this, e)
+  subroutine m_set_energy (this, e)
     class(reaction), intent (inout) :: this
     real(dp)       , intent (in)    :: e 
-    this % ene = e
+    this % energy = e
     return
-  end subroutine m_set_ene
+  end subroutine m_set_energy
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief Setter for reaction action
   !> @param m : moving specification
   !---------------------------------------------------------------------------  
-  subroutine m_set_mov (this, m)
+  subroutine m_set_move (this, m)
     class(reaction), intent (inout) :: this
     integer        , intent (in)    :: m (3)
-    this % mov = m
+    this % move = m
     return
-  end subroutine m_set_mov
+  end subroutine m_set_move
   
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
-  !> @brief Allocator for conds list
+  !> @brief Allocator for cond list
   !> @param n : number of conditions
   !---------------------------------------------------------------------------  
-  subroutine m_alloc_conds (this, n)
+  subroutine m_alloc_cond (this, n)
     class(reaction), intent (inout) :: this
     integer        , intent (in)    :: n
     integer                         :: status
     ! allocation check
-    if (associated(this % conds)) stop "ERROR: multiple definitions"
+    if (associated(this % cond)) stop "ERROR: multiple definitions"
     ! assign number value
     this % m_cond_num = n
     ! not a basic type, allocate manually
-    allocate(this % conds(n), STAT = status)
+    allocate(this % cond(n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory! (class reaction)"
     return
-  end subroutine m_alloc_conds
+  end subroutine m_alloc_cond
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION

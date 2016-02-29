@@ -8,10 +8,21 @@ module func_helper
 
   implicit none
 
+  !---------------------------------------------------------------------------  
   ! define double precision here
-  integer, parameter :: dp = kind(0.0D0)
+  integer, parameter :: sp = kind(1.0)
+  integer, parameter :: dp = selected_real_kind(2*precision(1.0_sp))
+  integer, parameter :: qp = selected_real_kind(2*precision(1.0_dp))
 
+  !---------------------------------------------------------------------------  
   ! function overload
+  interface alloc
+     module procedure &
+          alloc_I1, alloc_I1_ptr, &
+          alloc_I2, alloc_I2_ptr, &
+          alloc_F1, alloc_F2, alloc_F1_range
+  end interface alloc
+
   interface binary_search
      module procedure binary_search_F1, binary_search_I1
   end interface binary_search
@@ -129,10 +140,15 @@ contains
     rotate = tmp
     return
   end function rotate
-
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief allocate allocatable array for basic types
+  !> @param array: the allocatable target array
+  !> @param {n}  : dimension specifications
+  !---------------------------------------------------------------------------  
   subroutine alloc_I1 (array, n)
     integer, allocatable, intent(out) :: array(:)
-    integer, intent(in)  :: n
+    integer             , intent(in)  :: n
     integer :: status
     if (allocated(array)) stop "ERROR: multiple definitions"
     allocate(array(n), STAT = status)
@@ -140,19 +156,19 @@ contains
     return
   end subroutine alloc_I1
 
-  subroutine alloc_F1 (array, n)
-    real(8), allocatable, intent(out) :: array(:)
-    integer, intent(in)  :: n
+  subroutine alloc_I1_ptr (array, n)
+    integer, pointer, intent(out) :: array(:)
+    integer         , intent(in)  :: n
     integer :: status
-    if (allocated(array)) stop "ERROR: multiple definitions"
+    if (associated(array)) stop "ERROR: multiple definitions"
     allocate(array(n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
-  end subroutine alloc_F1
+  end subroutine alloc_I1_ptr
 
   subroutine alloc_I2 (array, n1, n2)
     integer, allocatable, intent(out) :: array(:,:)
-    integer, intent(in)  :: n1, n2
+    integer             , intent(in)  :: n1, n2
     integer :: status
     if (allocated(array)) stop "ERROR: multiple definitions"
     allocate(array(n1,n2), STAT = status)
@@ -160,9 +176,29 @@ contains
     return
   end subroutine alloc_I2
 
+  subroutine alloc_I2_ptr (array, n1, n2)
+    integer, pointer, intent(out) :: array(:,:)
+    integer         , intent(in)  :: n1, n2
+    integer :: status
+    if (associated(array)) stop "ERROR: multiple definitions"
+    allocate(array(n1,n2), STAT = status)
+    if (status /= 0) stop "ERROR: Not enough memory!"
+    return
+  end subroutine alloc_I2_ptr
+
+  subroutine alloc_F1 (array, n)
+    real(8), allocatable, intent(out) :: array(:)
+    integer             , intent(in)  :: n
+    integer :: status
+    if (allocated(array)) stop "ERROR: multiple definitions"
+    allocate(array(n), STAT = status)
+    if (status /= 0) stop "ERROR: Not enough memory!"
+    return
+  end subroutine alloc_F1
+
   subroutine alloc_F1_range (array, n1, n2)
     real(8), allocatable, intent(out) :: array(:)
-    integer, intent(in)  :: n1, n2
+    integer             , intent(in)  :: n1, n2
     integer :: status
     if (allocated(array)) stop "ERROR: multiple definitions"
     allocate(array(n1:n2), STAT = status)
@@ -170,6 +206,23 @@ contains
     return
   end subroutine alloc_F1_range
 
+  subroutine alloc_F2 (array, n1, n2)
+    real(8), allocatable, intent(out) :: array(:,:)
+    integer             , intent(in)  :: n1, n2
+    integer :: status
+    if (allocated(array)) stop "ERROR: multiple definitions"
+    allocate(array(n1, n2), STAT = status)
+    if (status /= 0) stop "ERROR: Not enough memory!"
+    return
+  end subroutine alloc_F2
+
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief binary search algorithm for finding bin index for a given number
+  !> @param  array: bin edge array, which should have N+1 values
+  !> @param  p    : number to select
+  !> @return r    : integer within [1,N] so that array(r) < p < array(r+1)
+  !---------------------------------------------------------------------------  
   function binary_search_F1(array, p) result (r)
     real(dp), intent (in) :: array (:)
     real(dp), intent (in) :: p
@@ -178,9 +231,6 @@ contains
     nl = 1
     nr = size(array)
     nm = (nl + nr) / 2
-    !if (p < array(nl) .or. p > array(nr)) then
-    !   stop "ERROR: value no found"
-    !end if
     do while (nr - nl > 1) 
        if (p <= array(nm)) then
           nr = nm
@@ -201,9 +251,6 @@ contains
     nl = 1
     nr = size(array)
     nm = (nl + nr) / 2
-    !if (p < array(nl) .or. p > array(nr)) then
-    !   stop "ERROR: value no found"
-    !end if
     do while (nr - nl > 1) 
        if (p <= array(nm)) then
           nr = nm

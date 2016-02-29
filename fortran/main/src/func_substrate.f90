@@ -11,9 +11,9 @@
 !--------------------------------------------------------------------------- 
 module func_substrate
 
-  use func_helper   , only: alloc_I1, alloc_I2, rand_int
-  use class_mtype   , only: tlist, mtype, tlist_num
-  use class_molecule, only: mlist, molecule
+  use func_helper   , only: alloc, rand_int
+  use class_mtype   , only: tlist, tlist_num, mtype
+  use class_molecule, only: mlist, mlist_num, molecule
   implicit none
 
   !--------------------------------------------------------------------------- 
@@ -50,11 +50,11 @@ contains
          trim(adjustl(m_curr_dir)))
     return
   end subroutine set_proj_dir
+
   !---------------------------------------------------------------------------  
   ! DESCRIPTION: 
-  !> @brief Subroutine to print substrate
-  !> @param sub: substrate
-  !> @return none
+  !> @brief Subroutine to open and close file
+  !> @param u: file unit idx
   !--------------------------------------------------------------------------- 
   subroutine start_file(u)
     integer  , intent(in)   :: u
@@ -65,7 +65,7 @@ contains
     character (len=99)      :: fname    ! file name
     ! write information
     call date_and_time(VALUES=dates)
-    !print *, dates
+    ! construct unique filename
     do i = 1, 8
        write (fpart(i), '(I4)') dates(i)
     end do
@@ -78,6 +78,7 @@ contains
          trim(adjustl(m_curr_dir))//'/'// &
          trim(adjustl(fname))//'.txt'
     write (*, '(" Saving data into ",A99)') fname
+    ! openfile
     open(u, file=trim(adjustl(fname)))
     file_idx  = file_idx + 1
     return
@@ -124,8 +125,8 @@ contains
     integer, intent (in) :: xlen, ylen
     m_xsize = xlen
     m_ysize = ylen
-    call alloc_I2(m_sub, xlen, ylen)
-    call alloc_I1(m_num, tlist_num())
+    call alloc (m_sub, xlen, ylen)
+    call alloc (m_num, tlist_num())
     m_sub = 0
     m_num = 0
     return
@@ -233,21 +234,21 @@ contains
     integer, intent(in)  :: m, xc, yc, dc
     integer, allocatable :: vec(:,:)
     integer              :: i, x, y, v, t, s, c
-    type(mtype)   , pointer :: mtp
-    type(molecule), pointer :: obj 
+
+    type(mtype)   , pointer :: t_obj
+    type(molecule), pointer :: m_obj
 
     ! retrieve molecule type & molecule object
-    obj => mlist(m)
-    mtp => tlist(obj % type) % ptr
+    m_obj => mlist(m)
+    t_obj => tlist(m_obj % tp)
 
     ! calculate all positions {x,y,comp-id}
-    call alloc_I2 (vec, 2, mtp % comp_num())
+    call alloc (vec, 2, t_obj % comp_num())
 
     ! check position is empty by the way
     empty = .true.
-    do i = 1, mtp % comp_num()
-       vec(:,i) = mtp % comps(i)
-       vec(:,i) = mtp % rotate(vec(:,i), dc)
+    do i = 1, t_obj % comp_num()
+       vec(:,i) = t_obj % rotate(t_obj % xy(i), dc)
        x = vec(1,i) + xc
        y = vec(2,i) + yc
        if (get_sub(x, y) /= 0) empty = .false.
@@ -256,21 +257,17 @@ contains
     ! land molecule if the site is empty, do nothing otherwise
     if (empty) then
 
-       !mlist(m) % pos(1) = xc ! here I am directly accessing the data in order
-       !mlist(m) % pos(2) = yc ! to make sure the changes are saved. Do changes
-       !mlist(m) % pos(3) = dc ! on local variable does not gaurantee that
-
-       obj % pos(1) = xc ! however this works if the variable is defined
-       obj % pos(2) = yc ! as a pointer
-       obj % pos(3) = modulo(dc, mtp % symm) 
+       m_obj % pos(1) = xc ! however this works if the variable is defined
+       m_obj % pos(2) = yc ! as a pointer
+       m_obj % pos(3) = modulo(dc, t_obj % symm) 
 
        ! land each dots
-       do i = 1, mtp % comp_num()
-          ! part 1
-          t = mtp % idx_gen() ! type index generated
-          c = i               ! comp-id
-          s = obj % sta(i)    ! comp-state
-          ! part 2
+       do i = 1, t_obj % comp_num()
+          ! part [1]
+          t = t_obj % idx_gen() ! type index generated
+          c = i                 ! comp-id
+          s = m_obj % state(i)  ! comp-state
+          ! part [2]
           x = vec(1,i) + xc
           y = vec(2,i) + yc
           v = convert_to_land (m, t, c, s)
@@ -302,17 +299,16 @@ contains
     integer              :: ox, oy, od
     integer              :: comp(2), opos(2), npos(2)
     integer              :: i, t, c, s
-    type(mtype)   , pointer :: mtp
-    type(molecule), pointer :: obj 
+    type(mtype)   , pointer :: t_obj
+    type(molecule), pointer :: m_obj 
 
     ! retrieve molecule type & molecule object
-    obj => mlist(m)                ! pointing pointer to oject
-    mtp => tlist(obj % type) % ptr ! this is pointer assignment !
+    m_obj => mlist(m)          ! pointing pointer to oject
+    t_obj => tlist(m_obj % tp) ! this is pointer assignment !
 
-    ox = obj % pos(1)
-    oy = obj % pos(2)
-    od = obj % pos(3)
-    !print *, "move old", obj % pos
+    ox = m_obj % pos(1)
+    oy = m_obj % pos(2)
+    od = m_obj % pos(3)
     
     nx = rx + ox
     ny = ry + oy
@@ -322,26 +318,23 @@ contains
     !mlist(m) % pos(2) = ny ! to make sure the changes are saved. Do changes
     !mlist(m) % pos(3) = nd ! on local variable does not gaurantee that
 
-    obj % pos(1) = nx ! however this works if the variable is defined
-    obj % pos(2) = ny ! as a pointer
-    obj % pos(3) = modulo(nd, mtp % symm) 
-    !print *, "move new", obj % pos
+    m_obj % pos(1) = nx ! however this works if the variable is defined
+    m_obj % pos(2) = ny ! as a pointer
+    m_obj % pos(3) = modulo(nd, t_obj % symm) 
 
     ! reset old points
-    do i = 1, mtp % comp_num()
-       comp = mtp % comps(i)
-       opos = [ox,oy] + mtp % rotate(comp, od)       
+    do i = 1, t_obj % comp_num()
+       opos = [ox,oy] + t_obj % rotate(t_obj % xy(i), od)       
        call set_sub(opos(1), opos(2), 0)
     end do
+
     ! assign new points
-    do i = 1, mtp % comp_num()
-       comp = mtp % comps(i)
-       npos = [nx,ny] + mtp % rotate(comp, nd)
-       t = mtp % idx_gen() ! type index generated
-       c = i               ! comp-id
-       s = obj % sta(i)    ! comp-state
+    do i = 1, t_obj % comp_num()
+       npos = [nx,ny] + t_obj % rotate(t_obj % xy(i), nd)
+       t = t_obj % idx_gen() ! type index generated
+       c = i                 ! comp-id
+       s = m_obj % state(i)  ! comp-state
        call set_sub(npos(1), npos(2), convert_to_land (m, t, c, s))
-       !print *, m, t, c, convert_to_land (m, t, c, s), npos
     end do
 
     return
@@ -410,28 +403,28 @@ contains
   !> @param mtp: copy/pointer to molecule type
   !> @param num: number of molecules will be evaporate
   !--------------------------------------------------------------------------- 
-  subroutine evaporate (mtp, num)
-    type(mtype), intent(in) :: mtp
+  subroutine evaporate (t_obj, num)
+    type(mtype), intent(in) :: t_obj
     integer    , intent(in) :: num
     integer :: i, t, k, x, y, d
 
     ! debug -------------------------------
     write (*,'(" plan to evaporate type  ",I6,"   for ",I6)') &
-         mtp % idx_def, num
+         t_obj % idx_def(), num
     ! debug -------------------------------
 
     ! evaporate new molecules
-    t = mtp % idx_gen() !> get molecule index
+    t = t_obj % idx_gen() !> get molecule index
     LAND_LOOP: do i = 1, num
        ! check if next landing will exceed maximum molecule number
-       if (activated_num(t) >= mtp % eva_num) exit LAND_LOOP
+       if (activated_num(t) >= t_obj % eva_num()) exit LAND_LOOP
        ! land a new molecule
        call activate_new(t)
        SEARCH_LOOP: do while (.true.)
-          k = activated_num(t) + mtp % idx_off() ! offset molecule id
+          k = activated_num(t) + t_obj % idx_off() ! offset molecule id
           x = rand_subX()
           y = rand_subY()
-          d = rand_int(1, mtp % symm)
+          d = rand_int(1, t_obj % symm)
           ! land_one will return true if landing succeed, vice versa
           if (land_one(k, x, y, d)) exit SEARCH_LOOP
        end do SEARCH_LOOP
@@ -439,7 +432,7 @@ contains
 
     ! debug -------------------------------
     write (*,'(" done evaporation of type",I6,"   for ",I6)') &
-         mtp % idx_def,activated_num(t)
+         t_obj % idx_def(),activated_num(t)
     ! debug -------------------------------
 
     return
