@@ -2,7 +2,7 @@ program main
 
   use FoX_dom
   use func_substrate
-  !use func_rate_kmc
+  use func_rate_kmc
   use define
   implicit none
 
@@ -15,7 +15,7 @@ program main
   print *, ">>> Simula"
   print *, ">>> Initialization"
   call init()
-  !print *, ">>> Evaporation"
+  print *, ">>> Evaporation"
 
   call activate_new(1)
   print *, land_one(1,3,5,0)
@@ -31,7 +31,7 @@ program main
 
   call print_to(6, 4)
 
-  ! print *, ">>> Calculate rate"
+  print *, ">>> Calculate rate"
   ! do i = 1, 10000
   !    call compute_rates()
   !    !call print_to(6, 4)

@@ -8,12 +8,11 @@ module func_rate_kmc
 
   !---------------------------------------------------------------------------
   ! used modules
-  use func_helper    , only: &
-       dp, alloc_I1, alloc_I2, alloc_F1, rand_uniform, binary_search
+  use func_helper    , only: dp, alloc, rand_uniform, binary_search
   use class_condition, only: condition
-  use class_reaction , only: reaction 
-  use class_mtype    , only: tlist, mtype, tlist_num
-  use class_molecule , only: mlist, molecule, mlist_num
+  use class_reaction , only: reaction
+  use class_mtype    , only: tlist, tlist_num, mtype
+  use class_molecule , only: mlist, mlist_num, molecule
   use func_substrate , only: &
        get_sub, activated_num, convert_from_land, move_one
   implicit none
