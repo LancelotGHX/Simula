@@ -29,6 +29,8 @@ module class_option
      integer, private, pointer :: m_pos (:,:)   ! (3,N) {[x,y,d]...}
      integer, private          :: m_pos_num     ! number N
    contains
+     procedure :: pos_eq_to   => m_pos_eq_to
+     procedure :: state_eq_to => m_state_eq_to
      ! getters
      procedure :: pos     => m_get_pos
      procedure :: pos_num => m_get_pos_num
@@ -307,12 +309,10 @@ contains
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief Getter for option state array's all initial states
-  !> @param i: index
   !> @return array pointer to the original data !!! be careful !!!
   !---------------------------------------------------------------------------  
-  function m_get_state_iptr (this, i) result (r)
+  function m_get_state_iptr (this) result (r)
     class(option), intent (in) :: this
-    integer      , intent (in) :: i
     integer, pointer           :: r(:)
     r => this % m_state(1, :)
     return
@@ -321,12 +321,10 @@ contains
   !---------------------------------------------------------------------------  
   ! DESCRIPTION
   !> @brief Getter for option state array's all final states
-  !> @param i: index
   !> @return array pointer to the original data !!! be careful !!!
   !---------------------------------------------------------------------------  
-  function m_get_state_fptr (this, i) result (r)
+  function m_get_state_fptr (this) result (r)
     class(option), intent (in) :: this
-    integer      , intent (in) :: i
     integer, pointer           :: r(:)
     r => this % m_state(2, :)
     return
@@ -342,5 +340,21 @@ contains
     r = this % m_state_num
     return
   end function m_get_state_num
+
+  function m_pos_eq_to (this, i, pos) result (r)
+    class(option), intent (in) :: this
+    integer      , intent (in) :: i, pos(3)
+    logical                    :: r
+    r = all(this % m_pos(:,i) == pos)
+    return
+  end function m_pos_eq_to
+
+  function m_state_eq_to (this, s) result (r)
+    class(option), intent (in) :: this
+    integer      , intent (in) :: s(:)
+    logical                    :: r
+    r = all(this % m_state(1,:) == s)
+    return
+  end function m_state_eq_to
 
 end module class_option

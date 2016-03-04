@@ -9,7 +9,7 @@ module define
   use class_molecule
   use func_helper
   use func_substrate
-  !use func_rate_kmc
+  use func_rate_kmc
   implicit none
 
   !---------------------------------------------------------------------------  
@@ -21,63 +21,64 @@ module define
 
 contains
 
-  ! subroutine def_free_move(t_obj, r, move, energy)
-  !   type(mtype), intent (inout) :: t_obj
-  !   integer    , intent (in)    :: r 
-  !   integer    , intent (in)    :: move(3)
-  !   real(dp)   , intent (in)    :: energy
+  subroutine def_free_move(t_obj, r, move, energy)
+    type(mtype), pointer, intent (inout) :: t_obj
+    integer             , intent (in) :: r 
+    integer             , intent (in) :: move(3)
+    real(dp)            , intent (in) :: energy
 
-  !   integer, allocatable :: sta (:), pos (:), tmp(:,:)
-  !   integer              :: i, j
+    integer, allocatable :: sta (:), pos (:)
+    integer, allocatable :: tmp(:,:)
+    integer              :: i, j
+    integer, pointer :: state_initial(:)
 
-  !   ! new-x, new-y, pos-not-overlap, original-x, original-y
-  !   call alloc_I2(tmp, 5, mtp % comp_num())
+    state_initial => t_obj % state_initial()
 
-  !   tmp = 1
-  !   do i = 1, mtp % comp_num()
-  !      tmp(1:2,i) = mtp % rotate(mtp % comp(i), move(3)) + move(1:2)
-  !      ! check overlap
-  !      do j = 1, mtp % comp_num()
-  !         tmp(4:5,j) = mtp % comp(j)
-  !         if ( all( tmp(1:2,i) == tmp(4:5,j) ) ) tmp(3,i) = 0
-  !      end do
-  !   end do
+    ! new-x, new-y, pos-not-overlap, original-x, original-y
+    call alloc(tmp, 5, t_obj % comp_num())
 
-  !   call alloc_I1(pos, sum(tmp(3,:)) * 2)
-  !   call alloc_I1(sta, size(tmp, 2)  * 2)
+    tmp = 1
+    do i = 1, t_obj % comp_num()
+       tmp(1:2,i) = t_obj % translate(t_obj % comp(i), move)
+       ! check overlapping
+       do j = 1, t_obj % comp_num()
+          tmp(4:5,j) = t_obj % xy(j)
+          if ( all( tmp(1:2,i) == tmp(4:5,j) ) ) tmp(3,i) = 0
+       end do
+    end do
+
+     call alloc_I1(pos, sum(tmp(3,:)) * 3)
+     call alloc_I1(sta, size(tmp, 2)  * 2)
     
-  !   j = 1
-  !   do i = 1, mtp % comp_num()
-  !      if (tmp(3,i) == 1) then
-  !         pos(2*j-1) = tmp(1,i)
-  !         pos(2*j  ) = tmp(2,i)
-  !         j = j + 1
-  !      end if
-  !      sta(3*i-2) = i
-  !      sta(3*i-1) = 1
-  !      sta(3*i  ) = 1
-  !   end do
+    j = 1
+    do i = 1, t_obj % comp_num()
+       if (tmp(3,i) == 1) then
+          pos(3*j-2) = tmp(1,i)
+          pos(3*j-1) = tmp(2,i)
+          pos(3*j  ) = 0
+          j = j + 1
+       end if
+       sta(2*i-1) = state_initial(i) 
+       sta(2*i  ) = state_initial(i)
+    end do
 
-  !   ! basic information
-  !   call mtp % reac (r) % set_energy (energy)
-  !   call mtp % reac (r) % set_move   (move)
-  !   ! two conditions
-  !   call mtp % reac (r) % alloc_cond (2)
-  !   ! condition for molecule itself
-  !   call mtp % reac (r) % cond (1) % set_tp (mtp % idx_def)
-  !   call mtp % reac (r) % cond (1) % set_state (sta) 
-  !   call mtp % reac (r) % cond (1) % alloc_opt (1)
-  !   call mtp % reac (r) % cond (1) % opt(1) % set ([0,0],0)
-  !   ! condition for background checking (empty checking)
-  !   call mtp % reac (r) % cond (2) % set_tp (0)        ! background
-  !   call mtp % reac (r) % cond (2) % set_state ([0,0]) ! background components
-  !   call mtp % reac (r) % cond (2) % alloc_opt (4)
-  !   call mtp % reac (r) % cond (2) % opt(1) % set (pos, 0)
-  !   call mtp % reac (r) % cond (2) % opt(2) % set (pos, 1)
-  !   call mtp % reac (r) % cond (2) % opt(3) % set (pos, 2)
-  !   call mtp % reac (r) % cond (2) % opt(4) % set (pos, 3)
-  !   return
-  ! end subroutine def_free_move
+    ! basic information
+    call t_obj % reac (r) % set_energy (energy)
+    call t_obj % reac (r) % set_move   (move)
+    ! two conditions
+    call t_obj % reac (r) % alloc_cond (2)
+    ! condition for molecule itself
+    call t_obj % reac (r) % cond (1) % set_tp (t_obj % idx_def())
+    call t_obj % reac (r) % cond (1) % alloc_opt (1)
+    call t_obj % reac (r) % cond (1) % opt(1) % set_pos ([0,0,0])
+    call t_obj % reac (r) % cond (1) % opt(1) % set_state (sta)
+    ! condition for background checking (empty checking)
+    call t_obj % reac (r) % cond (2) % set_tp (0)        ! background
+    call t_obj % reac (r) % cond (2) % alloc_opt (1)
+    call t_obj % reac (r) % cond (2) % opt(1) % set_pos (pos)
+    call t_obj % reac (r) % cond (2) % opt(1) % set_state ([0,0]) 
+    return
+  end subroutine def_free_move
 
   ! subroutine def_tpyp_tpyp (mtp, r, energy, mov_pos, tar_dir, num)
   !   type(mtype) :: mtp
@@ -156,7 +157,7 @@ contains
   !---------------------------------------------------------------------------  
   subroutine init ()
     integer :: r
-    call init_random_seed() !> initialize random seed
+    call init_random_seed() ! initialize random seed
 
     !-------------------------------------------------------------------
     !-------------------------------------------------------------------
@@ -184,16 +185,16 @@ contains
     call tpyp % set_comp(1, [ 0, 0, 1]) !> x, y, i-state
     call tpyp % set_comp(2, [ 1, 0, 2]) !> x, y, i-state
     call tpyp % set_comp(3, [ 0, 1, 3]) !> x, y, i-state
-    call tpyp % set_comp(4, [-1, 0, 2]) !> x, y, i-state
-    call tpyp % set_comp(5, [ 0,-1, 3]) !> x, y, i-state
-    call tpyp % alloc_reac (0)
-    ! call def_free_move(tpyp, 1, [ 1, 0,0], 0.5_dp)
-    ! call def_free_move(tpyp, 2, [ 0, 1,0], 0.5_dp)
-    ! call def_free_move(tpyp, 3, [-1, 0,0], 0.5_dp)
-    ! call def_free_move(tpyp, 4, [ 0,-1,0], 0.5_dp)
-    ! call def_free_move(tpyp, 5, [ 0, 0,1], 0.5_dp)
-    ! call def_free_move(tpyp, 6, [ 0, 0,2], 0.5_dp)
-    ! call def_free_move(tpyp, 7, [ 0, 0,3], 0.5_dp)
+    call tpyp % set_comp(4, [-1, 0, 4]) !> x, y, i-state
+    call tpyp % set_comp(5, [ 0,-1, 5]) !> x, y, i-state
+    call tpyp % alloc_reac (7)
+    call def_free_move(tpyp, 1, [ 1, 0,0], 0.5_dp)
+    call def_free_move(tpyp, 2, [ 0, 1,0], 0.5_dp)
+    call def_free_move(tpyp, 3, [-1, 0,0], 0.5_dp)
+    call def_free_move(tpyp, 4, [ 0,-1,0], 0.5_dp)
+    call def_free_move(tpyp, 5, [ 0, 0,1], 0.5_dp)
+    call def_free_move(tpyp, 6, [ 0, 0,2], 0.5_dp)
+    call def_free_move(tpyp, 7, [ 0, 0,3], 0.5_dp)
     ! call def_tpyp_tpyp(tpyp, 8, -0.5_dp, [ 1,0], 0, 1)
     ! call def_tpyp_tpyp(tpyp, 9, -0.5_dp, [ 1,0], 0, 2)
     ! call def_tpyp_tpyp(tpyp,10, -0.5_dp, [-1,0], 0, 1)
@@ -214,12 +215,12 @@ contains
     call lead % set_idx_def (4000) 
     call lead % set_eva_num (100)   
     call lead % alloc_comp (1)    
-    call lead % set_comp (1, [0, 0, 4]) 
-    call lead % alloc_reac (0)
-    ! call def_free_move(lead,  1, [ 1, 0,0], 0.5_dp)
-    ! call def_free_move(lead,  2, [ 0, 1,0], 0.5_dp)
-    ! call def_free_move(lead,  3, [-1, 0,0], 0.5_dp)
-    ! call def_free_move(lead,  4, [ 0,-1,0], 0.5_dp)
+    call lead % set_comp (1, [0, 0, 9]) 
+    call lead % alloc_reac (4)
+    call def_free_move(lead,  1, [ 1, 0,0], 0.5_dp)
+    call def_free_move(lead,  2, [ 0, 1,0], 0.5_dp)
+    call def_free_move(lead,  3, [-1, 0,0], 0.5_dp)
+    call def_free_move(lead,  4, [ 0,-1,0], 0.5_dp)
     ! call def_lead_tpyp( 5, -0.5_dp, [ 0, 1], 0)
     ! call def_lead_tpyp( 6, -0.5_dp, [ 1, 0], 0)
     ! call def_lead_tpyp( 7, -0.5_dp, [ 0,-1], 0)
@@ -234,7 +235,7 @@ contains
 
     ! !> Initialize molecules
     call init_substrate(45,45) ! this should be placed after type definitions
-    !call init_rates()
+    call init_rates()
     call mlist_init()
     return
   end subroutine init

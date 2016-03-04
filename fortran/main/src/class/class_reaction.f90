@@ -28,7 +28,7 @@ module class_reaction
      real(dp), public  :: energy   ! reaction energy
      integer , public  :: rid      ! reaction id for further reference
      integer , public  :: move (3) ! action specification [x, y, d]
-     type (condition), public, pointer :: cond (:) 
+     type (condition), public, pointer :: cond (:) => null()
      integer         , private         :: m_cond_num
    contains
      procedure :: set_energy => m_set_energy

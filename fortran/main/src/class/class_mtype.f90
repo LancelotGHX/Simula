@@ -63,6 +63,7 @@ module class_mtype
      procedure :: abs_id       => m_abs_idx
      procedure :: rel_id       => m_rel_idx
      procedure :: rotate       => m_rotate
+     procedure :: translate    => m_translate
   end type mtype
 
   !---------------------------------------------------------------------------  
@@ -419,6 +420,14 @@ contains
     r = rotate (this % m_rmat, v, n)
     return
   end function m_rotate
+  
+  function m_translate (this, v, m) result (r)
+    class(mtype), intent (in) :: this
+    integer     , intent (in) :: v(2), m(3)
+    integer                   :: r(2)
+    r = this % rotate(v, m(3)) + m(1:2)
+    return
+  end function m_translate
 
   !---------------------------------------------------------------------------  
   ! DESCRIPTION

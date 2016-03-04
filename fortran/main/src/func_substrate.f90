@@ -313,6 +313,7 @@ contains
     nx = rx + ox
     ny = ry + oy
     nd = rd + od
+    !write (*, '("(",3I2,")=>(",3I2,")")') [ox,oy,od], [nx,ny,nd] 
 
     !mlist(m) % pos(1) = nx ! here I am directly accessing the data in order
     !mlist(m) % pos(2) = ny ! to make sure the changes are saved. Do changes

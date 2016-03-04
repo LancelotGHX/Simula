@@ -20,11 +20,12 @@ module class_molecule
   type, public :: molecule
      integer, public , pointer :: tp
      integer, public , pointer :: id
-     integer, public , pointer ::   pos   (:)
+     integer, public , pointer ::   pos   (:) => null()
      integer, private          :: m_pos_num
-     integer, public , pointer ::   state (:)
+     integer, public , pointer ::   state (:) => null()
      integer, private          :: m_state_num
-     integer, private, pointer :: m_data(:) ! => [t,i,x,y,d,s1,s2,s3,...]
+     integer, private, pointer :: m_data(:)   => null()
+     ! => [t,i,x,y,d,s1,s2,s3,...]
    contains
      procedure :: init      => m_init
      procedure :: pos_num   => m_get_pos_num
