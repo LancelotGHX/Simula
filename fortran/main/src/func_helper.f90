@@ -180,7 +180,6 @@ contains
     integer, pointer, intent(out) :: array(:,:)
     integer         , intent(in)  :: n1, n2
     integer :: status
-    print *, n1, n2
     if (associated(array)) stop "ERROR: (I2 ptr) multiple definitions"
     allocate(array(n1,n2), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"

@@ -69,9 +69,7 @@ contains
     ! condition for molecule itself
     call t_obj % reac (r) % cond (1) % set_tp (t_obj % idx_def())
     call t_obj % reac (r) % cond (1) % alloc_opt (1)
-    print *, "aaa"
     call t_obj % reac (r) % cond (1) % opt(1) % set_pos ([0,0,0])
-    print *, "aaa"
     call t_obj % reac (r) % cond (1) % opt(1) % set_state (sta)
     
     ! condition for background checking (empty checking)
@@ -226,7 +224,7 @@ contains
 
     !> Auto initialization
     call init_random_seed() ! initialize random seed
-    call init_substrate(45,45) ! this should be placed after type definitions
+    call init_substrate(25,25) ! this should be placed after type definitions
     call init_rates()
     call mlist_init()
 

@@ -9,10 +9,11 @@ program main
   integer :: i
 
 #ifdef _WIN32
-  call set_root_dir("C:\Users\gkuang\Documents\GitHub\Simula\fortran\output")
+  call set_root_dir("..\..\..\output")
 #else
   call set_root_dir("/home/qiwu/work/dev/simula/fortran/output")
 #endif
+
   call set_proj_dir("test-qiwu")
 
   print *, ">>> Simula"
@@ -36,11 +37,11 @@ program main
   print *, ""
   do i = 1, 10000
      call compute_rates(verbose = .false.)
-     !if (modulo(i, 10000)==0) then
-     !   call start_file(90)
-     !   call print_to(90,4)
-     !   call close_file(90)
-     !end if
+     if (modulo(i, 1000)==0) then
+        call start_file(90)
+        call print_to(90,4)
+        call close_file(90)
+     end if
   end do
   print *, ""
   call print_to(6, 4)
