@@ -37,4 +37,3 @@ include_directories(
   ${fox_BINARY_DIR}/common
   ${fox_BINARY_DIR}/utils
 )
-
