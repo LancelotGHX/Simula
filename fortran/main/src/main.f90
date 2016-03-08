@@ -8,7 +8,11 @@ program main
 
   integer :: i
 
+#ifdef _WIN32
   call set_root_dir("C:\Users\gkuang\Documents\GitHub\Simula\fortran\output")
+#else
+  call set_root_dir("/home/qiwu/work/dev/simula/fortran/output")
+#endif
   call set_proj_dir("test-qiwu")
 
   print *, ">>> Simula"
@@ -18,28 +22,28 @@ program main
   print *, ">>> Evaporation"
 
   !call activate_new(1)
-  !print *, land_one(1, 7,5,0)
+  !print *, land_one(1, 5, 7,1)
   !call activate_new(1)
-  !print *, land_one(2,11,5,2)
+  !print *, land_one(2, 5, 3,1)
   !call activate_new(1)
-  !print *, land_one(3, 4,5,0)
+  !print *, land_one(3, 5,11,1)
 
-  call evaporate(tpyp, 100)
+  call evaporate(tpyp, 20)
   !call evaporate(lead, 50)
-  !call print_to(6, 4)
+  call print_to(6, 4)
 
   print *, ">>> Calculate rate"
   print *, ""
-  do i = 1, 100000
+  do i = 1, 10000
      call compute_rates(verbose = .false.)
-      if (modulo(i, 10000)==0) then
-         call start_file(90)
-         call print_to(90,4)
-         call close_file(90)
-      end if
+     !if (modulo(i, 10000)==0) then
+     !   call start_file(90)
+     !   call print_to(90,4)
+     !   call close_file(90)
+     !end if
   end do
   print *, ""
-  !call print_to(6, 4)
+  call print_to(6, 4)
   
   stop
 end program main

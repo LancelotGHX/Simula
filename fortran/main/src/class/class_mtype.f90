@@ -416,8 +416,9 @@ contains
   function m_rotate (this, v, n) result (r)
     class(mtype), intent (in) :: this
     integer     , intent (in) :: v(2), n
-    integer                   :: r(2)
-    r = rotate (this % m_rmat, v, n)
+    integer                   :: r(2), np
+    np = modulo(n, this % symm)
+    r = rotate (this % m_rmat, v, np)
     return
   end function m_rotate
   

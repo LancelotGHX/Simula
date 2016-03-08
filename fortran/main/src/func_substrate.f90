@@ -46,7 +46,7 @@ contains
     m_curr_dir = trim(adjustl(name))
     write (*, '(" Setting project output directory: ", A50)') m_curr_dir
     call system('mkdir '//               &
-         trim(adjustl(m_root_dir))//'\'//&
+         trim(adjustl(m_root_dir))//'/'//&
          trim(adjustl(m_curr_dir)))
     return
   end subroutine set_proj_dir
@@ -74,8 +74,8 @@ contains
        fname = trim(adjustl(fname))//trim(adjustl(fpart(i)))
     end do
     fname = &
-         trim(adjustl(m_root_dir))//'\'// &
-         trim(adjustl(m_curr_dir))//'\'// &
+         trim(adjustl(m_root_dir))//'/'// &
+         trim(adjustl(m_curr_dir))//'/'// &
          trim(adjustl(fname))//'.txt'
     write (*, '(" Saving data into ",A99)') fname
     ! openfile

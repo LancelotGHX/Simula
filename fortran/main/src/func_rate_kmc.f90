@@ -245,7 +245,7 @@ contains
 
     ! initialization for optional arguments
     if (.not. present(verbose)) then
-       m_verbose = .true.
+       m_verbose = .false.
     else
        m_verbose = verbose
     end if
@@ -310,17 +310,18 @@ contains
                 ! initialize variables
                 one_o_true = .false. ! if any option passed, make it true
 
-                !> debug
-                if (m_verbose) then
-                   write (*, '("--        c",A," ")',advance="no") int2str(c)
-                end if
-                !> debug
-
                 EACH_OPTION: do o = 1, c_obj % opt_num()
-                   !print *, "option", o
                    o_obj => c_obj % opt(o)
+                   
+                   all_p_true = .true. 
 
-                   all_p_true = .true.
+                   !> debug
+                   if (m_verbose) then
+                      write (*, '("--        c",A," o",A," ")',advance="no") &
+                           int2str(c), int2str(o)
+                   end if
+                   !> debug
+
                    EACH_POSION: do p = 1, c_obj % opt(o) % pos_num()
                       ! condition position
                       !> @remark need to rotate t_p first since it is define
@@ -334,21 +335,30 @@ contains
                       t_idx = convert_from_land( &
                            get_sub(fetch_pos(1), fetch_pos(2)), &
                            1) 
-
                       ! target molecule defined type
                       t_tp = tlist(mlist(t_idx) % tp) % idx_def()
 
-                      ! target molecule relative direction
-                      t_pos(3) = modulo(mlist(t_idx) % pos(3) - &
-                           m_pos(3), tlist(mlist(t_idx) % tp) % symm)
-                      t_pos(1:2) = mlist(t_idx) % pos(1:2) - m_pos(1:2)
+                      ! get target position
+                      t_pos = mlist(t_idx) % pos - m_pos
+                      ! compute relative direction
+                      t_pos(3) = &
+                           modulo(t_pos(3), tlist(mlist(t_idx) % tp) % symm)
+                      ! compute rotated relative position
+                      t_pos(1:2) = tlist(mlist(t_idx) % tp) % &
+                           rotate(t_pos(1:2), -m_pos(3))
 
                       ! check if type confirms with definition              
                       if (.not. c_obj % tp_eq_to(t_tp)) then 
                          all_p_true = .false.
                          !> debug
-                         if (m_verbose) write (*, '("w-type at ",A)') &
-                              int2str(p)
+                         if (m_verbose) then
+                            write (*, '("w-type at ",A)' ,advance="no") &
+                                 int2str(p)
+                            write (*, '(" | t_type ",I4)',advance="no") t_tp
+                            write (*, '(" | m_type ",I4)',advance="no") &
+                                 c_obj % tp()
+                            write (*, '(" | fetch_pos ",2I4)') fetch_pos
+                         end if
                          !> debug
                          exit EACH_POSION
                       end if
@@ -361,8 +371,12 @@ contains
                          if (.not. o_obj % pos_eq_to(p, t_pos)) then
                             all_p_true = .false.
                             !> debug
-                            if (m_verbose) write (*, '("w-pos at ",A)') &
+                            if (m_verbose) then
+                               write (*, '("w-pos at ",A)',advance="no") &
                                  int2str(p)
+                               write (*, '(" | t_pos",3I4)',advance="no") t_pos
+                               write (*, '(" | m_pos",3I4)') m_pos
+                            end if
                             !> debug
                             exit EACH_POSION
                          end if
@@ -387,10 +401,11 @@ contains
                    !          however we should always make sure there is only
                    !          one option is valid each time
                    if (all_p_true) then
-                      one_o_true = .true.
-                      !print *, "--",r_obj % cond_num(),m_data (reac_idx) % idxs
-                      m_data (ridx) % tars (c) = o
-                      
+                      one_o_true = .true.                      
+                      m_data (ridx) % tars (c) = o                      
+                      !> debug
+                      if (m_verbose) write (*, '(L1)') one_o_true
+                      !> debug
                       exit EACH_OPTION
                    end if
 
@@ -399,12 +414,6 @@ contains
                 ! if we don't have any option passed, then the condition must 
                 ! be failed
                 if (.not.one_o_true) all_c_true = .false.
-
-                !> debug
-                if (m_verbose) then
-                   write (*, '(L1)') all_c_true
-                end if
-                !> debug
 
              end do EACH_COND
 
@@ -415,10 +424,8 @@ contains
                 rate = 10E-10  * exp(- r_obj % energy / 0.01)          
              else 
                 rate = 0.0_dp
-             end if
-             !print *, rate, all_c_true, reac_idx
-             m_rate (ridx) = rate
-
+             end if             
+             m_rate (ridx) = rate             
 
           end do EACH_REACTION
 
