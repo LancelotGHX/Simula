@@ -150,7 +150,7 @@ contains
     integer, allocatable, intent(out) :: array(:)
     integer             , intent(in)  :: n
     integer :: status
-    if (allocated(array)) stop "ERROR: multiple definitions"
+    if (allocated(array)) stop "ERROR: (I1) multiple definitions"
     allocate(array(n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
@@ -160,7 +160,7 @@ contains
     integer, pointer, intent(out) :: array(:)
     integer         , intent(in)  :: n
     integer :: status
-    if (associated(array)) stop "ERROR: multiple definitions"
+    if (associated(array)) stop "ERROR: (I1 ptr) multiple definitions"
     allocate(array(n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
@@ -170,7 +170,7 @@ contains
     integer, allocatable, intent(out) :: array(:,:)
     integer             , intent(in)  :: n1, n2
     integer :: status
-    if (allocated(array)) stop "ERROR: multiple definitions"
+    if (allocated(array)) stop "ERROR: (I2) multiple definitions"
     allocate(array(n1,n2), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
@@ -180,7 +180,8 @@ contains
     integer, pointer, intent(out) :: array(:,:)
     integer         , intent(in)  :: n1, n2
     integer :: status
-    if (associated(array)) stop "ERROR: multiple definitions"
+    print *, n1, n2
+    if (associated(array)) stop "ERROR: (I2 ptr) multiple definitions"
     allocate(array(n1,n2), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
@@ -190,7 +191,7 @@ contains
     real(8), allocatable, intent(out) :: array(:)
     integer             , intent(in)  :: n
     integer :: status
-    if (allocated(array)) stop "ERROR: multiple definitions"
+    if (allocated(array)) stop "ERROR: (F1) multiple definitions"
     allocate(array(n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
@@ -200,7 +201,7 @@ contains
     real(8), allocatable, intent(out) :: array(:)
     integer             , intent(in)  :: n1, n2
     integer :: status
-    if (allocated(array)) stop "ERROR: multiple definitions"
+    if (allocated(array)) stop "ERROR: (F1 range) multiple definitions"
     allocate(array(n1:n2), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return
@@ -210,7 +211,7 @@ contains
     real(8), allocatable, intent(out) :: array(:,:)
     integer             , intent(in)  :: n1, n2
     integer :: status
-    if (allocated(array)) stop "ERROR: multiple definitions"
+    if (allocated(array)) stop "ERROR: (F2) multiple definitions"
     allocate(array(n1, n2), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
     return

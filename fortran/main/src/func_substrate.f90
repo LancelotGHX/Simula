@@ -24,8 +24,8 @@ module func_substrate
   integer, private, allocatable :: m_sub (:,:) ! substrate data
   integer, private, allocatable :: m_num (:)   ! number of molecule activated
 
-  character(len=50), save :: m_root_dir = "."
-  character(len=10), save :: m_curr_dir = "."
+  character(len=200), save :: m_root_dir = "."
+  character(len=100), save :: m_curr_dir = "."
 
 contains
   !---------------------------------------------------------------------------  
@@ -46,7 +46,7 @@ contains
     m_curr_dir = trim(adjustl(name))
     write (*, '(" Setting project output directory: ", A50)') m_curr_dir
     call system('mkdir '//               &
-         trim(adjustl(m_root_dir))//'/'//&
+         trim(adjustl(m_root_dir))//'\'//&
          trim(adjustl(m_curr_dir)))
     return
   end subroutine set_proj_dir
@@ -74,8 +74,8 @@ contains
        fname = trim(adjustl(fname))//trim(adjustl(fpart(i)))
     end do
     fname = &
-         trim(adjustl(m_root_dir))//'/'// &
-         trim(adjustl(m_curr_dir))//'/'// &
+         trim(adjustl(m_root_dir))//'\'// &
+         trim(adjustl(m_curr_dir))//'\'// &
          trim(adjustl(fname))//'.txt'
     write (*, '(" Saving data into ",A99)') fname
     ! openfile
@@ -425,7 +425,8 @@ contains
           k = activated_num(t) + t_obj % idx_off() ! offset molecule id
           x = rand_subX()
           y = rand_subY()
-          d = rand_int(1, t_obj % symm)
+          d = rand_int(1, t_obj % symm) 
+
           ! land_one will return true if landing succeed, vice versa
           if (land_one(k, x, y, d)) exit SEARCH_LOOP
        end do SEARCH_LOOP

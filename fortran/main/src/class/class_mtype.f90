@@ -31,11 +31,11 @@ module class_mtype
      ! part [5]
      integer, private :: m_idx_gen    ! data index in storage (auto)
      ! part [6]
-     integer, private, pointer :: m_comp (:,:)  ! 3xN {x, y, si}
-     integer, private          :: m_comp_num    ! component number
+     integer, private, pointer :: m_comp (:,:) => null() ! 3xN {x, y, si}
+     integer, private          :: m_comp_num             ! component number
      ! part [7]
-     type (reaction), public , pointer ::   reac (:) ! reaction list
-     integer        , private          :: m_reac_num ! reaction number
+     type (reaction), public , pointer ::   reac (:) => null() ! reaction list
+     integer        , private          :: m_reac_num           ! reaction number
    contains
      procedure :: check    => m_check
      ! getters
@@ -313,7 +313,7 @@ contains
     integer     , intent (in)    :: n
     integer                      :: i, status
     ! multiple allocation check
-    if (associated(this % reac)) stop "ERROR: multiple definitions"
+    if (associated(this % reac)) stop "ERROR: (reac) multiple definitions"
     ! assign value
     this % m_reac_num = n
     ! not a basic type, allocate manually
@@ -359,7 +359,7 @@ contains
     integer, intent (in) :: n
     integer              :: status
     ! check multiple allocation
-    if (allocated(tlist)) stop "ERROR: multiple definitions"
+    if (allocated(tlist)) stop "ERROR: (alloc tlist) multiple definitions"
     ! not a basic type, allocate manually
     allocate (tlist (0:n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"

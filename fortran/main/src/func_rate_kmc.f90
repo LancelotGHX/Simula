@@ -195,8 +195,8 @@ contains
     !          direction since it is define using relative position
     !print *, m_pos
     pos = t_obj % rotate(r_obj % move(1:2), m_pos(3)) 
-    x = pos (1) 
-    y = pos (2) 
+    x = pos (1)
+    y = pos (2)
     d = r_obj % move(3)
     call move_one(m,x,y,d)
 

@@ -24,10 +24,10 @@ module class_option
 
   ! option information for condition
   type, public :: option
-     integer, private, pointer :: m_state (:,:) ! (2,M)
-     integer, private          :: m_state_num   ! number M
-     integer, private, pointer :: m_pos (:,:)   ! (3,N) {[x,y,d]...}
-     integer, private          :: m_pos_num     ! number N
+     integer, private, pointer :: m_state (:,:) => null() ! (2,M)
+     integer, private          :: m_state_num             ! number M
+     integer, private, pointer :: m_pos (:,:)   => null() ! (3,N) {[x,y,d]...}
+     integer, private          :: m_pos_num               ! number N
    contains
      procedure :: pos_eq_to   => m_pos_eq_to
      procedure :: state_eq_to => m_state_eq_to

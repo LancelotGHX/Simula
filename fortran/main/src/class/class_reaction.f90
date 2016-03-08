@@ -88,7 +88,7 @@ contains
     integer        , intent (in)    :: n
     integer                         :: status
     ! allocation check
-    if (associated(this % cond)) stop "ERROR: multiple definitions"
+    if (associated(this % cond)) stop "ERROR: (alloc cond) multiple definitions"
     ! assign number value
     this % m_cond_num = n
     ! not a basic type, allocate manually

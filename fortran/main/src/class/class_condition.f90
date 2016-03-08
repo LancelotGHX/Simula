@@ -93,7 +93,7 @@ contains
     integer         , intent (in)    :: n
     integer                          :: status
     ! check allocation
-    if (associated(this % opt)) stop "ERROR: multiple definitions"
+    if (associated(this % opt)) stop "ERROR: (alloc opt) multiple definitions"
     ! allocate memory space
     allocate (this % opt (n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory"

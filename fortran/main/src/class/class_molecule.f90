@@ -111,7 +111,7 @@ contains
 
     ! not a basic type, allocate manually
     ! @remark id = 0 is researved for background type
-    if (allocated(mlist)) stop "ERROR: multiple definitions"
+    if (allocated(mlist)) stop "ERROR: (alloc mlist) multiple definitions"
     allocate (mlist (0:n), STAT = status)
     if (status /= 0) stop "ERROR: Not enough memory!"
 

@@ -29,7 +29,7 @@ contains
 
     integer, allocatable :: sta (:), pos (:)
     integer, allocatable :: tmp(:,:)
-    integer, pointer     :: state_initial(:)
+    integer, pointer     :: state_initial(:) => null()
     integer              :: i, j
     state_initial => t_obj % state_initial()
 
@@ -48,7 +48,7 @@ contains
 
     call alloc_I1(pos, sum(tmp(3,:)) * 3)
     call alloc_I1(sta, size(tmp, 2)  * 2)
-    
+
     j = 1
     do i = 1, t_obj % comp_num()
        if (tmp(3,i) == 1) then
@@ -60,7 +60,7 @@ contains
        sta(2*i-1) = state_initial(i) 
        sta(2*i  ) = state_initial(i)
     end do
-
+            
     ! basic information
     call t_obj % reac (r) % set_energy (energy)
     call t_obj % reac (r) % set_move   (move)
@@ -69,13 +69,17 @@ contains
     ! condition for molecule itself
     call t_obj % reac (r) % cond (1) % set_tp (t_obj % idx_def())
     call t_obj % reac (r) % cond (1) % alloc_opt (1)
+    print *, "aaa"
     call t_obj % reac (r) % cond (1) % opt(1) % set_pos ([0,0,0])
+    print *, "aaa"
     call t_obj % reac (r) % cond (1) % opt(1) % set_state (sta)
+    
     ! condition for background checking (empty checking)
     call t_obj % reac (r) % cond (2) % set_tp (0)        ! background
     call t_obj % reac (r) % cond (2) % alloc_opt (1)
     call t_obj % reac (r) % cond (2) % opt(1) % set_pos (pos)
     call t_obj % reac (r) % cond (2) % opt(1) % set_state ([0,0]) 
+                
     return
   end subroutine def_free_move
 
@@ -92,9 +96,11 @@ contains
     ! handled by user
     !
     !> adding types into the record
+    
     call tlist_init (2)
     tpyp => tlist_new ()
     lead => tlist_new ()
+
     !
     !-------------------------------------------------------------------
     !-------------------------------------------------------------------
@@ -107,58 +113,96 @@ contains
     ! 3) check if ALL components' initial states match : cond->state
     ! pass the checking and do movement and update component state
     !
+    
     call tpyp % set_symm    (4)    !> define symmetry
     call tpyp % set_idx_def (2000) !> type id should be within [1000, 9999]
     call tpyp % set_eva_num (100)  !> evaporation number
     call tpyp % alloc_comp (5)    !> number of components
+
     call tpyp % set_comp(1, [ 0, 0, 1]) !> x, y, i-state
     call tpyp % set_comp(2, [ 1, 0, 2]) !> x, y, i-state
     call tpyp % set_comp(3, [ 0, 1, 3]) !> x, y, i-state
     call tpyp % set_comp(4, [-1, 0, 2]) !> x, y, i-state
     call tpyp % set_comp(5, [ 0,-1, 3]) !> x, y, i-state
     call tpyp % alloc_reac (8)    
+
+    call def_free_move(tpyp, 1, [ 1, 0, 0], 0.0_dp)
+    call def_free_move(tpyp, 2, [ 0, 1, 0], 0.0_dp)
+    call def_free_move(tpyp, 3, [-1, 0, 0], 0.0_dp)
+    call def_free_move(tpyp, 4, [ 0,-1, 0], 0.0_dp)
+    call def_free_move(tpyp, 5, [ 0, 0, 1], 0.0_dp)
+    call def_free_move(tpyp, 6, [ 0, 0, 2], 0.0_dp)
+    call def_free_move(tpyp, 7, [ 0, 0, 3], 0.0_dp)
+
     ! reaction: tpyp+tpyp
     t_obj => tpyp
-    r     =  1
+    r     =  8
+!    call t_obj % reac (r) % set_energy (-0.5_dp)
+!    call t_obj % reac (r) % set_move   ([1,0,0])
+!    call t_obj % reac (r) % alloc_cond (3)
+!    ! 1st tpyp
+!    call t_obj % reac (r) % cond (1) % set_tp (2000)
+!    call t_obj % reac (r) % cond (1) % alloc_opt (1)
+!    call t_obj % reac (r) % cond (1) % opt(1) % set_pos ([0,0,0])
+!    call t_obj % reac (r) % cond (1) % opt(1) % set_state &
+!         ([1,1,  2,4,  3,3,  2,2,  3,3])
+!    ! 2nd tptp
+!    call t_obj % reac (r) % cond (2) % set_tp (2000)
+!    call t_obj % reac (r) % cond (2) % alloc_opt (4)
+!    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([4,0,0])
+!    call t_obj % reac (r) % cond (2) % opt(1) % set_state &
+!         ([1,1,  2,2,  3,3,  2,4,  3,3])
+!    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([4,0,2])
+!    call t_obj % reac (r) % cond (2) % opt(2) % set_state &
+!         ([1,1,  2,4,  3,3,  2,2,  3,3])
+!    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([4,0,0])
+!    call t_obj % reac (r) % cond (2) % opt(3) % set_state &
+!         ([1,1,  4,4,  3,3,  2,4,  3,3])
+!    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([4,0,2])
+!    call t_obj % reac (r) % cond (2) % opt(4) % set_state &
+!         ([1,1,  2,4,  3,3,  4,4,  3,3])
+!
+!    ! condition for background checking (empty checking)
+!    call t_obj % reac (r) % cond (3) % set_tp (0)
+!    call t_obj % reac (r) % cond (3) % alloc_opt (1)
+!    call t_obj % reac (r) % cond (3) % opt(1) % set_pos &
+!         ([1,1,0,  1,-1,0,  2,0,0])
+!    call t_obj % reac (r) % cond (3) % opt(1) % set_state ([0,0]) 
+
+    ! tpyp+tpyp
+    t_obj => tpyp
+    r     =  8
     call t_obj % reac (r) % set_energy (-0.5_dp)
-    call t_obj % reac (r) % set_move   ([1,0,0])
+    call t_obj % reac (r) % set_move   ([-1,0,0])
     call t_obj % reac (r) % alloc_cond (3)
     ! 1st tpyp
     call t_obj % reac (r) % cond (1) % set_tp (2000)
     call t_obj % reac (r) % cond (1) % alloc_opt (1)
     call t_obj % reac (r) % cond (1) % opt(1) % set_pos ([0,0,0])
     call t_obj % reac (r) % cond (1) % opt(1) % set_state &
-         ([1,1,  2,4,  3,3,  2,2,  3,3])
+         ([1,1,  2,2,  3,3,  2,4,  3,3])
     ! 2nd tptp
     call t_obj % reac (r) % cond (2) % set_tp (2000)
     call t_obj % reac (r) % cond (2) % alloc_opt (4)
-    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([4,0,0])
+    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([-4,0,0])
     call t_obj % reac (r) % cond (2) % opt(1) % set_state &
-         ([1,1,  2,2,  3,3,  2,4,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([4,0,2])
-    call t_obj % reac (r) % cond (2) % opt(2) % set_state &
          ([1,1,  2,4,  3,3,  2,2,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([4,0,0])
+    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([-4,0,2])
+    call t_obj % reac (r) % cond (2) % opt(2) % set_state &
+         ([1,1,  2,2,  3,3,  2,4,  3,3])
+    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([-4,0,0])
     call t_obj % reac (r) % cond (2) % opt(3) % set_state &
-         ([1,1,  4,4,  3,3,  2,4,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([4,0,2])
-    call t_obj % reac (r) % cond (2) % opt(4) % set_state &
          ([1,1,  2,4,  3,3,  4,4,  3,3])
+    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([-4,0,2])
+    call t_obj % reac (r) % cond (2) % opt(4) % set_state &
+         ([1,1,  4,4,  3,3,  2,4,  3,3])
 
     ! condition for background checking (empty checking)
     call t_obj % reac (r) % cond (3) % set_tp (0)
     call t_obj % reac (r) % cond (3) % alloc_opt (1)
     call t_obj % reac (r) % cond (3) % opt(1) % set_pos &
-         ([1,1,0,  1,-1,0,  2,0,0])
+         ([-1,1,0,  -1,-1,0,  -2,0,0])
     call t_obj % reac (r) % cond (3) % opt(1) % set_state ([0,0]) 
-    
-    call def_free_move(tpyp, 2, [ 1, 0, 0], 0.5_dp)
-    call def_free_move(tpyp, 3, [ 0, 1, 0], 0.5_dp)
-    call def_free_move(tpyp, 4, [-1, 0, 0], 0.5_dp)
-    call def_free_move(tpyp, 5, [ 0,-1, 0], 0.5_dp)
-    call def_free_move(tpyp, 6, [ 0, 0, 1], 0.5_dp)
-    call def_free_move(tpyp, 7, [ 0, 0, 2], 0.5_dp)
-    call def_free_move(tpyp, 8, [ 0, 0, 3], 0.5_dp)
 
     !
     !-------------------------------------------------------------------
@@ -182,7 +226,7 @@ contains
 
     !> Auto initialization
     call init_random_seed() ! initialize random seed
-    call init_substrate(45,45) ! this should be placed after type definitions
+    call init_substrate(100,100) ! this should be placed after type definitions
     call init_rates()
     call mlist_init()
 
