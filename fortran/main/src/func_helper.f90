@@ -263,4 +263,18 @@ contains
     return
   end function binary_search_I1
 
+  !--------------------------------------------------------------------------- 
+  ! DESCRIPTION
+  !> @brief function to convert integer to string
+  !> @param  i: input integer
+  !---------------------------------------------------------------------------  
+  function int2str(i) result(c)
+    integer, intent(in)  :: i
+    character (len = int(log(real(i))/log(10.0_dp))+1) :: c
+    character (len = 2)                                :: f    
+    write (f,'(I2)') int(log(real(i))/log(10.0_dp))+1
+    write (c,'(I'//trim(f)//')') i
+    return
+  end function int2str
+
 end module func_helper

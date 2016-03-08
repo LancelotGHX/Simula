@@ -134,7 +134,7 @@ contains
        p = rand_uniform(0.0_dp, m_sums(m_reac_num()+1))
        !print *, p
        
-       !u = rand_uniform(0.0_dp, 1.0_dp)
+       u = rand_uniform(0.0_dp, 1.0_dp)
        !print *, log(1.0_dp/u) / m_rate_stp(m_reac_num)
     
        i = binary_search(m_sums, p)
@@ -167,7 +167,6 @@ contains
     m_obj => mlist(m)
     r_obj => tlist(t) % reac(r)
     
-    
     m_pos = m_obj % pos
 
     EACH_CONDITION: do c = 1, m_data(i) % size
@@ -199,7 +198,6 @@ contains
     x = pos (1) 
     y = pos (2) 
     d = r_obj % move(3)
-    !print *, tlist(t) % ptr % reacs(r) % mov
     call move_one(m,x,y,d)
 
     return
@@ -209,7 +207,7 @@ contains
   ! DESCRIPTION
   !> @brief calculate the rate array for all reactions
   !---------------------------------------------------------------------------
-  subroutine compute_rates()
+  subroutine compute_rates(verbose)
 
     ! how to check one condition
     ! 1) check if one of the relative positions matches: cond->opt->pos
@@ -224,125 +222,161 @@ contains
     type(condition), pointer :: c_obj ! condition object
     type(option)   , pointer :: o_obj ! condition object
 
+    logical, intent(in), optional :: verbose
+    logical                       :: m_verbose
+
     ! counter number
-    integer :: m, m_range(2) ! molecule index counter
-    integer :: t             ! type index counter
-    integer :: r             ! reaction
-    integer :: c             ! condition
-    integer :: o             ! option
-    integer :: p             ! option position
+    integer :: m, m_idxs(2), m_pos(3) ! molecule index counter
+    integer :: t ! type index counter
+    integer :: r ! reaction
+    integer :: c ! condition
+    integer :: o ! option
+    integer :: p ! option position
 
-    integer :: t_p(3), t_t, t_d, t_m ! target properties
-
-    integer :: m_pos(3)
+    integer :: fetch_pos(2)
+    integer :: t_pos(3), t_tp, t_dir, t_idx ! target properties
 
     logical :: all_c_true
     logical :: one_o_true
     logical :: all_p_true
 
     real(dp) :: rate
-    integer  :: reac_idx
+    integer  :: ridx
+
+    ! initialization for optional arguments
+    if (.not. present(verbose)) then
+       m_verbose = .true.
+    else
+       m_verbose = verbose
+    end if
+
+    !> debug
+    if (m_verbose) write(*, '("-- Entering Compute Rates")')
+    !> debug
 
     EACH_TYPE: do t = 1, tlist_num()
-       !print *, "type", t
-       ! retrieve current type
        t_obj => tlist(t)
 
        ! retrieve index range
-       m_range(1) = t_obj % abs_id(1)
-       m_range(2) = t_obj % abs_id(activated_num(t))
+       m_idxs(1) = t_obj % abs_id(1)
+       m_idxs(2) = t_obj % abs_id(activated_num(t))
 
-       !print  *, "type", t, "index range", m_range(1), m_range(2)
+       !> debug
+       if (m_verbose) then
+          write (*, '("--  type #",A," = ",A,":",A," idx (",A,",",A,")")') &
+               int2str(t), &
+               int2str(t_obj % idx_gen()), &
+               int2str(t_obj % idx_def()), &
+               int2str(m_idxs(1)), &
+               int2str(m_idxs(2))
+       end if
+       !> debug
 
-       EACH_MOLECULE: do m = m_range(1), m_range(2)
-          !print *, "molecule", m
-          ! retrieve current molecule
+       EACH_MOLECULE: do m = m_idxs(1), m_idxs(2)
           m_obj => mlist(m)
+          
+          ! retrieve current molecule center position
           m_pos =  m_obj % pos
 
+          !> debug
+          if (m_verbose) then
+             write (*, '("--    molecule ",A," = "A)') &
+                  int2str(m), int2str(mlist(m) % id) 
+          end if          
+          !> debug
+          
           EACH_REACTION: do r = 1, t_obj % reac_num()
-             !print *, "reaction", r
-             ! retrieve current reaction
              r_obj => t_obj % reac(r)
 
              ! record data for moelcule itself
-             reac_idx = (m-m_range(1)) * t_obj % reac_num() + m_reac(1,t) + r
-             m_data(reac_idx) % idxs = [ t, m, r ]
-             !print *, reac_idx
+             ridx = (m-m_idxs(1)) * t_obj % reac_num() + m_reac(1,t) + r
+             m_data(ridx) % idxs = [ t, m, r ]
 
-             ! all conditions must be fulfilled
-             all_c_true = .true.
+             ! initialize variables
+             all_c_true = .true. ! if any condition failed, set it to false
+             rate       = 0.0_dp
 
-             ! rate default value
-             rate = 0.0
+             !> debug
+             if (m_verbose) then
+                write (*, '("--      reaction id = ",A," glob id = "A)') &
+                     int2str(r), int2str(ridx)
+             end if
+             !> debug
              
              !> @remark all the conditions must be fulfilled
              EACH_COND: do c = 1, r_obj % cond_num()
-                !print *, "condition", c
-                ! retrieve current condition
                 c_obj => r_obj % cond(c)
 
-                one_o_true = .false.
-                ! one of the option should be true
+                ! initialize variables
+                one_o_true = .false. ! if any option passed, make it true
+
+                !> debug
+                if (m_verbose) then
+                   write (*, '("--        c",A," ")',advance="no") int2str(c)
+                end if
+                !> debug
+
                 EACH_OPTION: do o = 1, c_obj % opt_num()
                    !print *, "option", o
                    o_obj => c_obj % opt(o)
 
                    all_p_true = .true.
                    EACH_POSION: do p = 1, c_obj % opt(o) % pos_num()
-                      !print *, "psition", p
                       ! condition position
                       !> @remark need to rotate t_p first since it is define
                       ! according to relative direction 
 
-                      !print *, "get pos"
-                      t_p(1:2) = m_pos(1:2) + &
+                      fetch_pos(1:2) = &
+                           m_pos(1:2) + &
                            t_obj % rotate(o_obj % xy(p), m_pos(3))
 
-                      !print *, "get target molecule id"
                       ! target molecule index
-                      t_m = convert_from_land(get_sub(t_p(1), t_p(2)), 1) 
+                      t_idx = convert_from_land( &
+                           get_sub(fetch_pos(1), fetch_pos(2)), &
+                           1) 
 
-                      !print *, "get target type id"
                       ! target molecule defined type
-                      t_t = tlist(mlist(t_m) % tp) % idx_def()
+                      t_tp = tlist(mlist(t_idx) % tp) % idx_def()
 
-                      !print *, "get relative direction"
-                      !print *, t_m, t_t
                       ! target molecule relative direction
-                      t_p(3) = modulo(mlist(t_m) % pos(3) - &
-                           m_pos(3), tlist(mlist(t_m) % tp) % symm)
+                      t_pos(3) = modulo(mlist(t_idx) % pos(3) - &
+                           m_pos(3), tlist(mlist(t_idx) % tp) % symm)
+                      t_pos(1:2) = mlist(t_idx) % pos(1:2) - m_pos(1:2)
 
-                      t_p(1:2) = t_p(1:2) - m_pos(1:2)
-
-                      !print *, "get check type"
                       ! check if type confirms with definition              
-                      if (.not. c_obj % tp_eq_to(t_t)) then 
+                      if (.not. c_obj % tp_eq_to(t_tp)) then 
                          all_p_true = .false.
-                         !exit EACH_POSION
+                         !> debug
+                         if (m_verbose) write (*, '("w-type at ",A)') &
+                              int2str(p)
+                         !> debug
+                         exit EACH_POSION
                       end if
-                      !print *,"tp", all_p_true
 
-                      !print *, "get check center position"
                       !> @remark  we should never check the center
                       !           position of background                      
-                      if (t_t /= 0) then 
+                      if (t_tp /= 0) then 
                          !> @remark check if t_p is the central position of
                          !          molecule
-                         if (.not. o_obj % pos_eq_to(p, t_p)) then
+                         if (.not. o_obj % pos_eq_to(p, t_pos)) then
                             all_p_true = .false.
-                            !exit EACH_POSION
+                            !> debug
+                            if (m_verbose) write (*, '("w-pos at ",A)') &
+                                 int2str(p)
+                            !> debug
+                            exit EACH_POSION
                          end if
                       end if
-                      !print *, "pos",all_p_true, t_p
 
-                      !print *, "get check states"
                       ! check all comp states must be the same as initial
-                      if (.not.o_obj % state_eq_to(mlist(t_m) % state)) then
+                      if (.not.o_obj % state_eq_to(mlist(t_idx) % state)) then
                          all_p_true = .false.
-                         !exit EACH_POSION
+                         !> debug
+                         if (m_verbose) write (*, '("w-state at ",A)') &
+                              int2str(p)
+                         !> debug
+                         exit EACH_POSION
                       end if
-                      !print *, "sta",all_p_true, mlist(t_m) % state(:)
 
                    end do EACH_POSION
                    
@@ -355,7 +389,7 @@ contains
                    if (all_p_true) then
                       one_o_true = .true.
                       !print *, "--",r_obj % cond_num(),m_data (reac_idx) % idxs
-                      m_data (reac_idx) % tars (c) = o
+                      m_data (ridx) % tars (c) = o
                       
                       exit EACH_OPTION
                    end if
@@ -365,6 +399,12 @@ contains
                 ! if we don't have any option passed, then the condition must 
                 ! be failed
                 if (.not.one_o_true) all_c_true = .false.
+
+                !> debug
+                if (m_verbose) then
+                   write (*, '(L1)') all_c_true
+                end if
+                !> debug
 
              end do EACH_COND
 
@@ -377,7 +417,7 @@ contains
                 rate = 0.0_dp
              end if
              !print *, rate, all_c_true, reac_idx
-             m_rate (reac_idx) = rate
+             m_rate (ridx) = rate
 
 
           end do EACH_REACTION
@@ -386,8 +426,8 @@ contains
 
     end do EACH_TYPE
     
-    do reac_idx = 1, m_reac_num()
-       m_sums(reac_idx+1) = sum(m_rate(1:reac_idx))
+    do ridx = 1, m_reac_num()
+       m_sums(ridx+1) = sum(m_rate(1:ridx))
        !print *, "r=", m_sums(reac_idx+1), m_rate(reac_idx)
     end do
     
