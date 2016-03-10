@@ -31,3 +31,6 @@ add_library(
   ${fox_fsys_srcs_pp}
 )
 
+
+  set_target_properties(fox_fsys PROPERTIES FOLDER FoX-Project)
+

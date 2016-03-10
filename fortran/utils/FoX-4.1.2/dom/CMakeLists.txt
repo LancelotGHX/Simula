@@ -105,5 +105,7 @@ include_directories(
   ${fox_BINARY_DIR}/sax
 )
 
+set_target_properties(fox_dom PROPERTIES FOLDER FoX-Project)
+
 
 

@@ -23,3 +23,6 @@ include_directories(
   ${fox_BINARY_DIR}/fsys
 )
 
+  set_target_properties(fox_utils PROPERTIES FOLDER FoX-Project)
+
+

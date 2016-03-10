@@ -42,7 +42,8 @@ endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 
 # Add source files
 file(GLOB_RECURSE SRCS "src/*.f90")
-foreach(f ${SRCS})
+file(GLOB_RECURSE INDS "include/*")
+foreach(f ${SRCS} ${INDS})
   message ("-- " ${f})
 endforeach()
 
@@ -61,4 +62,21 @@ include_directories(
 
 # executable
 set(EXECUTABLE_OUTPUT_PATH ${SIMULA_BUILD_PATH})
-add_executable ("simula.exe" ${SRCS})
+add_executable ("simula.exe" ${SRCS} ${INDS})
+
+# organize folder
+macro(GroupSources curdir)
+   file(GLOB children RELATIVE ${PROJECT_SOURCE_DIR}/${curdir} ${PROJECT_SOURCE_DIR}/${curdir}/*)
+   foreach(child ${children})
+          if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/${curdir}/${child})
+                  GroupSources(${curdir}/${child})
+          else()
+                  string(REPLACE "/" "\\" groupname ${curdir})
+                  string(REPLACE "src" "Source" groupname ${groupname})
+            source_group(${groupname} FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
+          endif()
+   endforeach()
+endmacro()
+
+GroupSources("include")
+GroupSources("src")
