@@ -136,8 +136,8 @@ contains
     t_obj => tpyp
     r     =  8
     call t_obj % reac (r) % set_energy (-0.5_dp)
-    call t_obj % reac (r) % set_move   ([1,0,0])
-    call t_obj % reac (r) % alloc_cond (3)
+    call t_obj % reac (r) % set_move   ([0,0,0])
+    call t_obj % reac (r) % alloc_cond (2)
     ! 1st tpyp
     call t_obj % reac (r) % cond (1) % set_tp (2000)
     call t_obj % reac (r) % cond (1) % alloc_opt (1)
@@ -147,32 +147,25 @@ contains
     ! 2nd tptp
     call t_obj % reac (r) % cond (2) % set_tp (2000)
     call t_obj % reac (r) % cond (2) % alloc_opt (4)
-    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([4,0,0])
+    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([3,0,0])
     call t_obj % reac (r) % cond (2) % opt(1) % set_state &
          ([1,1,  2,2,  3,3,  2,4,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([4,0,2])
+    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([3,0,2])
     call t_obj % reac (r) % cond (2) % opt(2) % set_state &
          ([1,1,  2,4,  3,3,  2,2,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([4,0,0])
+    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([3,0,0])
     call t_obj % reac (r) % cond (2) % opt(3) % set_state &
          ([1,1,  4,4,  3,3,  2,4,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([4,0,2])
+    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([3,0,2])
     call t_obj % reac (r) % cond (2) % opt(4) % set_state &
          ([1,1,  2,4,  3,3,  4,4,  3,3])
-
-    ! condition for background checking (empty checking)
-    call t_obj % reac (r) % cond (3) % set_tp (0)
-    call t_obj % reac (r) % cond (3) % alloc_opt (1)
-    call t_obj % reac (r) % cond (3) % opt(1) % set_pos &
-         ([1,1,0,  1,-1,0,  2,0,0])
-    call t_obj % reac (r) % cond (3) % opt(1) % set_state ([0,0]) 
 
     ! tpyp+tpyp
     t_obj => tpyp
     r     =  9
     call t_obj % reac (r) % set_energy (-0.5_dp)
-    call t_obj % reac (r) % set_move   ([-1,0,0])
-    call t_obj % reac (r) % alloc_cond (3)
+    call t_obj % reac (r) % set_move   ([0,0,0])
+    call t_obj % reac (r) % alloc_cond (2)
     ! 1st tpyp
     call t_obj % reac (r) % cond (1) % set_tp (2000)
     call t_obj % reac (r) % cond (1) % alloc_opt (1)
@@ -182,25 +175,18 @@ contains
     ! 2nd tptp
     call t_obj % reac (r) % cond (2) % set_tp (2000)
     call t_obj % reac (r) % cond (2) % alloc_opt (4)
-    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([-4,0,0])
+    call t_obj % reac (r) % cond (2) % opt(1) % set_pos ([-3,0,0])
     call t_obj % reac (r) % cond (2) % opt(1) % set_state &
          ([1,1,  2,4,  3,3,  2,2,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([-4,0,2])
+    call t_obj % reac (r) % cond (2) % opt(2) % set_pos ([-3,0,2])
     call t_obj % reac (r) % cond (2) % opt(2) % set_state &
          ([1,1,  2,2,  3,3,  2,4,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([-4,0,0])
+    call t_obj % reac (r) % cond (2) % opt(3) % set_pos ([-3,0,0])
     call t_obj % reac (r) % cond (2) % opt(3) % set_state &
          ([1,1,  2,4,  3,3,  4,4,  3,3])
-    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([-4,0,2])
+    call t_obj % reac (r) % cond (2) % opt(4) % set_pos ([-3,0,2])
     call t_obj % reac (r) % cond (2) % opt(4) % set_state &
          ([1,1,  4,4,  3,3,  2,4,  3,3])
-
-    ! condition for background checking (empty checking)
-    call t_obj % reac (r) % cond (3) % set_tp (0)
-    call t_obj % reac (r) % cond (3) % alloc_opt (1)
-    call t_obj % reac (r) % cond (3) % opt(1) % set_pos &
-         ([-1,1,0,  -1,-1,0,  -2,0,0])
-    call t_obj % reac (r) % cond (3) % opt(1) % set_state ([0,0]) 
 
     !
     !-------------------------------------------------------------------
@@ -224,7 +210,7 @@ contains
 
     !> Auto initialization
     call init_random_seed() ! initialize random seed
-    call init_substrate(25,25) ! this should be placed after type definitions
+    call init_substrate(45,45) ! this should be placed after type definitions
     call init_rates()
     call mlist_init()
 

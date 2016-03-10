@@ -1,63 +1,38 @@
 <doc>
   <substrate>5,8</substrate>
 
-  <molecule id='2500'>
-    <symm>   4     </symm>
-    <name>   tpyp  </name>
-    <amount> 50  </amount>
+  <molecule id='2500' symm='4' amount='100'>
 
-    <rotation symmetry='4'>
-      0, -1,
-      1,  0
-    </rotation>
-    
-    <component id='1' description='central component'>
-      <state>1</state>
-    </component>
-    <component id='2' description='reactable component, which lines on the four vertices of this molecule'>1
-      <state description='state before reaction'>1</state>
-      <state description='state after reaction' >2</state>
-    </component>
+    <component-list size='5'>
+      <component x=' 0' y=' 0' init='1'/>
+      <component x=' 1' y=' 0' init='2'/>
+      <component x=' 0' y=' 1' init='3'/>
+      <component x='-1' y=' 0' init='2'/>
+      <component x=' 0' y='-1' init='3'/>
+    </component-list>
 
-    <geometry x=' 0' y=' 0'>1</geometry>
-    <geometry x=' 1' y=' 0'>2</geometry>
-    <geometry x=' 0' y=' 1'>2</geometry>
-    <geometry x='-1' y=' 0'>2</geometry>
-    <geometry x=' 0' y='-1'>2</geometry>
-    
-    <!-- Chemical reaction -->
-    <reaction id ='0' energy='0.2'>
-      
-      <!-- Positions that need to be empty -->
-      <reactant type='blank'>
-        <config x='1' y=' 1' d='1'/>
-      </reactant>
-      <reactant type='blank'>
-        <config x='1' y='-1' d='1'/>
-      </reactant>
-      <reactant type='blank'>
-        <config x='2' y=' 1' d='1'/>
-      </reactant>
-      <reactant type='blank'>
-        <config x='2' y='-1' d='1'/>
-      </reactant>
-      
-      <!-- Current molecule as reactant -->
-      <reactant type='self'>
-        <component id='2' initial='1' final='2'/>
-      </reactant>
+    <reaction-list size='8'>
 
-      <!-- Other reactants -->
-      <reactant type='2500'>
-        <config x=' 3' y=' 0' d='0/1/2/3'/>
-        <config x=' 0' y=' 3' d='0/1/2/3'/>
-        <config x='-3' y=' 0' d='0/1/2/3'/>
-        <config x=' 0' y=' 3' d='0/1/2/3'/>
-        <component id='2' initial='1' final='2'/>
-      </reactant>
+      <reaction energy='-0.5' condition-num='2'>
+	<move x='1' y='0' d='0'/>	
+	<condition target='' option-num=''>	  
+	  <option>
+	    <pos>
+	      1,1,1
+	    </pos>
+	    <state>
+	      1,1,
+	      2,2,
+	      3,3
+	      2,2,
+	      3,3
+	    </state>
+	  </option>	  	 	  
+	</condition>
+      </reaction>
 
-    </reaction>
-    
+    </reaction-list>
+
   </molecule>
 
 </doc>

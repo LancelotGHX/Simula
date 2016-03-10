@@ -9,13 +9,8 @@
 !> ...
 !
 !--------------------------------------------------------------------------- 
+#include "macro_slash.f90"
 module func_substrate
-
-#ifdef _WIN32
-#  define _S_ '\'
-#else
-#  define _S_ '/'
-#endif
 
   use func_helper   , only: alloc, rand_int
   use class_mtype   , only: tlist, tlist_num, mtype
@@ -49,10 +44,15 @@ contains
 
   subroutine set_proj_dir(name)
     character*(*) :: name
-    m_curr_dir = trim(adjustl(name))
+    character (len=8)  :: dates
+    character (len=10) :: times
+    ! write date information into project folder name
+    call date_and_time(DATE=dates,TIME=times)
+    ! create folder name and make folder
+    m_curr_dir = trim(adjustl(name))//"-"//dates//"-"//times(1:6)
     write (*, '(" Setting project output directory: ", A50)') m_curr_dir
     call system('mkdir '//               &
-         trim(adjustl(m_root_dir))//_S_//&
+         trim(adjustl(m_root_dir))//macro_SLASH//&
          trim(adjustl(m_curr_dir)))
     return
   end subroutine set_proj_dir
@@ -80,8 +80,8 @@ contains
        fname = trim(adjustl(fname))//trim(adjustl(fpart(i)))
     end do
     fname = &
-         trim(adjustl(m_root_dir))//_S_// &
-         trim(adjustl(m_curr_dir))//_S_// &
+         trim(adjustl(m_root_dir))//macro_SLASH// &
+         trim(adjustl(m_curr_dir))//macro_SLASH// &
          trim(adjustl(fname))//'.txt'
     write (*, '(" Saving data into ",A99)') fname
     ! openfile
