@@ -1,0 +1,63 @@
+<doc>
+  <substrate>5,8</substrate>
+
+  <molecule id='2500'>
+    <symm>   4     </symm>
+    <name>   tpyp  </name>
+    <amount> 50  </amount>
+
+    <rotation symmetry='4'>
+      0, -1,
+      1,  0
+    </rotation>
+    
+    <component id='1' description='central component'>
+      <state>1</state>
+    </component>
+    <component id='2' description='reactable component, which lines on the four vertices of this molecule'>1
+      <state description='state before reaction'>1</state>
+      <state description='state after reaction' >2</state>
+    </component>
+
+    <geometry x=' 0' y=' 0'>1</geometry>
+    <geometry x=' 1' y=' 0'>2</geometry>
+    <geometry x=' 0' y=' 1'>2</geometry>
+    <geometry x='-1' y=' 0'>2</geometry>
+    <geometry x=' 0' y='-1'>2</geometry>
+    
+    <!-- Chemical reaction -->
+    <reaction id ='0' energy='0.2'>
+      
+      <!-- Positions that need to be empty -->
+      <reactant type='blank'>
+        <config x='1' y=' 1' d='1'/>
+      </reactant>
+      <reactant type='blank'>
+        <config x='1' y='-1' d='1'/>
+      </reactant>
+      <reactant type='blank'>
+        <config x='2' y=' 1' d='1'/>
+      </reactant>
+      <reactant type='blank'>
+        <config x='2' y='-1' d='1'/>
+      </reactant>
+      
+      <!-- Current molecule as reactant -->
+      <reactant type='self'>
+        <component id='2' initial='1' final='2'/>
+      </reactant>
+
+      <!-- Other reactants -->
+      <reactant type='2500'>
+        <config x=' 3' y=' 0' d='0/1/2/3'/>
+        <config x=' 0' y=' 3' d='0/1/2/3'/>
+        <config x='-3' y=' 0' d='0/1/2/3'/>
+        <config x=' 0' y=' 3' d='0/1/2/3'/>
+        <component id='2' initial='1' final='2'/>
+      </reactant>
+
+    </reaction>
+    
+  </molecule>
+
+</doc>
