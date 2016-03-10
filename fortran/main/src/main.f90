@@ -1,13 +1,14 @@
 program main
 
-  !use FoX_dom
   use func_substrate
   use func_rate_kmc
+  use func_xml_reader
   use define
   implicit none
 
   integer :: i
 
+  call xml_read()
 #ifdef _WIN32
   call set_root_dir("..\..\..\output")
 #else

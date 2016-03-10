@@ -62,3 +62,12 @@ include_directories(
 # executable
 set(EXECUTABLE_OUTPUT_PATH ${SIMULA_BUILD_PATH})
 add_executable ("simula.exe" ${SRCS})
+target_link_libraries("simula.exe" 
+  fox_wxml
+  fox_wcml
+  fox_wkml
+  fox_common
+  fox_utils
+  fox_fsys
+  fox_sax
+  fox_dom)
