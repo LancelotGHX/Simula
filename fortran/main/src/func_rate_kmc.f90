@@ -7,6 +7,7 @@
 module func_rate_kmc
 
   ! used modules
+  use global
   use class_option
   use class_condition
   use class_reaction 
@@ -135,7 +136,7 @@ contains
        !print *, p
        
        u = rand_uniform(0.0_dp, 1.0_dp)
-       !print *, log(1.0_dp/u) / m_rate_stp(m_reac_num)
+       tot_time = tot_time + log(1.0_dp/u) / m_sums(m_reac_num()+1)
     
        i = binary_search(m_sums, p)
        !print *, i, m_rate(i)
@@ -421,7 +422,7 @@ contains
              ! function (need more freedom). else we set rate to be zero
              ! which means the execution probability is zero
              if (all_c_true) then
-                rate = 10E-10  * exp(- r_obj % energy / 0.01)          
+                rate = rate_compute(- r_obj % energy)       
              else 
                 rate = 0.0_dp
              end if             
