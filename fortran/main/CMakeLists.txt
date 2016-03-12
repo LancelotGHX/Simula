@@ -62,8 +62,7 @@ include_directories(
 
 # executable
 set(EXECUTABLE_OUTPUT_PATH ${SIMULA_BUILD_PATH})
-<<<<<<< HEAD
-add_executable ("simula.exe" ${SRCS})
+add_executable ("simula.exe" ${SRCS} ${INDS})
 target_link_libraries("simula.exe" 
   fox_wxml
   fox_wcml
@@ -73,8 +72,6 @@ target_link_libraries("simula.exe"
   fox_fsys
   fox_sax
   fox_dom)
-=======
-add_executable ("simula.exe" ${SRCS} ${INDS})
 
 # organize folder
 macro(GroupSources curdir)
@@ -92,4 +89,4 @@ endmacro()
 
 GroupSources("include")
 GroupSources("src")
->>>>>>> 3a2621c3ac65b3deab6a6c4e6835e05d6d5adf5a
+

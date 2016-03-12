@@ -1,10 +1,7 @@
 program main
 
-<<<<<<< HEAD
-=======
   !use FoX_dom
   use global
->>>>>>> 3a2621c3ac65b3deab6a6c4e6835e05d6d5adf5a
   use func_substrate
   use func_rate_kmc
   use func_xml_reader
@@ -30,7 +27,7 @@ program main
   call init()
   print *, ">>> Evaporation"
 
-  
+
   call activate_new(1)
   print *, land_one(1, 5, 1,0)
   call activate_new(1)
