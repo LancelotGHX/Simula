@@ -45,3 +45,4 @@ include_directories(
   ${fox_BINARY_DIR}/common
 )
 
+  set_target_properties(fox_wkml PROPERTIES FOLDER FoX-Project)

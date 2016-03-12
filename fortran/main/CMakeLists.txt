@@ -42,7 +42,8 @@ endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 
 # Add source files
 file(GLOB_RECURSE SRCS "src/*.f90")
-foreach(f ${SRCS})
+file(GLOB_RECURSE INDS "include/*")
+foreach(f ${SRCS} ${INDS})
   message ("-- " ${f})
 endforeach()
 
@@ -61,6 +62,7 @@ include_directories(
 
 # executable
 set(EXECUTABLE_OUTPUT_PATH ${SIMULA_BUILD_PATH})
+<<<<<<< HEAD
 add_executable ("simula.exe" ${SRCS})
 target_link_libraries("simula.exe" 
   fox_wxml
@@ -71,3 +73,23 @@ target_link_libraries("simula.exe"
   fox_fsys
   fox_sax
   fox_dom)
+=======
+add_executable ("simula.exe" ${SRCS} ${INDS})
+
+# organize folder
+macro(GroupSources curdir)
+   file(GLOB children RELATIVE ${PROJECT_SOURCE_DIR}/${curdir} ${PROJECT_SOURCE_DIR}/${curdir}/*)
+   foreach(child ${children})
+          if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/${curdir}/${child})
+                  GroupSources(${curdir}/${child})
+          else()
+                  string(REPLACE "/" "\\" groupname ${curdir})
+                  string(REPLACE "src" "Source" groupname ${groupname})
+            source_group(${groupname} FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
+          endif()
+   endforeach()
+endmacro()
+
+GroupSources("include")
+GroupSources("src")
+>>>>>>> 3a2621c3ac65b3deab6a6c4e6835e05d6d5adf5a

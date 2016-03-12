@@ -60,4 +60,13 @@ include_directories(
 )
 
 
+set_target_properties(wxml_example PROPERTIES FOLDER FoX-Project)
+set_target_properties(wcml_example PROPERTIES FOLDER FoX-Project)
+set_target_properties(wkml_example PROPERTIES FOLDER FoX-Project)
+set_target_properties(sax_example PROPERTIES FOLDER FoX-Project) 
+set_target_properties(sax_example_2 PROPERTIES FOLDER FoX-Project) 
+set_target_properties(dom_example_2 PROPERTIES FOLDER FoX-Project)
+set_target_properties(dom_example_3 PROPERTIES FOLDER FoX-Project)
+
+
 

@@ -109,3 +109,6 @@ include_directories(
   ${fox_BINARY_DIR}/common
 )
 
+
+  set_target_properties(fox_wcml PROPERTIES FOLDER FoX-Project)
+

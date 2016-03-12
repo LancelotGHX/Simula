@@ -36,3 +36,5 @@ include_directories(
   ${fox_BINARY_DIR}/utils
 )
 
+set_target_properties(fox_common PROPERTIES FOLDER FoX-Project)
+
